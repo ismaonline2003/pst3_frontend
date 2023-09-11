@@ -6,7 +6,7 @@ const styledComponents = {
         fontWeight: '700',
         color: '#1f2937'
     }),
-    dahsboardPanelh2: styled('h1')({
+    dahsboardPanelh2: styled('h2')({
         color: 'blue',
         fontSize: '1.6rem',
         fontWeight: '700',

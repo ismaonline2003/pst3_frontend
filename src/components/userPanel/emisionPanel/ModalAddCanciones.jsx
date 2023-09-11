@@ -192,11 +192,15 @@ export default function ModalAddCanciones({ showModal, setShowModal }) {
 
     const handleSaveBtn = () => {
         setBlockUI(true);
+        let newSongsList = [];
+        newSongs.map((element) => {
+            
+        })
         setTimeout(() => {
             console.log('saved changes');
             setBlockUI(false);
             setShowModal(false);
-        }, 10000)
+        }, 10000);
     }
 
     return(

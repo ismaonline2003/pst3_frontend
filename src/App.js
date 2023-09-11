@@ -1,5 +1,6 @@
 //import { HelmetProvider } from 'react-helmet-async'; 
 import Login from './components/Login';
+import OnlineRadio from './components/onlineRadio/OnlineRadio';
 import Dashboard from './components/userPanel/Dashboard';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -76,6 +77,7 @@ function App() {
      <AppContext.Provider value={{blockUI, setBlockUI}}>
         <Routes value="dark">
           <Route path="/login" element={<Login sessionVals={sessionVals} setSessionVals={setSessionVals} setIsLogged={setIsLogged} panel=""/>} />
+          <Route path="/radioOnline" element={<OnlineRadio />} />
         </Routes>
         <Backdrop
             sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
@@ -96,6 +98,7 @@ function App() {
                 <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"inicio"}/>}/>
                 <Route path="radioOnlineEmision" element={<Dashboard sessionVals={sessionVals} panelName={"emision_panel"}/>}/>
               </Route>
+              <Route path="/radioOnline" element={<OnlineRadio />} />
           </Routes>
           <Backdrop
             sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
