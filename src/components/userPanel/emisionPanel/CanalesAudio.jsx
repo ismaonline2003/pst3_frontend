@@ -72,7 +72,7 @@ export default function CanalesAudio({}) {
                     canal[0].device_media_recorder.onstart = (ev) => {
                         setTimeout(() => {
                             canal[0].device_media_recorder.stop();
-                        }, 3000);
+                        }, 5000);
                     }
 
                     canal[0].device_media_recorder.start();
