@@ -38,6 +38,7 @@ const OnlineRadio = ({}) => {
   };
 
   const onSocketDisconnection = () => {
+    console.log("onSocketDisconnection");
     console.log(socket.id); // undefined
   }
 

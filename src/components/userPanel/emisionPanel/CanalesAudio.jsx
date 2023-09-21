@@ -27,10 +27,10 @@ export default function CanalesAudio({}) {
     const [ canalesList, setCanalesList] = useState([]);
     const [ wsObj, setWswsObj ] = useState(undefined);
     const socket = io(consts.ws_server_url);
-
     const onSocketConnection = () => {
       const engine = socket.io.engine;
-      console.log("Socket Connection"); // x8WIv7-mJelg7on_ALbx
+      console.log("Socket Connection"); 
+      // x8WIv7-mJelg7on_ALbx
       //socket.on("radio_audio", onRadioAudio); 
     };
 
@@ -40,6 +40,9 @@ export default function CanalesAudio({}) {
 
     socket.on("connect", onSocketConnection);
     socket.on("disconnect", onSocketDisconnection);
+    socket.on("connect_error", (err) => {
+        console.log(`connect_error due to ${err.message}`);
+      });
 
     const activarDispositivo = (canalID) => {    
         navigator.mediaDevices
@@ -72,7 +75,7 @@ export default function CanalesAudio({}) {
                     canal[0].device_media_recorder.onstart = (ev) => {
                         setTimeout(() => {
                             canal[0].device_media_recorder.stop();
-                        }, 5000);
+                        }, 9000);
                     }
 
                     canal[0].device_media_recorder.start();
