@@ -88,7 +88,6 @@ function App() {
      </AppContext.Provider> 
     )
   } else {
-    console.log(sessionVals);
       return (
         <AppContext.Provider value={{blockUI, setBlockUI}}>
           <Routes>
@@ -97,6 +96,7 @@ function App() {
               <Route path="/dashboard">
                 <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"inicio"}/>}/>
                 <Route path="radioOnlineEmision" element={<Dashboard sessionVals={sessionVals} panelName={"emision_panel"}/>}/>
+                <Route path="estudiantes" element={<Dashboard sessionVals={sessionVals} panelName={"estudiantes"}/>}/>
               </Route>
               <Route path="/radioOnline" element={<OnlineRadio />} />
           </Routes>

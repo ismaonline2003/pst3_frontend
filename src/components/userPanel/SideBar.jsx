@@ -50,9 +50,11 @@ export default function NestedList() {
         </ListItemButton>
         <Collapse in={openAcademico} timeout="auto" unmountOnExit>
             <List component="div" disablePadding>
-                <ListItemButton sx={{ pl: 4 }}>
-                    <ListItemText primary="Estudiantes" />
-                </ListItemButton>
+                <Link to="/dashboard/estudiantes">
+                    <ListItemButton sx={{ pl: 4 }}>
+                        <ListItemText primary="Estudiantes" />
+                    </ListItemButton>
+                </Link>
                 <ListItemButton sx={{ pl: 4 }}>
                     <ListItemText primary="Profesores" />
                 </ListItemButton>

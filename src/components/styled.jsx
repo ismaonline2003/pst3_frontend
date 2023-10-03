@@ -10,6 +10,10 @@ const styledComponents = {
         fontSize: '1.6rem',
         fontWeight: '700'
     }),
+    StyledErrorNotification: styled('div')({
+        fontSize: '1.6rem',
+        fontWeight: '700'
+    }),
     radioOnlineh1: styled('h1')({
         fontSize: '2rem',
         fontWeight: '700',

@@ -5,13 +5,18 @@ import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import { styled } from '@mui/system';
 import EmisionPanel from './emisionPanel/EmisionPanel';
+import Estudiantes from './estudiantesPanel/Estudiantes';
 import Inicio from './Inicio';
 import AppBar from './AppBar';
 import SideBar from './SideBar';
+import SimpleNotification from '../generales/SimpleNotification';
+import AppContext from '../../context/App';
+import styledComponents from '../styled';
 
 const paneles = {
     emision_panel: EmisionPanel,
-    inicio: Inicio
+    inicio: Inicio,
+    estudiantes: Estudiantes
 }
 
 const Dashboard = ({sessionVals, panelName}) => {
@@ -19,6 +24,10 @@ const Dashboard = ({sessionVals, panelName}) => {
     const [sideBarXs, setSideBarXs] = useState(4);
     const [contentScreenXs, setContentScreenXs] = useState(8);
     const [personData, setPersonData] = useState({});
+    const [notificationMsg, setNotificationMsg] = useState("");
+    const [notificationType, setNotificationType] = useState("");
+    const [showNotification, setShowNotification] = useState(false);
+    const { blockUI, setBlockUI} = useContext(AppContext);
     let Panel = paneles[panelName];
 
     useEffect(() => {
@@ -42,6 +51,10 @@ const Dashboard = ({sessionVals, panelName}) => {
         setPersonData(persondata);
     }, [sessionVals]);
 
+    useEffect(() => {
+        console.log('showNotification', showNotification);
+    }, [showNotification]);
+
     return (
         <Box sx={{ flexGrow: 1 }}>
             <AppBar isSideBarOpen={isSideBarOpen} setIsSideBarOpen={setIsSideBarOpen}></AppBar>
@@ -52,8 +65,19 @@ const Dashboard = ({sessionVals, panelName}) => {
                     </Grid>
                     <Grid item xs={contentScreenXs}>
                         <Container>
-                             {/*Style="width: 100%, margin-top: 1rem"*/}
-                                <Panel/>
+                        <AppContext.Provider value={{blockUI, setBlockUI, setShowNotification, setNotificationMsg, setNotificationType}}>
+                            {
+                                (
+                                    <div className='fixed right-4'>
+                                        <SimpleNotification 
+                                            message={notificationMsg}
+                                            type={notificationType}
+                                        />
+                                    </div>
+                                ) ? showNotification == true : ""
+                            }
+                            <Panel/>
+                        </AppContext.Provider>
                         </Container>
                     </Grid>
                 </Grid>
