@@ -1,10 +1,10 @@
 import { useState, useEffect, useContext } from 'react';
 import Button from '@mui/material/Button';
-
+import AppContext from '../../context/App';
 
 const FormBtns = ({setUnlockFields, handleConfirmarBtn, handleCancelarBtn}) => {
     const [ showConfirmEditBtn, setShowConfirmEditBtn ] = useState(false);
-
+    const { blockUI, setBlockUI, setNotificationMsg, setNotificationType, setShowNotification} = useContext(AppContext);
     const _handleEditarBtn = () => {
         setUnlockFields(true);
         setShowConfirmEditBtn(true);
@@ -22,8 +22,11 @@ const FormBtns = ({setUnlockFields, handleConfirmarBtn, handleCancelarBtn}) => {
             setUnlockFields(false);
             setShowConfirmEditBtn(false);
         }
-
-        
+        if(confirmarBtn.status != 'success') {
+            setNotificationMsg(confirmarBtn.msg);
+            setNotificationType('error');
+            setShowNotification(true);
+        }
     }
 
     return (

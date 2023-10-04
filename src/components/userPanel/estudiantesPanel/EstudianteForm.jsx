@@ -38,6 +38,7 @@ const EstudianteForm = ({}) => {
     const [phone, setPhone] = useState("");
     const [mobile, setMobile] = useState("");
     const [address, setAddress] = useState("");
+    const [nroExpediente, setNroExpediente] = useState("");
     const { id } = useParams();
     const { blockUI, setBlockUI, setNotificationMsg, setNotificationType, setShowNotification} = useContext(AppContext);
     const [unlockFields, setUnlockFields] = useState(false);
@@ -67,6 +68,37 @@ const EstudianteForm = ({}) => {
           setBlockUI(false);
         });
     }
+
+    const updateEstudianteData = () => {
+        setBlockUI(true);
+        const token = localStorage.getItem('token');
+        const body = {
+            id_persona: estudiante.person.id,
+            person: {
+                ci_type: ciType,
+                ci: ci,
+                name: name,
+                lastname: lastname,
+                phone: phone,
+                mobile: mobile,
+                address: address
+            },
+            nro_expediente: nroExpediente
+        };
+        const config = {headers:{ authorization: token}};
+        let url = `${consts.backend_base_url}/api/estudiante/${id}`;
+        axios.put(url, body, config).then((response) => {
+            setBlockUI(false);
+            setNotificationMsg(response.data.message);
+            setNotificationType('success');
+            setShowNotification(true);
+        }).catch((err) => {
+          setNotificationMsg(err.response.data.message);
+          setNotificationType('error');
+          setShowNotification(true);
+          setBlockUI(false);
+        });
+    }
     
     const handleConfirmarBtn = (e) => {
         let personaData = {
@@ -79,6 +111,9 @@ const EstudianteForm = ({}) => {
             address: address
         };
         let confirmarBtnReturn = personaFieldsValidations(personaData);
+        if(confirmarBtnReturn.status == 'success') {
+            updateEstudianteData();
+        }
         return confirmarBtnReturn;
     }
     const handleCancelarBtn = (e) => {
@@ -89,6 +124,7 @@ const EstudianteForm = ({}) => {
         setPhone(estudiante.person.phone);
         setMobile(estudiante.person.mobile);
         setAddress(estudiante.person.address);
+        setNroExpediente(estudiante.nro_expediente);
     }
 
     useEffect(() => {
