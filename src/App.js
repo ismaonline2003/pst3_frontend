@@ -7,6 +7,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { React, useState, createContext, useEffect } from 'react';
 import {Routes, Route } from 'react-router-dom';
 import AppContext from './context/App';
+import SimpleNotification from './components/generales/SimpleNotification';
 import './App.css';
 
 function App() {
@@ -19,6 +20,9 @@ function App() {
   const [blockUI, setBlockUI] = useState(false);
   const [sessionVals, setSessionVals] = useState(default_session_obj);
   const [isLogged, setIsLogged] = useState(false);
+  const [notificationMsg, setNotificationMsg] = useState("");
+  const [notificationType, setNotificationType] = useState("success");
+  const [showNotification, setShowNotification] = useState(false);
 
   useEffect(() => {
     let userData = {};
@@ -71,14 +75,29 @@ function App() {
     }
   }, [isLogged]);
 
+  useEffect(() => {
+    if(showNotification) {
+      setTimeout(() => {
+        setShowNotification(false);
+      }, 5000);
+    }
+  }, [showNotification])
+
 
   if(sessionVals.isExpired) {
     return (
-     <AppContext.Provider value={{blockUI, setBlockUI}}>
+     <AppContext.Provider value={{blockUI, setBlockUI, setNotificationMsg, setNotificationType, setShowNotification}}>
         <Routes value="dark">
           <Route path="/login" element={<Login sessionVals={sessionVals} setSessionVals={setSessionVals} setIsLogged={setIsLogged} panel=""/>} />
           <Route path="/radioOnline" element={<OnlineRadio />} />
         </Routes>
+        {
+            showNotification == true && 
+              <SimpleNotification 
+                message={notificationMsg}
+                type={notificationType}
+              />
+        }
         <Backdrop
             sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
             open={blockUI}
@@ -89,17 +108,27 @@ function App() {
     )
   } else {
       return (
-        <AppContext.Provider value={{blockUI, setBlockUI}}>
+        <AppContext.Provider value={{blockUI, setBlockUI, setNotificationMsg, setNotificationType, setShowNotification}}>
           <Routes>
               <Route path="/" element={<Dashboard sessionVals={sessionVals} panelName={"inicio"}/>}/>
               <Route path="/login" element={<Dashboard sessionVals={sessionVals} panelName={"inicio"}/>} ></Route>
               <Route path="/dashboard">
                 <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"inicio"}/>}/>
                 <Route path="radioOnlineEmision" element={<Dashboard sessionVals={sessionVals} panelName={"emision_panel"}/>}/>
-                <Route path="estudiantes" element={<Dashboard sessionVals={sessionVals} panelName={"estudiantes"}/>}/>
+                <Route path="estudiantes" >
+                  <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"estudiantes"}/>}/>
+                  <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"estudiante_form"}/>}/>
+                </Route>
               </Route>
               <Route path="/radioOnline" element={<OnlineRadio />} />
           </Routes>
+          {
+            showNotification == true && 
+              <SimpleNotification 
+                message={notificationMsg}
+                type={notificationType}
+              />
+          }
           <Backdrop
             sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
             open={blockUI}

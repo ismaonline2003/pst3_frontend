@@ -1,21 +1,25 @@
 import * as React from 'react';
 import { useState, useEffect, useContext } from 'react';
 import axios from "axios";
-import { DataGrid } from '@mui/x-data-grid';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import SearchBar from '../SearchBar';
 import styledComponents from '../../styled';
 import AppContext from '../../../context/App';
 import consts from '../../../settings/consts';
+//simple table
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
+import TablePagination from '@mui/material/TablePagination';
+//link
+import { Link } from 'react-router-dom';
 
-const columns = [
-    { field: 'id', headerName: 'Ref', width: 70 },
-    { field: 'name', headerName: 'Nombre y Apellido', width: 250 },
-    { field: 'ci', headerName: 'Cédula', width: 120 },
-    { field: 'nro_expediente', headerName: 'Nro Expediente', width: 120 },
-    { field: 'phone', headerName: 'Teléfono', width: 150 },
-    { field: 'mobile', headerName: 'Teléfono Móvil', width: 150 },
-    { field: 'actions', headerName: 'Acciones', width: 150 }
-];
+
+
 const searchBarParameters = [
     { value: 'ref', label: 'Referencia', type: "number"},
     { value: 'nombre', label: 'Nombre y Apellido', type: "search"},
@@ -28,7 +32,62 @@ const searchBarParameters = [
 export default function Estudiantes({}) {
     const StyledH1 = styledComponents.dahsboardPanelh1;
     const [ estudiantes, setEstudiantes ] = useState([]);
-    const { blockUI, setBlockUI, setShowNotification, setNotificationMsg, setNotificationType } = useContext(AppContext);
+    const { blockUI, setBlockUI, setNotificationMsg, setNotificationType, setShowNotification} = useContext(AppContext);
+    const [order, setOrder] = useState('asc');
+    const [orderBy, setOrderBy] = useState('calories');
+    const [selected, setSelected] = React.useState([]);
+    const [page, setPage] = React.useState(0);
+    const [dense, setDense] = React.useState(false);
+    const [rowsPerPage, setRowsPerPage] = React.useState(5);
+
+    const handleRequestSort = (event, property) => {
+        const isAsc = orderBy === property && order === 'asc';
+        setOrder(isAsc ? 'desc' : 'asc');
+        setOrderBy(property);
+    };
+
+    const handleSelectAllClick = (event) => {
+        if (event.target.checked) {
+        const newSelected = estudiantes.map((n) => n.name);
+        setSelected(newSelected);
+        return;
+        }
+        setSelected([]);
+    };
+
+    const handleClick = (event, name) => {
+        const selectedIndex = selected.indexOf(name);
+        let newSelected = [];
+
+        if (selectedIndex === -1) {
+        newSelected = newSelected.concat(selected, name);
+        } else if (selectedIndex === 0) {
+        newSelected = newSelected.concat(selected.slice(1));
+        } else if (selectedIndex === selected.length - 1) {
+        newSelected = newSelected.concat(selected.slice(0, -1));
+        } else if (selectedIndex > 0) {
+        newSelected = newSelected.concat(
+            selected.slice(0, selectedIndex),
+            selected.slice(selectedIndex + 1),
+        );
+        }
+
+        setSelected(newSelected);
+    };
+
+    const handleChangePage = (event, newPage) => {
+        setPage(newPage);
+    };
+
+    const handleChangeRowsPerPage = (event) => {
+        setRowsPerPage(parseInt(event.target.value, 10));
+        setPage(0);
+    };
+
+    const handleChangeDense = (event) => {
+        setDense(event.target.checked);
+    };
+
 
     const searchEstudiantes = (searchVals) => {
         setBlockUI(true);
@@ -52,9 +111,6 @@ export default function Estudiantes({}) {
             }) 
             setEstudiantes(estudiantes)
             setBlockUI(false);
-            setNotificationMsg("Ocurrió un error inesperado... Intentelo mas tarde.");
-            setNotificationType('error');
-            setShowNotification(true);
         }).catch((err) => {
           console.log(err);
           setNotificationMsg("Ocurrió un error inesperado... Intentelo mas tarde.");
@@ -85,17 +141,54 @@ export default function Estudiantes({}) {
             <SearchBar selectOptions={searchBarParameters} externalHandleSearchBtn={handleSearchBtn}/>
             <br />
             <div style={{ height: 400, width: '100%' }}>
-                <DataGrid
-                    rows={estudiantes}
-                    columns={columns}
-                    initialState={{
-                    pagination: {
-                        paginationModel: { page: 0, pageSize: 5 },
-                    },
-                    }}
-                    pageSizeOptions={[5, 10]}
-                    checkboxSelection
-                />
+            <Paper sx={{ width: '100%', mb: 2 }}>
+                <TableContainer>
+                    <Table sx={{ minWidth: 650 }} aria-label="Estudiantes">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell align="left">Ref</TableCell>
+                                <TableCell align="left">Nombre y Apellido</TableCell>
+                                <TableCell align="left">Cédula</TableCell>
+                                <TableCell align="left">Nro Expediente</TableCell>
+                                <TableCell align="left">Teléfono</TableCell>
+                                <TableCell align="left">Móvil</TableCell>
+                                <TableCell align="left">Ver</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                        {estudiantes.map((row) => (
+                            <TableRow
+                            key={row.id}
+                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                            >
+                                <TableCell component="th" scope="row">
+                                    {row.id}
+                                </TableCell>
+                                <TableCell align="left">{row.name}</TableCell>
+                                <TableCell align="left">{row.ci}</TableCell>
+                                <TableCell align="left">{row.nro_expediente}</TableCell>
+                                <TableCell align="left">{row.phone}</TableCell>
+                                <TableCell align="left">{row.mobile}</TableCell>
+                                <TableCell align="left">
+                                    <Link to={`/dashboard/estudiantes/${row.id}`}>
+                                        <VisibilityIcon color="secondary"/>
+                                    </Link>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+                <TablePagination
+                    rowsPerPageOptions={[5, 10, 25]}
+                    component="div"
+                    count={estudiantes.length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                 />
+            </Paper>
             </div>
         </React.Fragment>
     );
