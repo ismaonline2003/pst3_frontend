@@ -40,20 +40,32 @@ const PersonaForm = ({
         setMobile,
         address, 
         setAddress,
+        fotoCarnetStr,
+        setFotoCarnetStr,
         unlockFields
     }) => {
+
+    const [fotoCarnet, setFotoCarnet] = useState(undefined);
+
+    useEffect(() => {
+        console.log(fotoCarnetStr);
+    }, []);
+
     return (
-        <div className='m-10'>
+        <div>
             {
                 unlockFields && 
                 <div>
+                    <div className='d-flex flex-row flex-wrap'>
+                        <img src={`data:image/png;base64,${fotoCarnetStr}`} alt=""/>
+                    </div>
                     <div className='d-flex flex-row flex-wrap'>
                         <FormControl sx={{ m: 1, width: '20%' }} variant="outlined">
                             <TextField
                                 id="ci_type"
                                 select
                                 label="Tipo de Cédula"
-                                defaultValue={ciType}
+                                defaultValue={ciType ? ciType : "V"}
                                 onChange={(e) => setCIType(e.target.value)}
                                 >
                                 {ci_vals.map((option) => (
@@ -96,12 +108,15 @@ const PersonaForm = ({
                 !unlockFields && 
                 <div>
                     <div className='d-flex flex-row flex-wrap'>
+                        <img src={fotoCarnetStr} alt="" style={{width: '100px', height: '100px'}}/>
+                    </div>
+                    <div className='d-flex flex-row flex-wrap'>
                         <FormControl sx={{ m: 1, width: '20%' }} variant="outlined">
                             <TextField
                                 id="ci_type"
                                 select
                                 label="Tipo de Cédula"
-                                defaultValue={ciType}
+                                defaultValue={ciType ? ciType : "V"}
                                 disabled
                                 >
                                 {ci_vals.map((option) => (

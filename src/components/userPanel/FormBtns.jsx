@@ -30,10 +30,10 @@ const FormBtns = ({setUnlockFields, handleConfirmarBtn, handleCancelarBtn}) => {
     }
 
     return (
-        <div className='m-10 w-100'>
+        <div className='mb-10 w-100'>
             {
                 !showConfirmEditBtn && 
-                <Button variant="contained" onClick={(e) => _handleEditarBtn(e)}>Editar</Button>
+                <Button variant="contained" onClick={(e) => _handleEditarBtn(e)} style={{marginLeft: '10px'}}>Editar</Button>
             }
             {
                 showConfirmEditBtn && 
