@@ -1,9 +1,12 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useRef } from 'react';
 import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
 import Input from '@mui/material/Input';
-
+import styledComponents from '../styled';
+import imgValidations from '../../helpers/imgValidations';
 import MenuItem from '@mui/material/MenuItem';
+import AppContext from '../../context/App';
+import getBase64 from '../../helpers/getBase64'
 
 const ci_vals = [
     {
@@ -24,7 +27,6 @@ const ci_vals = [
       }
   ];
 
-
 const PersonaForm = ({
         ciType,
         setCIType,
@@ -42,22 +44,55 @@ const PersonaForm = ({
         setAddress,
         fotoCarnetStr,
         setFotoCarnetStr,
+        fotoCarnetObj,
+        setFotoCarnetObj,
         unlockFields
     }) => {
 
-    const [fotoCarnet, setFotoCarnet] = useState(undefined);
+    const [ showEditFotoCarnet, setShowEditFotoCarnet] = useState(false);
+    const fotoCarnetInput = useRef(null)
+    const FotoCarnet = styledComponents.fotoCarnetBig;
+    const FotoCarnetEdit = styledComponents.fotoCarnetBigEdit;
+    const FotoCarnetEditLayer = styledComponents.fotoCarnetBigEditLayer;
+    const { blockUI, setBlockUI, setNotificationMsg, setNotificationType, setShowNotification} = useContext(AppContext);
 
-    useEffect(() => {
-        console.log(fotoCarnetStr);
-    }, []);
-
+    if(fotoCarnetInput && fotoCarnetInput.current) {
+        fotoCarnetInput.current.onchange = (e) => {
+            const validations = imgValidations(e.target.files[0]);
+            if(validations.status != 'success') {
+                setNotificationMsg(validations.msg);
+                setNotificationType('error');
+                setShowNotification(true);
+                e.target.value = "";
+            } else {
+                let url = window.URL.createObjectURL(e.target.files[0]);
+                setFotoCarnetStr(url);
+                setFotoCarnetObj(e.target.files[0])
+            }
+        } 
+    }
     return (
         <div>
             {
                 unlockFields && 
                 <div>
-                    <div className='d-flex flex-row flex-wrap'>
-                        <img src={`data:image/png;base64,${fotoCarnetStr}`} alt=""/>
+                    <div className='d-flex flex-row flex-wrap mb-4'>
+                        <FotoCarnetEdit 
+                            style={{backgroundImage: `url('${fotoCarnetStr}')`}}   
+                            onMouseEnter={() => setShowEditFotoCarnet(true)} 
+                            onMouseLeave={() => setShowEditFotoCarnet(false)}>
+                            {
+                                showEditFotoCarnet &&
+                                <FotoCarnetEditLayer
+                                    onClick={(e) => fotoCarnetInput.current.click()}
+                                >
+                                    <p>Click Aqui para cambiar la foto</p>
+                                    <input type="file" id="fotoCarnetImage" ref={fotoCarnetInput} hidden
+                                    />
+                                </FotoCarnetEditLayer>
+                            }
+                        </FotoCarnetEdit>
+                        
                     </div>
                     <div className='d-flex flex-row flex-wrap'>
                         <FormControl sx={{ m: 1, width: '20%' }} variant="outlined">
@@ -107,8 +142,8 @@ const PersonaForm = ({
             {
                 !unlockFields && 
                 <div>
-                    <div className='d-flex flex-row flex-wrap'>
-                        <img src={fotoCarnetStr} alt="" style={{width: '100px', height: '100px'}}/>
+                    <div className='d-flex flex-row flex-wrap text-center mb-4'>
+                        <FotoCarnet src={fotoCarnetStr} alt="foto-carnet"/>
                     </div>
                     <div className='d-flex flex-row flex-wrap'>
                         <FormControl sx={{ m: 1, width: '20%' }} variant="outlined">

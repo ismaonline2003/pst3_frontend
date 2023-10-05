@@ -9,6 +9,7 @@ import MenuItem from '@mui/material/MenuItem';
 import FormBtns from '../FormBtns';
 import PersonaForm from '../PersonaForm';
 import personaFieldsValidations from '../../../helpers/personaFieldsValidations';
+import sequelizeImg2Base64 from '../../../helpers/sequelizeImg2Base64';
 const ci_vals = [
     {
       value: 'V',
@@ -41,6 +42,7 @@ const EstudianteForm = ({}) => {
     const [yearIngreso, setYearIngreso] = useState(0);
     const [nroExpediente, setNroExpediente] = useState("");
     const [fotoCarnetStr, setFotoCarnetStr] = useState("");
+    const [fotoCarnetObj, setFotoCarnetObj] = useState(undefined);
     const { id } = useParams();
     const { blockUI, setBlockUI, setNotificationMsg, setNotificationType, setShowNotification} = useContext(AppContext);
     const [unlockFields, setUnlockFields] = useState(false);
@@ -62,18 +64,9 @@ const EstudianteForm = ({}) => {
             setAddress(response.data.person.address);
             setYearIngreso(response.data.year_ingreso);
             setNroExpediente(response.data.nro_expediente);
-            console.log(response.data.person.foto_carnet);
             if(response.data.person.foto_carnet) {
-                const blob = new Blob([response.data.person.foto_carnet.data]);
-                const url = URL.createObjectURL(blob)
-                let img = new Image()
-                img.onload = () => {
-                    URL.revokeObjectURL(url)
-                }
-                img.src = url
-                console.log(img);
-                var base64String = btoa(String.fromCharCode.apply(null, new Uint8Array(response.data.person.foto_carnet.data)));
-                setFotoCarnetStr(url);
+                const base64Img = sequelizeImg2Base64(response.data.person.foto_carnet);
+                setFotoCarnetStr(base64Img.b64str);
             }
             setBlockUI(false);
         }).catch((err) => {
@@ -88,7 +81,9 @@ const EstudianteForm = ({}) => {
     const updateEstudianteData = () => {
         setBlockUI(true);
         const token = localStorage.getItem('token');
-        const body = {
+        const formData = new FormData();
+        formData.append('foto_carnet', fotoCarnetObj);
+        let body = {
             id_persona: estudiante.person.id,
             person: {
                 ci_type: ciType,
@@ -102,9 +97,10 @@ const EstudianteForm = ({}) => {
             nro_expediente: nroExpediente,
             year_ingreso: yearIngreso
         };
-        const config = {headers:{ authorization: token}};
+        formData.append('data', JSON.stringify(body));
+        const config = {headers:{'authorization': token, 'Content-Type': 'multipart/form-data'}};
         let url = `${consts.backend_base_url}/api/estudiante/${id}`;
-        axios.put(url, body, config).then((response) => {
+        axios.put(url, formData, config).then((response) => {
             setBlockUI(false);
             setNotificationMsg(response.data.message);
             setNotificationType('success');
@@ -159,6 +155,11 @@ const EstudianteForm = ({}) => {
         setAddress(estudiante.person.address);
         setYearIngreso(estudiante.year_ingreso);
         setNroExpediente(estudiante.nro_expediente);
+        setFotoCarnetObj(undefined);
+        if(estudiante.person.foto_carnet) {
+            const base64Img = sequelizeImg2Base64(estudiante.person.foto_carnet);
+            setFotoCarnetStr(base64Img.b64str);
+        }
     }
 
     useEffect(() => {
@@ -189,6 +190,8 @@ const EstudianteForm = ({}) => {
                 setAddress={setAddress}
                 fotoCarnetStr={fotoCarnetStr}
                 setFotoCarnetStr={setFotoCarnetStr}
+                fotoCarnetObj={fotoCarnetObj}
+                setFotoCarnetObj={setFotoCarnetObj}
                 unlockFields={unlockFields}
             ></PersonaForm>
             <div className='d-flex flex-row flex-wrap'>
