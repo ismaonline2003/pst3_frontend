@@ -109,6 +109,19 @@ export default function personaFieldsValidations(data) {
         objReturn = {status: 'error', msg: 'El número de telefono móvil no puede superar los 15 digitos.'}
         return objReturn;
     }
+
+    let birthDate = new Date(data.birthdate);
+    let currentDate = new Date();
+    if(isNaN(birthDate)) {
+        objReturn = {status: 'error', msg: 'Debe establecer una fecha de nacimiento.'}
+        return objReturn;
+    }
+    if(birthDate instanceof Date) {
+        if(birthDate > currentDate) {
+            objReturn = {status: 'error', msg: 'La fecha de nacimiento no puede ser mayor a la fecha actual.'}
+            return objReturn;
+        }
+    }
     
     return objReturn;
 }

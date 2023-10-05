@@ -10,6 +10,8 @@ import FormBtns from '../FormBtns';
 import PersonaForm from '../PersonaForm';
 import personaFieldsValidations from '../../../helpers/personaFieldsValidations';
 import sequelizeImg2Base64 from '../../../helpers/sequelizeImg2Base64';
+import getFormattedDate from '../../../helpers/getFormattedDate';
+
 const ci_vals = [
     {
       value: 'V',
@@ -36,6 +38,7 @@ const EstudianteForm = ({}) => {
     const [ci, setCI] = useState("");
     const [name, setName] = useState("");
     const [lastname, setLastName] = useState("");
+    const [fechaNacimiento, setFechaNacimiento] = useState(new Date());
     const [phone, setPhone] = useState("");
     const [mobile, setMobile] = useState("");
     const [address, setAddress] = useState("");
@@ -53,12 +56,12 @@ const EstudianteForm = ({}) => {
         const config = {headers:{ authorization: token}};
         let url = `${consts.backend_base_url}/api/estudiante/${id}`;
         axios.get(url, config).then((response) => {
-            console.log(response.data);
             setEstudiante(response.data);
             setCIType(response.data.person.ci_type);
             setCI(response.data.person.ci);
             setName(response.data.person.name);
             setLastName(response.data.person.lastname);
+            setFechaNacimiento(new Date(response.data.person.birthdate));
             setPhone(response.data.person.phone);
             setMobile(response.data.person.mobile);
             setAddress(response.data.person.address);
@@ -70,7 +73,6 @@ const EstudianteForm = ({}) => {
             }
             setBlockUI(false);
         }).catch((err) => {
-          console.log(err);
           setNotificationMsg("Ocurrió un error inesperado... Intentelo mas tarde.");
           setNotificationType('error');
           setShowNotification(true);
@@ -82,8 +84,13 @@ const EstudianteForm = ({}) => {
         setBlockUI(true);
         const token = localStorage.getItem('token');
         const formData = new FormData();
-        formData.append('foto_carnet', fotoCarnetObj);
+        let foto_carnet = fotoCarnetObj;
+        if(fotoCarnetObj == 'sin_foto') {
+            foto_carnet = undefined;
+        }
+        formData.append('foto_carnet', foto_carnet);
         let body = {
+            updateFotoCarnet: true ? fotoCarnetObj != undefined : false,
             id_persona: estudiante.person.id,
             person: {
                 ci_type: ciType,
@@ -92,7 +99,8 @@ const EstudianteForm = ({}) => {
                 lastname: lastname,
                 phone: phone,
                 mobile: mobile,
-                address: address
+                address: address,
+                birthdate: getFormattedDate(fechaNacimiento)
             },
             nro_expediente: nroExpediente,
             year_ingreso: yearIngreso
@@ -133,7 +141,8 @@ const EstudianteForm = ({}) => {
             lastname: lastname,
             phone: phone,
             mobile: mobile,
-            address: address
+            address: address,
+            birthdate: fechaNacimiento
         };
         let confirmarBtnReturn = personaFieldsValidations(personaData);
         if(confirmarBtnReturn.status == 'success') {
@@ -150,6 +159,7 @@ const EstudianteForm = ({}) => {
         setCI(estudiante.person.ci);
         setName(estudiante.person.name);
         setLastName(estudiante.person.lastname);
+        setFechaNacimiento(new Date(estudiante.person.birthdate));
         setPhone(estudiante.person.phone);
         setMobile(estudiante.person.mobile);
         setAddress(estudiante.person.address);
@@ -182,6 +192,8 @@ const EstudianteForm = ({}) => {
                 setName={setName}
                 lastname={lastname}
                 setLastName={setLastName} 
+                fechaNacimiento={fechaNacimiento}
+                setFechaNacimiento={setFechaNacimiento} 
                 phone={phone}
                 setPhone={setPhone} 
                 mobile={mobile}
@@ -209,7 +221,7 @@ const EstudianteForm = ({}) => {
             }
 
                 <FormControl sx={{ m: 1, width: '45%' }} variant="outlined">
-                    <TextField id="nro_expediente" label="Número de Expediente" disabled variant="outlined" value={nroExpediente}/>
+                    <TextField id="nro_expediente" label="Número de Expediente" disabled variant="standard" value={nroExpediente}/>
                 </FormControl>
             </div>
         </div>

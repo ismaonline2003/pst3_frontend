@@ -6,7 +6,9 @@ import styledComponents from '../styled';
 import imgValidations from '../../helpers/imgValidations';
 import MenuItem from '@mui/material/MenuItem';
 import AppContext from '../../context/App';
-import getBase64 from '../../helpers/getBase64'
+import getFormattedDate from '../../helpers/getFormattedDate';
+import SinFotoPerfil from '../../icons/sin-foto-perfil.png';
+import Button from '@mui/material/Button';
 
 const ci_vals = [
     {
@@ -36,6 +38,8 @@ const PersonaForm = ({
         setName,
         lastname, 
         setLastName,
+        fechaNacimiento,
+        setFechaNacimiento,
         phone, 
         setPhone,
         mobile, 
@@ -50,6 +54,7 @@ const PersonaForm = ({
     }) => {
 
     const [ showEditFotoCarnet, setShowEditFotoCarnet] = useState(false);
+    const [ edad, setEdad ] = useState("");
     const fotoCarnetInput = useRef(null)
     const FotoCarnet = styledComponents.fotoCarnetBig;
     const FotoCarnetEdit = styledComponents.fotoCarnetBigEdit;
@@ -71,14 +76,38 @@ const PersonaForm = ({
             }
         } 
     }
+
+    useEffect(() => {
+        getEdad();
+    }, []);
+
+    useEffect(() => {
+        getEdad();
+    }, [fechaNacimiento]);
+
+    const _handleEliminarFotoBtn = (e) => {
+        setFotoCarnetStr("");
+        setFotoCarnetObj("sin_foto");
+    }
+
+    const getEdad = () => {
+        if(fechaNacimiento instanceof Date && !isNaN(fechaNacimiento)) {
+            let currentDate = new Date();
+            let datesDifference = currentDate - fechaNacimiento;
+            let ageDate = new Date(datesDifference);
+            let years = Math.abs(ageDate.getUTCFullYear() - 1970);
+            setEdad(`${years} Años`);
+        }
+    }
+
     return (
         <div>
             {
                 unlockFields && 
                 <div>
-                    <div className='d-flex flex-row flex-wrap mb-4'>
+                    <div className='d-flex flex-row flex-wrap mb-4 items-center justify-center text-center'>
                         <FotoCarnetEdit 
-                            style={{backgroundImage: `url('${fotoCarnetStr}')`}}   
+                            style={{backgroundImage: `url('${fotoCarnetStr ? fotoCarnetStr : SinFotoPerfil}')`}}   
                             onMouseEnter={() => setShowEditFotoCarnet(true)} 
                             onMouseLeave={() => setShowEditFotoCarnet(false)}>
                             {
@@ -92,7 +121,7 @@ const PersonaForm = ({
                                 </FotoCarnetEditLayer>
                             }
                         </FotoCarnetEdit>
-                        
+                        <Button variant="outlined" color="error" style={{margin: '10px'}} onClick={(e) => _handleEliminarFotoBtn(e)}>Eliminar Foto</Button>
                     </div>
                     <div className='d-flex flex-row flex-wrap'>
                         <FormControl sx={{ m: 1, width: '20%' }} variant="outlined">
@@ -133,6 +162,14 @@ const PersonaForm = ({
                         </FormControl>
                     </div>
                     <div className='d-flex flex-row flex-wrap'>
+                        <FormControl sx={{ m: 1, width: '45%' }} variant="outlined">
+                            <TextField id="birthdate" label="Fecha Nacimiento" type="date" defaultValue={getFormattedDate(fechaNacimiento)} onChange={(e) => setFechaNacimiento(new Date(e.target.value))}/>
+                        </FormControl>
+                        <FormControl sx={{ m: 1, width: '45%' }} variant="standard">
+                            <TextField id="years_old" label="Edad" variant="standard" disabled value={edad}/>
+                        </FormControl>
+                    </div>
+                    <div className='d-flex flex-row flex-wrap'>
                         <FormControl sx={{ m: 1, width: '100%' }} variant="outlined">
                             <TextField id="address" label="Dirección" variant="outlined" defaultValue={address} onChange={(e) => setAddress(e.target.value)}/>
                         </FormControl>
@@ -143,7 +180,7 @@ const PersonaForm = ({
                 !unlockFields && 
                 <div>
                     <div className='d-flex flex-row flex-wrap text-center mb-4'>
-                        <FotoCarnet src={fotoCarnetStr} alt="foto-carnet"/>
+                        <FotoCarnet src={fotoCarnetStr ? fotoCarnetStr : SinFotoPerfil} alt="foto-carnet"/>
                     </div>
                     <div className='d-flex flex-row flex-wrap'>
                         <FormControl sx={{ m: 1, width: '20%' }} variant="outlined">
@@ -180,6 +217,14 @@ const PersonaForm = ({
                         </FormControl>
                         <FormControl sx={{ m: 1, width: '45%' }} variant="outlined">
                             <TextField id="mobile" label="Móvil" disabled variant="outlined" value={mobile}/>
+                        </FormControl>
+                    </div>
+                    <div className='d-flex flex-row flex-wrap'>
+                        <FormControl sx={{ m: 1, width: '45%' }} variant="outlined">
+                            <TextField id="birthdate" label="Fecha Nacimiento" disabled variant="outlined" value={getFormattedDate(fechaNacimiento)}/>
+                        </FormControl>
+                        <FormControl sx={{ m: 1, width: '45%' }} variant="standard">
+                            <TextField id="years_old" label="Edad" variant="standard" disabled value={edad}/>
                         </FormControl>
                     </div>
                     <div className='d-flex flex-row flex-wrap'>
