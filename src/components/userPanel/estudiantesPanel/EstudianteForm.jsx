@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Navigate, Link } from 'react-router-dom';
 import axios from "axios";
 import AppContext from '../../../context/App';
 import consts from '../../../settings/consts';
@@ -11,6 +11,10 @@ import PersonaForm from '../PersonaForm';
 import personaFieldsValidations from '../../../helpers/personaFieldsValidations';
 import sequelizeImg2Base64 from '../../../helpers/sequelizeImg2Base64';
 import getFormattedDate from '../../../helpers/getFormattedDate';
+import styledComponents from '../../styled'
+import FormContainer from '../FormContainer'
+import noEncontrado from '../../../icons/no-encontrado.jpg'
+import Button from '@mui/material/Button';
 
 const ci_vals = [
     {
@@ -33,8 +37,11 @@ const ci_vals = [
 
 
 const EstudianteForm = ({}) => {
+    const [reLoad, setReload] = useState(false);
+    const [redirect, setRedirect] = useState(false);
     const [estudiante, setEstudiante] = useState(undefined);
-    const [ciType, setCIType] = useState("");
+    const [estudianteFound, setEstudianteFound] = useState(true);
+    const [ciType, setCIType] = useState("V");
     const [ci, setCI] = useState("");
     const [name, setName] = useState("");
     const [lastname, setLastName] = useState("");
@@ -46,38 +53,50 @@ const EstudianteForm = ({}) => {
     const [nroExpediente, setNroExpediente] = useState("");
     const [fotoCarnetStr, setFotoCarnetStr] = useState("");
     const [fotoCarnetObj, setFotoCarnetObj] = useState(undefined);
+    const [newId, setNewId] = useState(0);
     const { id } = useParams();
     const { blockUI, setBlockUI, setNotificationMsg, setNotificationType, setShowNotification} = useContext(AppContext);
     const [unlockFields, setUnlockFields] = useState(false);
+    const StyledH1 = styledComponents.dahsboardPanelh1;
+    const StyledH2 = styledComponents.dahsboardPanelh2;
 
     const searchEstudiante = () => {
         setBlockUI(true);
-        const token = localStorage.getItem('token');
-        const config = {headers:{ authorization: token}};
-        let url = `${consts.backend_base_url}/api/estudiante/${id}`;
-        axios.get(url, config).then((response) => {
-            setEstudiante(response.data);
-            setCIType(response.data.person.ci_type);
-            setCI(response.data.person.ci);
-            setName(response.data.person.name);
-            setLastName(response.data.person.lastname);
-            setFechaNacimiento(new Date(response.data.person.birthdate));
-            setPhone(response.data.person.phone);
-            setMobile(response.data.person.mobile);
-            setAddress(response.data.person.address);
-            setYearIngreso(response.data.year_ingreso);
-            setNroExpediente(response.data.nro_expediente);
-            if(response.data.person.foto_carnet) {
-                const base64Img = sequelizeImg2Base64(response.data.person.foto_carnet);
-                setFotoCarnetStr(base64Img.b64str);
-            }
+        if(id != "0") {
+            const token = localStorage.getItem('token');
+            const config = {headers:{ authorization: token}};
+            let url = `${consts.backend_base_url}/api/estudiante/${id}`;
+            axios.get(url, config).then((response) => {
+                setEstudiante(response.data);
+                setCIType(response.data.person.ci_type);
+                setCI(response.data.person.ci);
+                setName(response.data.person.name);
+                setLastName(response.data.person.lastname);
+                setFechaNacimiento(new Date(response.data.person.birthdate));
+                setPhone(response.data.person.phone);
+                setMobile(response.data.person.mobile);
+                setAddress(response.data.person.address);
+                setYearIngreso(response.data.year_ingreso);
+                setNroExpediente(response.data.nro_expediente);
+                if(response.data.person.foto_carnet) {
+                    const base64Img = sequelizeImg2Base64(response.data.person.foto_carnet);
+                    setFotoCarnetStr(base64Img.b64str);
+                }
+                setBlockUI(false);
+            }).catch((err) => {
+                if(err.response.status == 404) {
+                    setEstudianteFound(false);
+                } else {
+                    setNotificationMsg("Ocurrió un error inesperado... Intentelo mas tarde.");
+                    setNotificationType('error');
+                    setShowNotification(true);
+                }
+                setBlockUI(false);
+            });
+        } else {
+            setUnlockFields(true);
             setBlockUI(false);
-        }).catch((err) => {
-          setNotificationMsg("Ocurrió un error inesperado... Intentelo mas tarde.");
-          setNotificationType('error');
-          setShowNotification(true);
-          setBlockUI(false);
-        });
+        }
     }
 
     const updateEstudianteData = () => {
@@ -105,6 +124,7 @@ const EstudianteForm = ({}) => {
             nro_expediente: nroExpediente,
             year_ingreso: yearIngreso
         };
+        console.log(body);
         formData.append('data', JSON.stringify(body));
         const config = {headers:{'authorization': token, 'Content-Type': 'multipart/form-data'}};
         let url = `${consts.backend_base_url}/api/estudiante/${id}`;
@@ -114,10 +134,68 @@ const EstudianteForm = ({}) => {
             setNotificationType('success');
             setShowNotification(true);
         }).catch((err) => {
-          setNotificationMsg(err.response.data.message);
-          setNotificationType('error');
-          setShowNotification(true);
-          setBlockUI(false);
+            console.log(err);
+            setNotificationMsg(err.response.data.message);
+            setNotificationType('error');
+            setShowNotification(true);
+            setBlockUI(false);
+        });
+    }
+
+    const createEstudiante = () => {
+        setBlockUI(true);
+        const token = localStorage.getItem('token');
+        const formData = new FormData();
+        let foto_carnet = fotoCarnetObj;
+        if(fotoCarnetObj == 'sin_foto') {
+            foto_carnet = undefined;
+        }
+        formData.append('foto_carnet', foto_carnet);
+        let body = {
+            uploadFotoCarnet: true ? fotoCarnetObj != undefined : false,
+            person: {
+                ci_type: ciType,
+                ci: ci,
+                name: name,
+                lastname: lastname,
+                phone: phone,
+                mobile: mobile,
+                address: address,
+                birthdate: getFormattedDate(fechaNacimiento)
+            },
+            nro_expediente: nroExpediente,
+            year_ingreso: yearIngreso
+        };
+        formData.append('data', JSON.stringify(body));
+        const config = {headers:{'authorization': token, 'Content-Type': 'multipart/form-data'}};
+        let url = `${consts.backend_base_url}/api/estudiante`;
+        axios.post(url, formData, config).then((response) => {
+            setEstudiante(response.data);
+            setCIType(response.data.person.ci_type);
+            setCI(response.data.person.ci);
+            setName(response.data.person.name);
+            setLastName(response.data.person.lastname);
+            setFechaNacimiento(new Date(response.data.person.birthdate));
+            setPhone(response.data.person.phone);
+            setMobile(response.data.person.mobile);
+            setAddress(response.data.person.address);
+            setYearIngreso(response.data.year_ingreso);
+            setNroExpediente(response.data.nro_expediente);
+            if(response.data.person.foto_carnet) {
+                const base64Img = sequelizeImg2Base64(response.data.person.foto_carnet);
+                setFotoCarnetStr(base64Img.b64str);
+            }
+            setBlockUI(false);
+            setNotificationMsg("El estudiante fue creado satisfactoriamente!!");
+            setNotificationType('success');
+            setNewId(response.data.id);
+            setShowNotification(true);
+            setReload(true);
+        }).catch((err) => {
+            setNotificationMsg(err.response.data.message);
+            setNotificationType('error');
+            setShowNotification(true);
+            setBlockUI(false);
         });
     }
 
@@ -148,27 +226,35 @@ const EstudianteForm = ({}) => {
         if(confirmarBtnReturn.status == 'success') {
             confirmarBtnReturn = estudianteValidations();
             if(confirmarBtnReturn.status == 'success'){
-                updateEstudianteData();
+                if(estudiante != undefined) {
+                    updateEstudianteData();
+                } else {
+                    createEstudiante();
+                }
             }
         }
         return confirmarBtnReturn;
     }
 
     const handleCancelarBtn = (e) => {
-        setCIType(estudiante.person.ci_type);
-        setCI(estudiante.person.ci);
-        setName(estudiante.person.name);
-        setLastName(estudiante.person.lastname);
-        setFechaNacimiento(new Date(estudiante.person.birthdate));
-        setPhone(estudiante.person.phone);
-        setMobile(estudiante.person.mobile);
-        setAddress(estudiante.person.address);
-        setYearIngreso(estudiante.year_ingreso);
-        setNroExpediente(estudiante.nro_expediente);
-        setFotoCarnetObj(undefined);
-        if(estudiante.person.foto_carnet) {
-            const base64Img = sequelizeImg2Base64(estudiante.person.foto_carnet);
-            setFotoCarnetStr(base64Img.b64str);
+        if(id != '0') {
+            setCIType(estudiante.person.ci_type);
+            setCI(estudiante.person.ci);
+            setName(estudiante.person.name);
+            setLastName(estudiante.person.lastname);
+            setFechaNacimiento(new Date(estudiante.person.birthdate));
+            setPhone(estudiante.person.phone);
+            setMobile(estudiante.person.mobile);
+            setAddress(estudiante.person.address);
+            setYearIngreso(estudiante.year_ingreso);
+            setNroExpediente(estudiante.nro_expediente);
+            setFotoCarnetObj(undefined);
+            if(estudiante.person.foto_carnet) {
+                const base64Img = sequelizeImg2Base64(estudiante.person.foto_carnet);
+                setFotoCarnetStr(base64Img.b64str);
+            }
+        } else {
+            setRedirect(true);
         }
     }
 
@@ -182,48 +268,89 @@ const EstudianteForm = ({}) => {
 
     return (
         <div className='m-10'>
-            <FormBtns setUnlockFields={setUnlockFields} handleConfirmarBtn={handleConfirmarBtn} handleCancelarBtn={handleCancelarBtn}/>
-            <PersonaForm 
-                ciType={ciType} 
-                setCIType={setCIType}
-                ci={ci} 
-                setCI={setCI}
-                name={name} 
-                setName={setName}
-                lastname={lastname}
-                setLastName={setLastName} 
-                fechaNacimiento={fechaNacimiento}
-                setFechaNacimiento={setFechaNacimiento} 
-                phone={phone}
-                setPhone={setPhone} 
-                mobile={mobile}
-                setMobile={setMobile} 
-                address={address}
-                setAddress={setAddress}
-                fotoCarnetStr={fotoCarnetStr}
-                setFotoCarnetStr={setFotoCarnetStr}
-                fotoCarnetObj={fotoCarnetObj}
-                setFotoCarnetObj={setFotoCarnetObj}
-                unlockFields={unlockFields}
-            ></PersonaForm>
-            <div className='d-flex flex-row flex-wrap'>
             {
-                !unlockFields && 
-                <FormControl sx={{ m: 1, width: '45%' }} variant="outlined">
-                    <TextField id="year_ingreso" label="Año de Ingreso" disabled variant="outlined" value={yearIngreso}/>
-                </FormControl>
+                id == '0' && estudianteFound && 
+                <div className='text-center mb-10'>
+                    <StyledH1>Crear un nuevo Estudiante</StyledH1>
+                </div>
             }
             {
-                unlockFields && 
-                <FormControl sx={{ m: 1, width: '45%' }} variant="outlined">
-                    <TextField id="year_ingreso" label="Año de Ingreso" variant="outlined" defaultValue={yearIngreso} onChange={(e) => {setYearIngreso(e.target.value)}}/>
-                </FormControl>
+                id != '0' && estudianteFound &&
+                <div className='text-center mb-10'>
+                    <StyledH1>Actualizar Estudiante</StyledH1>
+                </div>
+            }
+            {
+                estudianteFound && 
+                <FormBtns setUnlockFields={setUnlockFields} handleConfirmarBtn={handleConfirmarBtn} handleCancelarBtn={handleCancelarBtn} showEditBtn={true ? id == '0' : false}/>
+            }
+            {
+                reLoad && <Navigate to={`/dashboard/estudiantes/${newId}`} />
+            }
+            {
+                redirect && <Navigate to="/dashboard/estudiantes" />
+            }
+            {
+                estudianteFound && 
+                <FormContainer>
+                    <PersonaForm 
+                        ciType={ciType} 
+                        setCIType={setCIType}
+                        ci={ci} 
+                        setCI={setCI}
+                        name={name} 
+                        setName={setName}
+                        lastname={lastname}
+                        setLastName={setLastName} 
+                        fechaNacimiento={fechaNacimiento}
+                        setFechaNacimiento={setFechaNacimiento} 
+                        phone={phone}
+                        setPhone={setPhone} 
+                        mobile={mobile}
+                        setMobile={setMobile} 
+                        address={address}
+                        setAddress={setAddress}
+                        fotoCarnetStr={fotoCarnetStr}
+                        setFotoCarnetStr={setFotoCarnetStr}
+                        fotoCarnetObj={fotoCarnetObj}
+                        setFotoCarnetObj={setFotoCarnetObj}
+                        unlockFields={unlockFields}
+                    ></PersonaForm>
+                    <div className='d-flex flex-row flex-wrap'>
+                    {
+                        !unlockFields && 
+                        <FormControl sx={{ m: 1, width: '45%' }} variant="outlined">
+                            <TextField id="year_ingreso" label="Año de Ingreso" disabled variant="outlined" value={yearIngreso}/>
+                        </FormControl>
+                    }
+                    {
+                        unlockFields && 
+                        <FormControl sx={{ m: 1, width: '45%' }} variant="outlined">
+                            <TextField id="year_ingreso" label="Año de Ingreso" variant="outlined" defaultValue={yearIngreso} onChange={(e) => {setYearIngreso(e.target.value)}}/>
+                        </FormControl>
+                    }
+
+                        <FormControl sx={{ m: 1, width: '45%' }} variant="outlined">
+                            <TextField id="nro_expediente" label="Número de Expediente" disabled variant="standard" value={nroExpediente}/>
+                        </FormControl>
+                    </div>
+                </FormContainer>
+            }            
+            {
+                !estudianteFound && 
+                <FormContainer>
+                    <div className='text-center'>
+                        <img src={noEncontrado} alt="no-encontrado" style={{width: '300px', margin: '0 auto', marginTop:'10px'}}/>
+                        <StyledH2 className='mt-5'>El estudiante no fue encontrado</StyledH2>
+                        <div className='text-center d-flex flex-row flex-wrap w-100 mt-5'>
+                            <Link to={"/dashboard/estudiantes"}>
+                                <Button variant="contained" color="primary" style={{marginLeft: '10px'}}>Volver</Button>
+                            </Link>
+                        </div>
+                    </div>
+                </FormContainer>
             }
 
-                <FormControl sx={{ m: 1, width: '45%' }} variant="outlined">
-                    <TextField id="nro_expediente" label="Número de Expediente" disabled variant="standard" value={nroExpediente}/>
-                </FormControl>
-            </div>
         </div>
     )
 }

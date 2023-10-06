@@ -30,8 +30,8 @@ const Dashboard = ({sessionVals, panelName}) => {
 
     useEffect(() => {
         if(isSideBarOpen) {
-            setSideBarXs(4);
-            setContentScreenXs(8);
+            setSideBarXs(2);
+            setContentScreenXs(10);
         }
         if(!isSideBarOpen) {
             setSideBarXs(0);
@@ -58,8 +58,8 @@ const Dashboard = ({sessionVals, panelName}) => {
                         {isSideBarOpen ? <SideBar /> : <Fragment/>}
                     </Grid>
                     <Grid item xs={contentScreenXs}>
-                        <Container>
-                            <Panel/>
+                        <Container className='p-0 m-0 w-100'>
+                            <Panel className='p-0 m-0 w-100'/>
                         </Container>
                     </Grid>
                 </Grid>

@@ -1,12 +1,12 @@
 import { styled } from '@mui/system';
 const styledComponents = {
     dahsboardPanelh1: styled('h1')({
-        color: 'blue',
+        color: 'rgb(51 65 85)',
         fontSize: '2rem',
         fontWeight: '700'
     }),
     dahsboardPanelh2: styled('h2')({
-        color: 'blue',
+        color: 'rgb(51 65 85)',
         fontSize: '1.6rem',
         fontWeight: '700'
     }),

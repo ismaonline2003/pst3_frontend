@@ -4,6 +4,7 @@ import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
 import AppContext from '../../context/App';
+import { Link } from 'react-router-dom';
 
 const recordsLimit = [
     { value: '10', label: '10'},
@@ -16,7 +17,7 @@ const recordsLimit = [
     { value: '1000', label: '1000'}
 ]
 
-export default function SearchBar({selectOptions, externalHandleSearchBtn}) {
+export default function SearchBar({selectOptions, externalHandleSearchBtn, crearRoute}) {
     const [ selectedOptionType, setSelectedOptionType ] = useState("search");
     const [ selectedOption, setSelectedOption ] = useState("");
     const [ searchValue, setSearchValue ] = useState("");
@@ -105,7 +106,10 @@ export default function SearchBar({selectOptions, externalHandleSearchBtn}) {
                 </TextField>
             </div>
             <div>
-                <Button variant="contained" onClick={(e) => handleSearchBtn()}>Buscar</Button>
+                <Button variant="contained" onClick={(e) => handleSearchBtn()} style={{marginLeft: '10px'}}>Buscar</Button>
+                <Link to={crearRoute}>
+                    <Button variant="contained" style={{marginLeft: '10px'}} color="success">Crear</Button>
+                </Link>
             </div>
         </div>
     );

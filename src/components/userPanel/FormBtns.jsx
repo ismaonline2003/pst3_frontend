@@ -2,9 +2,14 @@ import { useState, useEffect, useContext } from 'react';
 import Button from '@mui/material/Button';
 import AppContext from '../../context/App';
 
-const FormBtns = ({setUnlockFields, handleConfirmarBtn, handleCancelarBtn}) => {
+const FormBtns = ({setUnlockFields, handleConfirmarBtn, handleCancelarBtn, showEditBtn}) => {
     const [ showConfirmEditBtn, setShowConfirmEditBtn ] = useState(false);
     const { blockUI, setBlockUI, setNotificationMsg, setNotificationType, setShowNotification} = useContext(AppContext);
+
+    useEffect(() => {
+        setShowConfirmEditBtn(showEditBtn);
+    }, [])
+
     const _handleEditarBtn = () => {
         setUnlockFields(true);
         setShowConfirmEditBtn(true);
@@ -30,7 +35,7 @@ const FormBtns = ({setUnlockFields, handleConfirmarBtn, handleCancelarBtn}) => {
     }
 
     return (
-        <div className='mb-10 w-100'>
+        <div className='mb-2 w-100 rounded border border-slate-500 p-4 border-opacity-20 bg-slate-50'>
             {
                 !showConfirmEditBtn && 
                 <Button variant="contained" onClick={(e) => _handleEditarBtn(e)} style={{marginLeft: '10px'}}>Editar</Button>
@@ -39,7 +44,7 @@ const FormBtns = ({setUnlockFields, handleConfirmarBtn, handleCancelarBtn}) => {
                 showConfirmEditBtn && 
                 <div className='d-flex justify-center align-middle'>
                     <Button variant="contained" color="success" onClick={(e) => _handleConfirmarBtn(e)} style={{marginLeft: '10px'}}>Confirmar</Button>
-                    <Button variant="outlined" color="secondary" onClick={(e) => _handleCancelarBtn()} style={{marginLeft: '10px'}}>Cancelar</Button>
+                    <Button variant="outlined" color="secondary" className="bg-white" onClick={(e) => _handleCancelarBtn()} style={{marginLeft: '10px'}}>Cancelar</Button>
                 </div>
             }
         </div>

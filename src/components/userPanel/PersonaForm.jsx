@@ -121,7 +121,10 @@ const PersonaForm = ({
                                 </FotoCarnetEditLayer>
                             }
                         </FotoCarnetEdit>
-                        <Button variant="outlined" color="error" style={{margin: '10px'}} onClick={(e) => _handleEliminarFotoBtn(e)}>Eliminar Foto</Button>
+                        {
+                            fotoCarnetStr &&
+                            <Button variant="outlined" color="error" style={{margin: '10px'}} onClick={(e) => _handleEliminarFotoBtn(e)}>Eliminar Foto</Button>
+                        }
                     </div>
                     <div className='d-flex flex-row flex-wrap'>
                         <FormControl sx={{ m: 1, width: '20%' }} variant="outlined">
