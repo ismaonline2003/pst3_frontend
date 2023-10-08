@@ -15,6 +15,7 @@ import styledComponents from '../../styled'
 import FormContainer from '../FormContainer'
 import noEncontrado from '../../../icons/no-encontrado.jpg'
 import Button from '@mui/material/Button';
+import DeleteDialog from '../../generales/DeleteDialog';
 
 const ci_vals = [
     {
@@ -39,6 +40,7 @@ const ci_vals = [
 const EstudianteForm = ({}) => {
     const [reLoad, setReload] = useState(false);
     const [redirect, setRedirect] = useState(false);
+    const [ showFormBtns, setShowFormBtns] = useState(true);
     const [estudiante, setEstudiante] = useState(undefined);
     const [estudianteFound, setEstudianteFound] = useState(true);
     const [ciType, setCIType] = useState("V");
@@ -53,6 +55,7 @@ const EstudianteForm = ({}) => {
     const [nroExpediente, setNroExpediente] = useState("");
     const [fotoCarnetStr, setFotoCarnetStr] = useState("");
     const [fotoCarnetObj, setFotoCarnetObj] = useState(undefined);
+    const [ showDeleteDialog, setShowDeleteDialog ] = useState(false);
     const [newId, setNewId] = useState(0);
     const { id } = useParams();
     const { blockUI, setBlockUI, setNotificationMsg, setNotificationType, setShowNotification} = useContext(AppContext);
@@ -67,6 +70,7 @@ const EstudianteForm = ({}) => {
             const config = {headers:{ authorization: token}};
             let url = `${consts.backend_base_url}/api/estudiante/${id}`;
             axios.get(url, config).then((response) => {
+                console.log(response);
                 setEstudiante(response.data);
                 setCIType(response.data.person.ci_type);
                 setCI(response.data.person.ci);
@@ -258,6 +262,32 @@ const EstudianteForm = ({}) => {
         }
     }
 
+    const handleDeleteBtn = () => {
+        setShowDeleteDialog(true);
+    }
+
+    const handleDeleteConfirm = (e) => {
+        setBlockUI(true);
+        const token = localStorage.getItem('token');
+        const config = {headers:{'authorization': token}};
+        let url = `${consts.backend_base_url}/api/estudiante/${id}`;
+        axios.delete(url, config).then((response) => {
+            setBlockUI(false);
+            setNotificationMsg(response.data.message);
+            setNotificationType('success');
+            setShowNotification(true);
+            setShowFormBtns(false);
+            setTimeout(() => {
+                setRedirect(true);
+            }, 5000);
+        }).catch((err) => {
+            setNotificationMsg(err.response.data.message);
+            setNotificationType('error');
+            setShowNotification(true);
+            setBlockUI(false);
+        });
+    }
+
     useEffect(() => {
         searchEstudiante();
     }, []);
@@ -281,8 +311,15 @@ const EstudianteForm = ({}) => {
                 </div>
             }
             {
-                estudianteFound && 
-                <FormBtns setUnlockFields={setUnlockFields} handleConfirmarBtn={handleConfirmarBtn} handleCancelarBtn={handleCancelarBtn} showEditBtn={true ? id == '0' : false}/>
+                estudianteFound && showFormBtns && 
+                <FormBtns 
+                    setUnlockFields={setUnlockFields} 
+                    handleConfirmarBtn={handleConfirmarBtn} 
+                    handleCancelarBtn={handleCancelarBtn} 
+                    showEditBtn={true ? id == '0' : false}
+                    deleteApplies={true}
+                    handleDeleteBtn={handleDeleteBtn}
+                    />
             }
             {
                 reLoad && <Navigate to={`/dashboard/estudiantes/${newId}`} />
@@ -349,6 +386,10 @@ const EstudianteForm = ({}) => {
                         </div>
                     </div>
                 </FormContainer>
+            }
+            {
+                showDeleteDialog &&
+                <DeleteDialog showDeleteDialog={showDeleteDialog} setShowDeleteDialog={setShowDeleteDialog} handleDeleteConfirm={handleDeleteConfirm}></DeleteDialog>
             }
 
         </div>

@@ -8,7 +8,7 @@ import BootstrapDialog from './BootstrapDialog';
 import BootstrapDialogTitle from './BootstrapDialogTitle';
 
 export default function BoostrapModal({props}) {
-    const [ maxWidth, showModal, setShowModal, btnSaveAction, title, children, footer ] = props;
+    const [ maxWidth, showModal, setShowModal, title, children, footer ] = props;
     return (
         <BootstrapDialog
             maxWidth={maxWidth}
@@ -24,11 +24,6 @@ export default function BoostrapModal({props}) {
         </DialogContent>
         <DialogActions>
             {footer != undefined && footer}
-            {footer == undefined && (
-                <Button autoFocus onClick={(e) => btnSaveAction()}>
-                    Guardar
-                </Button>
-            )}
         </DialogActions>
       </BootstrapDialog>
     )

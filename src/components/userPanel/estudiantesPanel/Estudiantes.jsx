@@ -156,26 +156,28 @@ export default function Estudiantes({}) {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                        {estudiantes.map((row) => (
-                            <TableRow
-                            key={row.id}
-                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                            >
-                                <TableCell component="th" scope="row">
-                                    {row.id}
-                                </TableCell>
-                                <TableCell align="left">{row.name}</TableCell>
-                                <TableCell align="left">{row.ci}</TableCell>
-                                <TableCell align="left">{row.nro_expediente}</TableCell>
-                                <TableCell align="left">{row.phone}</TableCell>
-                                <TableCell align="left">{row.mobile}</TableCell>
-                                <TableCell align="left">
-                                    <Link to={`/dashboard/estudiantes/${row.id}`}>
-                                        <VisibilityIcon color="secondary"/>
-                                    </Link>
-                                </TableCell>
-                            </TableRow>
-                        ))}
+                        {estudiantes.filter((item, index) => index < (page+1)*rowsPerPage && index >= (page)*rowsPerPage).map((row, index) => {
+                                return (
+                                    <TableRow
+                                        key={row.id}
+                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                        >
+                                            <TableCell component="th" scope="row">
+                                                {row.id}
+                                            </TableCell>
+                                            <TableCell align="left">{row.name}</TableCell>
+                                            <TableCell align="left">{row.ci}</TableCell>
+                                            <TableCell align="left">{row.nro_expediente}</TableCell>
+                                            <TableCell align="left">{row.phone}</TableCell>
+                                            <TableCell align="left">{row.mobile}</TableCell>
+                                            <TableCell align="left">
+                                                <Link to={`/dashboard/estudiantes/${row.id}`}>
+                                                    <VisibilityIcon color="secondary"/>
+                                                </Link>
+                                            </TableCell>
+                                    </TableRow>
+                                )
+                        })}
                         </TableBody>
                     </Table>
                 </TableContainer>

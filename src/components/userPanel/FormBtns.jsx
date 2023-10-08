@@ -2,8 +2,9 @@ import { useState, useEffect, useContext } from 'react';
 import Button from '@mui/material/Button';
 import AppContext from '../../context/App';
 
-const FormBtns = ({setUnlockFields, handleConfirmarBtn, handleCancelarBtn, showEditBtn}) => {
+const FormBtns = ({setUnlockFields, handleConfirmarBtn, handleCancelarBtn, showEditBtn, deleteApplies, handleDeleteBtn}) => {
     const [ showConfirmEditBtn, setShowConfirmEditBtn ] = useState(false);
+    const [ showDeleteDialog, setShowDeleteDialog ] = useState(false);
     const { blockUI, setBlockUI, setNotificationMsg, setNotificationType, setShowNotification} = useContext(AppContext);
 
     useEffect(() => {
@@ -46,6 +47,10 @@ const FormBtns = ({setUnlockFields, handleConfirmarBtn, handleCancelarBtn, showE
                     <Button variant="contained" color="success" onClick={(e) => _handleConfirmarBtn(e)} style={{marginLeft: '10px'}}>Confirmar</Button>
                     <Button variant="outlined" color="secondary" className="bg-white" onClick={(e) => _handleCancelarBtn()} style={{marginLeft: '10px'}}>Cancelar</Button>
                 </div>
+            }
+            {
+                !showConfirmEditBtn && deleteApplies && 
+                <Button variant="contained" onClick={(e) => handleDeleteBtn()} style={{marginLeft: '10px'}} color="error">Eliminar</Button>
             }
         </div>
     )

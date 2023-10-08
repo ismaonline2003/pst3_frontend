@@ -6,7 +6,7 @@ import CloseIcon from '@mui/icons-material/Close';
 
 export default function BootstrapDialogTitle(props) {
     const { children, onClose, ...other } = props;
-  
+    console.log()
     return (
       <DialogTitle sx={{ m: 0, p: 2 }} {...other}>
         {children}

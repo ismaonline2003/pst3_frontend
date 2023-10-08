@@ -210,7 +210,6 @@ export default function ModalAddCanciones({ showModal, setShowModal }) {
                     "xl",
                     showModal,
                     setShowModal,
-                    (() => {console.log('save')}),
                     (<h5>Agregar Nuevas Canciones</h5>),
                     (
                         <TableContainer component={Paper}>
