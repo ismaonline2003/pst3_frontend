@@ -9,6 +9,8 @@ import AppContext from '../../context/App';
 import getFormattedDate from '../../helpers/getFormattedDate';
 import SinFotoPerfil from '../../icons/sin-foto-perfil.png';
 import Button from '@mui/material/Button';
+import { createTheme, ThemeProvider, useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 const ci_vals = [
     {
@@ -27,7 +29,18 @@ const ci_vals = [
         value: 'P',
         label: 'P',
       }
-  ];
+];
+
+const sexo_vals = [
+    {
+      value: 'M',
+      label: 'Masculino'
+    },
+    {
+      value: 'F',
+      label: 'Femenino'
+    }
+];
 
 const PersonaForm = ({
         ciType,
@@ -40,6 +53,8 @@ const PersonaForm = ({
         setLastName,
         fechaNacimiento,
         setFechaNacimiento,
+        sexo,
+        setSexo,
         phone, 
         setPhone,
         mobile, 
@@ -55,11 +70,18 @@ const PersonaForm = ({
 
     const [ showEditFotoCarnet, setShowEditFotoCarnet] = useState(false);
     const [ edad, setEdad ] = useState("");
+    const [ fieldsWidth, setFieldsWidth ] = useState({});
     const fotoCarnetInput = useRef(null)
-    const FotoCarnet = styledComponents.fotoCarnetBig;
-    const FotoCarnetEdit = styledComponents.fotoCarnetBigEdit;
-    const FotoCarnetEditLayer = styledComponents.fotoCarnetBigEditLayer;
+    const FotoCarnet = styledComponents.fotoCarnet;
+    const FotoCarnetEdit = styledComponents.fotoCarnetEdit;
+    const FotoCarnetEditLayer = styledComponents.fotoCarnetEditLayer;
     const { blockUI, setBlockUI, setNotificationMsg, setNotificationType, setShowNotification} = useContext(AppContext);
+    const theme = useTheme();
+    const XSmatches = useMediaQuery(theme.breakpoints.up('xs'));
+    const SMmatches = useMediaQuery(theme.breakpoints.up('sm'));
+    const MDmatches = useMediaQuery(theme.breakpoints.up('md'));
+    const LGmatches = useMediaQuery(theme.breakpoints.up('lg'));
+    const XLmatches = useMediaQuery(theme.breakpoints.up('xl'));
 
     if(fotoCarnetInput && fotoCarnetInput.current) {
         fotoCarnetInput.current.onchange = (e) => {
@@ -77,8 +99,91 @@ const PersonaForm = ({
         } 
     }
 
+    const _getFieldsWidth = () => {
+        if(XSmatches) {
+            setFieldsWidth({
+                ciType: '100%',
+                ci: '100%',
+                sexo: '100%',
+                name: '100%',
+                lastname: '100%',
+                phone: '100%',
+                mobile: '100%',
+                birthdate: '100%',
+                edad: '100%',
+                address: "100%",
+                fotoCarnet: "100px !important"
+            });
+        }
+
+        if(SMmatches) {
+            setFieldsWidth({
+                ciType: '100%',
+                ci: '100%',
+                sexo: '100%',
+                name: '100%',
+                lastname: '100%',
+                phone: '100%',
+                mobile: '100%',
+                birthdate: '100%',
+                edad: '100%',
+                address: "100%",
+                fotoCarnet: "200px !important"
+            });
+        }
+
+        if(MDmatches) {
+            setFieldsWidth({
+                ciType: '20%',
+                ci: '35%',
+                sexo: '35%',
+                name: '47%',
+                lastname: '47%',
+                phone: '47%',
+                mobile: '47%',
+                birthdate: '47%',
+                edad: '47%',
+                address: "100%",
+                fotoCarnet: "200px !important"
+            });
+        }
+
+        if(LGmatches) {
+            setFieldsWidth({
+                ciType: '20%',
+                ci: '35%',
+                sexo: '35%',
+                name: '47%',
+                lastname: '47%',
+                phone: '47%',
+                mobile: '47%',
+                birthdate: '47%',
+                edad: '47%',
+                address: "100%",
+                fotoCarnet: "200px !important"
+            });
+        }
+
+        if(XLmatches) {
+            setFieldsWidth({
+                ciType: '15%',
+                ci: '39%',
+                sexo: '39%',
+                name: '47%',
+                lastname: '47%',
+                phone: '47%',
+                mobile: '47%',
+                birthdate: '47%',
+                edad: '47%',
+                address: "100%",
+                fotoCarnet: "200px !important"
+            });
+        }
+    }
+
     useEffect(() => {
         getEdad();
+        _getFieldsWidth();
     }, []);
 
     useEffect(() => {
@@ -127,53 +232,56 @@ const PersonaForm = ({
                         }
                     </div>
                     <div className='d-flex flex-row flex-wrap'>
-                        <FormControl sx={{ m: 1, width: '20%' }} variant="outlined">
-                            <TextField
-                                id="ci_type"
-                                select
-                                label="Tipo de Cédula"
-                                defaultValue={ciType ? ciType : "V"}
-                                onChange={(e) => setCIType(e.target.value)}
-                                >
+                        <FormControl sx={{ m: 1, width: fieldsWidth.ciType }} variant="outlined">
+                            <TextField id="ci_type" select label="Tipo de Cédula" defaultValue={ciType ? ciType : "V"} onChange={(e) => setCIType(e.target.value)}>
                                 {ci_vals.map((option) => (
                                     <MenuItem key={option.value} value={option.value}>
                                         {option.label}
                                     </MenuItem>
                                 ))}
-                                </TextField >
+                            </TextField >
                         </FormControl>
-                        <FormControl sx={{ m: 1, width: '70%' }} variant="outlined">
+                        <FormControl sx={{ m: 1, width: fieldsWidth.ci }} variant="outlined">
                             <TextField id="ci" label="Cédula" variant="outlined" type="number" defaultValue={ci}
                                 onChange={(e) => setCI(e.target.value)}
                             />
                         </FormControl>
+                        <FormControl sx={{ m: 1, width: fieldsWidth.sexo }} variant="outlined">
+                            <TextField id="sexo" select label="Sexo" defaultValue={sexo ? sexo : "M"}  onChange={(e) => setSexo(e.target.value)}>
+                                {sexo_vals.map((option) => (
+                                    <MenuItem key={option.value} value={option.value}>
+                                        {option.label}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                        </FormControl>
                     </div>
                     <div className='d-flex flex-row flex-wrap'>
-                        <FormControl sx={{ m: 1, width: '45%' }} variant="outlined">
+                        <FormControl sx={{ m: 1, width: fieldsWidth.name }} variant="outlined">
                             <TextField id="name" label="Nombre" variant="outlined" defaultValue={name} onChange={(e) => setName(e.target.value)} />
                         </FormControl>
-                        <FormControl sx={{ m: 1, width: '45%' }} variant="outlined">
+                        <FormControl sx={{ m: 1, width: fieldsWidth.lastname }} variant="outlined">
                             <TextField id="lastname" label="Apellido" variant="outlined" defaultValue={lastname}  onChange={(e) => setLastName(e.target.value)}/>
                         </FormControl>
                     </div>
                     <div className='d-flex flex-row flex-wrap'>
-                        <FormControl sx={{ m: 1, width: '45%' }} variant="outlined">
+                        <FormControl sx={{ m: 1, width: fieldsWidth.phone }} variant="outlined">
                             <TextField id="phone" label="Teléfono" variant="outlined" defaultValue={phone} onChange={(e) => setPhone(e.target.value)}/>
                         </FormControl>
-                        <FormControl sx={{ m: 1, width: '45%' }} variant="outlined">
+                        <FormControl sx={{ m: 1, width: fieldsWidth.mobile }} variant="outlined">
                             <TextField id="mobile" label="Móvil" variant="outlined" defaultValue={mobile} onChange={(e) => setMobile(e.target.value)}/>
                         </FormControl>
                     </div>
                     <div className='d-flex flex-row flex-wrap'>
-                        <FormControl sx={{ m: 1, width: '45%' }} variant="outlined">
+                        <FormControl sx={{ m: 1, width: fieldsWidth.birthdate }} variant="outlined">
                             <TextField id="birthdate" label="Fecha Nacimiento" type="date" defaultValue={getFormattedDate(fechaNacimiento)} onChange={(e) => setFechaNacimiento(new Date(e.target.value))}/>
                         </FormControl>
-                        <FormControl sx={{ m: 1, width: '45%' }} variant="standard">
+                        <FormControl sx={{ m: 1, width: fieldsWidth.edad }} variant="standard">
                             <TextField id="years_old" label="Edad" variant="standard" disabled value={edad}/>
                         </FormControl>
                     </div>
                     <div className='d-flex flex-row flex-wrap'>
-                        <FormControl sx={{ m: 1, width: '100%' }} variant="outlined">
+                        <FormControl sx={{ m: 1, width: fieldsWidth.address }} variant="outlined">
                             <TextField id="address" label="Dirección" variant="outlined" defaultValue={address} onChange={(e) => setAddress(e.target.value)}/>
                         </FormControl>
                     </div>
@@ -186,14 +294,8 @@ const PersonaForm = ({
                         <FotoCarnet src={fotoCarnetStr ? fotoCarnetStr : SinFotoPerfil} alt="foto-carnet"/>
                     </div>
                     <div className='d-flex flex-row flex-wrap'>
-                        <FormControl sx={{ m: 1, width: '20%' }} variant="outlined">
-                            <TextField
-                                id="ci_type"
-                                select
-                                label="Tipo de Cédula"
-                                defaultValue={ciType ? ciType : "V"}
-                                disabled
-                                >
+                        <FormControl sx={{ m: 1, width: fieldsWidth.ciType }} variant="outlined">
+                            <TextField id="ci_type" select label="Tipo de Cédula" defaultValue={ciType ? ciType : "V"} disabled>
                                 {ci_vals.map((option) => (
                                     <MenuItem key={option.value} value={option.value}>
                                         {option.label}
@@ -201,37 +303,46 @@ const PersonaForm = ({
                                 ))}
                                 </TextField>
                         </FormControl>
-                        <FormControl sx={{ m: 1, width: '70%' }} variant="outlined">
+                        <FormControl sx={{ m: 1, width: fieldsWidth.ci }} variant="outlined">
                             <TextField id="ci" label="Cédula" variant="outlined" disabled type="number" value={ci}
                             />
                         </FormControl>
+                        <FormControl sx={{ m: 1, width: fieldsWidth.sexo }} variant="outlined">
+                            <TextField id="sexo" select label="Sexo" defaultValue={sexo ? sexo : "M"} disabled >
+                                {sexo_vals.map((option) => (
+                                    <MenuItem key={option.value} value={option.value}>
+                                        {option.label}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                        </FormControl>
                     </div>
                     <div className='d-flex flex-row flex-wrap'>
-                        <FormControl sx={{ m: 1, width: '45%' }}>
+                        <FormControl sx={{ m: 1, width: fieldsWidth.name }}>
                             <TextField id="name" label="Nombre" disabled value={name}/>
                         </FormControl>
-                        <FormControl sx={{ m: 1, width: '45%' }}>
+                        <FormControl sx={{ m: 1, width: fieldsWidth.lastname }}>
                             <TextField id="lastname" label="Apellido" disabled value={lastname}/>
                         </FormControl>
                     </div>
                     <div className='d-flex flex-row flex-wrap'>
-                        <FormControl sx={{ m: 1, width: '45%' }} variant="outlined">
+                        <FormControl sx={{ m: 1, width: fieldsWidth.phone }} variant="outlined">
                             <TextField id="phone" label="Teléfono" disabled variant="outlined" value={phone}/>
                         </FormControl>
-                        <FormControl sx={{ m: 1, width: '45%' }} variant="outlined">
+                        <FormControl sx={{ m: 1, width: fieldsWidth.mobile }} variant="outlined">
                             <TextField id="mobile" label="Móvil" disabled variant="outlined" value={mobile}/>
                         </FormControl>
                     </div>
                     <div className='d-flex flex-row flex-wrap'>
-                        <FormControl sx={{ m: 1, width: '45%' }} variant="outlined">
+                        <FormControl sx={{ m: 1, width: fieldsWidth.birthdate }} variant="outlined">
                             <TextField id="birthdate" label="Fecha Nacimiento" disabled variant="outlined" value={getFormattedDate(fechaNacimiento)}/>
                         </FormControl>
-                        <FormControl sx={{ m: 1, width: '45%' }} variant="standard">
+                        <FormControl sx={{ m: 1, width: fieldsWidth.edad }} variant="standard">
                             <TextField id="years_old" label="Edad" variant="standard" disabled value={edad}/>
                         </FormControl>
                     </div>
                     <div className='d-flex flex-row flex-wrap'>
-                        <FormControl sx={{ m: 1, width: '100%' }} variant="outlined">
+                        <FormControl sx={{ m: 1, width: fieldsWidth.address }} variant="outlined">
                             <TextField id="address" label="Dirección" disabled variant="outlined" value={address}/>
                         </FormControl>
                     </div>

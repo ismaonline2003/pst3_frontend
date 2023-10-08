@@ -10,25 +10,65 @@ const styledComponents = {
         fontSize: '1.6rem',
         fontWeight: '700'
     }),
-    fotoCarnetBig: styled('img')({
-        width: '200px', 
-        height: '200px', 
-        margin: '0 auto', 
-        borderRadius:"50%"
-    }),
-    fotoCarnetBigEdit: styled('div')({
-        width: '200px', 
-        height: '200px', 
+    fotoCarnet: styled('img')(({ theme }) => ({ 
+        width: '100px',
+        height: '100px',
+        margin: '0 auto',
+        borderRadius: '50%',
+        [theme.breakpoints.up("xs")]: {
+            width: '100px',
+            height: '100px'
+        },
+        [theme.breakpoints.up("sm")]: {
+            width: '200px',
+            height: '200px'
+        },
+        [theme.breakpoints.up("md")]: {
+            width: '200px',
+            height: '200px'
+        },
+        [theme.breakpoints.up("lg")]: {
+            width: '200px',
+            height: '200px'
+        },
+        [theme.breakpoints.up("xl")]: {
+            width: '200px',
+            height: '200px'
+        }
+    })),
+    fotoCarnetEdit: styled('div')(({ theme }) => ({
+        width: '100px',
+        height: '100px',
         margin: '0 auto', 
         borderRadius:"50%",
         backgroundPosition: 'center',
         backgroundSize: 'cover',
         cursor: 'pointer',
-        position: 'relative'
-    }),
-    fotoCarnetBigEditLayer: styled('div')({
-        width: '200px', 
-        height: '200px', 
+        position: 'relative',
+        [theme.breakpoints.up("xs")]: {
+            width: '100px',
+            height: '100px'
+        },
+        [theme.breakpoints.up("sm")]: {
+            width: '200px',
+            height: '200px'
+        },
+        [theme.breakpoints.up("md")]: {
+            width: '200px',
+            height: '200px'
+        },
+        [theme.breakpoints.up("lg")]: {
+            width: '200px',
+            height: '200px'
+        },
+        [theme.breakpoints.up("xl")]: {
+            width: '200px',
+            height: '200px'
+        }
+    })),
+    fotoCarnetEditLayer: styled('div')(({ theme }) => ({
+        width: '100px',
+        height: '100px',
         margin: '0 auto', 
         borderRadius:"50%",
         cursor: 'pointer',
@@ -40,8 +80,28 @@ const styledComponents = {
         textAlign: 'center',
         display: 'flex',
         justifyContent: 'center',
-        alignItems: 'center'
-    }),
+        alignItems: 'center',
+        [theme.breakpoints.up("xs")]: {
+            width: '100px',
+            height: '100px'
+        },
+        [theme.breakpoints.up("sm")]: {
+            width: '200px',
+            height: '200px'
+        },
+        [theme.breakpoints.up("md")]: {
+            width: '200px',
+            height: '200px'
+        },
+        [theme.breakpoints.up("lg")]: {
+            width: '200px',
+            height: '200px'
+        },
+        [theme.breakpoints.up("xl")]: {
+            width: '200px',
+            height: '200px'
+        }
+    })),
     fotoCarnetSmall: styled('img')({
         width: '80px', 
         height: '80px', 

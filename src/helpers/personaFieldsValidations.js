@@ -5,10 +5,17 @@ export default function personaFieldsValidations(data) {
     const onlyLettersRegEx =  /^[A-Za-z]+$/g;
     const lettersRegEx =  /[A-Za-z]/g;
     const ciTypes = ["V", "J", "E", "P"];
+    const sexoOptions = ["M", "F"];
 
     //ci type validations    
     if(!ciTypes.includes(data.ci_type)) {
         objReturn = {status: 'error', msg: 'El tipo de número de cédula debe ser uno de los siguientes: V, J, E, P.'}
+        return objReturn;
+    }
+
+    //sexo validations
+    if(!sexoOptions.includes(data.sexo)) {
+        objReturn = {status: 'error', msg: 'Debe elegir entre los sexo Masculino y Femenino.'}
         return objReturn;
     }
 

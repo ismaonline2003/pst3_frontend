@@ -40,13 +40,14 @@ const ci_vals = [
 const EstudianteForm = ({}) => {
     const [reLoad, setReload] = useState(false);
     const [redirect, setRedirect] = useState(false);
-    const [ showFormBtns, setShowFormBtns] = useState(true);
+    const [showFormBtns, setShowFormBtns] = useState(true);
     const [estudiante, setEstudiante] = useState(undefined);
     const [estudianteFound, setEstudianteFound] = useState(true);
     const [ciType, setCIType] = useState("V");
     const [ci, setCI] = useState("");
     const [name, setName] = useState("");
     const [lastname, setLastName] = useState("");
+    const [sexo, setSexo] = useState("M");
     const [fechaNacimiento, setFechaNacimiento] = useState(new Date());
     const [phone, setPhone] = useState("");
     const [mobile, setMobile] = useState("");
@@ -72,10 +73,11 @@ const EstudianteForm = ({}) => {
             axios.get(url, config).then((response) => {
                 console.log(response);
                 setEstudiante(response.data);
-                setCIType(response.data.person.ci_type);
+                setCIType(response.data.person.ci_type ? response.data.person.ci_type : "V");
                 setCI(response.data.person.ci);
                 setName(response.data.person.name);
                 setLastName(response.data.person.lastname);
+                setSexo(response.data.person.sexo ? response.data.person.sexo : "M");
                 setFechaNacimiento(new Date(response.data.person.birthdate));
                 setPhone(response.data.person.phone);
                 setMobile(response.data.person.mobile);
@@ -123,12 +125,12 @@ const EstudianteForm = ({}) => {
                 phone: phone,
                 mobile: mobile,
                 address: address,
-                birthdate: getFormattedDate(fechaNacimiento)
+                birthdate: getFormattedDate(fechaNacimiento),
+                sexo: sexo
             },
             nro_expediente: nroExpediente,
             year_ingreso: yearIngreso
         };
-        console.log(body);
         formData.append('data', JSON.stringify(body));
         const config = {headers:{'authorization': token, 'Content-Type': 'multipart/form-data'}};
         let url = `${consts.backend_base_url}/api/estudiante/${id}`;
@@ -138,7 +140,6 @@ const EstudianteForm = ({}) => {
             setNotificationType('success');
             setShowNotification(true);
         }).catch((err) => {
-            console.log(err);
             setNotificationMsg(err.response.data.message);
             setNotificationType('error');
             setShowNotification(true);
@@ -165,7 +166,8 @@ const EstudianteForm = ({}) => {
                 phone: phone,
                 mobile: mobile,
                 address: address,
-                birthdate: getFormattedDate(fechaNacimiento)
+                birthdate: getFormattedDate(fechaNacimiento),
+                sexo: sexo
             },
             nro_expediente: nroExpediente,
             year_ingreso: yearIngreso
@@ -180,6 +182,7 @@ const EstudianteForm = ({}) => {
             setName(response.data.person.name);
             setLastName(response.data.person.lastname);
             setFechaNacimiento(new Date(response.data.person.birthdate));
+            setSexo(response.data.person.sexo);
             setPhone(response.data.person.phone);
             setMobile(response.data.person.mobile);
             setAddress(response.data.person.address);
@@ -224,7 +227,8 @@ const EstudianteForm = ({}) => {
             phone: phone,
             mobile: mobile,
             address: address,
-            birthdate: fechaNacimiento
+            birthdate: fechaNacimiento,
+            sexo: sexo
         };
         let confirmarBtnReturn = personaFieldsValidations(personaData);
         if(confirmarBtnReturn.status == 'success') {
@@ -246,6 +250,7 @@ const EstudianteForm = ({}) => {
             setCI(estudiante.person.ci);
             setName(estudiante.person.name);
             setLastName(estudiante.person.lastname);
+            setSexo(estudiante.person.sexo);
             setFechaNacimiento(new Date(estudiante.person.birthdate));
             setPhone(estudiante.person.phone);
             setMobile(estudiante.person.mobile);
@@ -297,7 +302,7 @@ const EstudianteForm = ({}) => {
     }, [yearIngreso, ci]);
 
     return (
-        <div className='m-10'>
+        <div className='m-4'>
             {
                 id == '0' && estudianteFound && 
                 <div className='text-center mb-10'>
@@ -340,7 +345,9 @@ const EstudianteForm = ({}) => {
                         lastname={lastname}
                         setLastName={setLastName} 
                         fechaNacimiento={fechaNacimiento}
-                        setFechaNacimiento={setFechaNacimiento} 
+                        setFechaNacimiento={setFechaNacimiento}
+                        sexo={sexo}
+                        setSexo={setSexo} 
                         phone={phone}
                         setPhone={setPhone} 
                         mobile={mobile}
