@@ -244,24 +244,28 @@ const EstudianteForm = ({}) => {
         return confirmarBtnReturn;
     }
 
+    const _resetEstudianteData = () => {
+        setCIType(estudiante.person.ci_type);
+        setCI(estudiante.person.ci);
+        setName(estudiante.person.name);
+        setLastName(estudiante.person.lastname);
+        setSexo(estudiante.person.sexo);
+        setFechaNacimiento(new Date(estudiante.person.birthdate));
+        setPhone(estudiante.person.phone);
+        setMobile(estudiante.person.mobile);
+        setAddress(estudiante.person.address);
+        setYearIngreso(estudiante.year_ingreso);
+        setNroExpediente(estudiante.nro_expediente);
+        setFotoCarnetObj(undefined);
+        if(estudiante.person.foto_carnet) {
+            const base64Img = sequelizeImg2Base64(estudiante.person.foto_carnet);
+            setFotoCarnetStr(base64Img.b64str);
+        }
+    }
+
     const handleCancelarBtn = (e) => {
         if(id != '0') {
-            setCIType(estudiante.person.ci_type);
-            setCI(estudiante.person.ci);
-            setName(estudiante.person.name);
-            setLastName(estudiante.person.lastname);
-            setSexo(estudiante.person.sexo);
-            setFechaNacimiento(new Date(estudiante.person.birthdate));
-            setPhone(estudiante.person.phone);
-            setMobile(estudiante.person.mobile);
-            setAddress(estudiante.person.address);
-            setYearIngreso(estudiante.year_ingreso);
-            setNroExpediente(estudiante.nro_expediente);
-            setFotoCarnetObj(undefined);
-            if(estudiante.person.foto_carnet) {
-                const base64Img = sequelizeImg2Base64(estudiante.person.foto_carnet);
-                setFotoCarnetStr(base64Img.b64str);
-            }
+            _resetEstudianteData();
         } else {
             setRedirect(true);
         }
