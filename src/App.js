@@ -119,6 +119,38 @@ function App() {
                   <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"estudiantes"}/>}/>
                   <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"estudiante_form"}/>}/>
                 </Route>
+                <Route path="profesores" >
+                  <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"profesores"}/>}/>
+                  <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"profesor_form"}/>}/>
+                </Route>
+                <Route path="secciones" >
+                  <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"secciones"}/>}/>
+                  <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"seccion_form"}/>}/>
+                </Route>
+                <Route path="proyectos" >
+                  <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"proyectos"}/>}/>
+                  <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"proyecto_form"}/>}/>
+                </Route>
+                <Route path="noticias" >
+                  <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"noticias"}/>}/>
+                  <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"noticia_form"}/>}/>
+                </Route>
+                <Route path="categorias_noticias" >
+                  <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"categorias_noticias"}/>}/>
+                  <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"categoria_noticia_form"}/>}/>
+                </Route>
+                <Route path="grabaciones" >
+                  <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"grabaciones"}/>}/>
+                  <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"grabacion_form"}/>}/>
+                </Route>
+                <Route path="suscripciones" >
+                  <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"suscripciones"}/>}/>
+                  <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"suscripcion_form"}/>}/>
+                </Route>
+                <Route path="usuarios" >
+                  <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"usuarios"}/>}/>
+                  <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"usuario_form"}/>}/>
+                </Route>
               </Route>
               <Route path="/radioOnline" element={<OnlineRadio />} />
           </Routes>

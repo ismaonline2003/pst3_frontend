@@ -55,21 +55,27 @@ export default function NestedList() {
                         <ListItemText primary="Estudiantes" />
                     </ListItemButton>
                 </Link>
-                <ListItemButton sx={{ pl: 4 }}>
-                    <ListItemText primary="Profesores" />
-                </ListItemButton>
-                <ListItemButton sx={{ pl: 4 }}>
-                    <ListItemText primary="Secciones" />
-                </ListItemButton>
+                <Link to="/dashboard/profesores">
+                    <ListItemButton sx={{ pl: 4 }}>
+                        <ListItemText primary="Profesores" />
+                    </ListItemButton>
+                </Link>
+                <Link to="/dashboard/secciones">
+                    <ListItemButton sx={{ pl: 4 }}>
+                        <ListItemText primary="Secciones" />
+                    </ListItemButton>
+                </Link>
             </List>
         </Collapse>
         {/*Sección de Proyectos*/}
-        <ListItemButton>
-            <ListItemIcon>
-                <AccountTreeIcon />
-            </ListItemIcon>
-            <ListItemText primary="Proyectos" />
-        </ListItemButton>
+        <Link to="/dashboard/proyectos">
+            <ListItemButton>
+                <ListItemIcon>
+                    <AccountTreeIcon />
+                </ListItemIcon>
+                <ListItemText primary="Proyectos" />
+            </ListItemButton>
+        </Link>
         {/*Sección de Datos de Portal de Noticias*/}
         <ListItemButton onClick={() => setOpenNoticias(!openNoticias)}>
             <ListItemIcon>
@@ -80,12 +86,16 @@ export default function NestedList() {
         </ListItemButton>
         <Collapse in={openNoticias} timeout="auto" unmountOnExit>
             <List component="div" disablePadding>
-                <ListItemButton sx={{ pl: 4 }}>
-                    <ListItemText primary="Noticias" />
-                </ListItemButton>
-                <ListItemButton sx={{ pl: 4 }}>
-                    <ListItemText primary="Categorías de Noticias" />
-                </ListItemButton>
+                <Link to="/dashboard/noticias">
+                    <ListItemButton sx={{ pl: 4 }}>
+                        <ListItemText primary="Noticias" />
+                    </ListItemButton>
+                </Link>
+                <Link to="/dashboard/categorias_noticias">
+                    <ListItemButton sx={{ pl: 4 }}>
+                        <ListItemText primary="Categorías de Noticias" />
+                    </ListItemButton>
+                </Link>
             </List>
         </Collapse>
         {/*Sección de Radio Online*/}
@@ -103,12 +113,16 @@ export default function NestedList() {
                         <ListItemText primary="Nueva Emisión" />
                     </ListItemButton>
                 </Link>
-                <ListItemButton sx={{ pl: 4 }}>
-                    <ListItemText primary="Emisiones" />
-                </ListItemButton>
-                <ListItemButton sx={{ pl: 4 }}>
-                    <ListItemText primary="Suscripciones" />
-                </ListItemButton>
+                <Link to="/dashboard/grabaciones">
+                    <ListItemButton sx={{ pl: 4 }}>
+                        <ListItemText primary="Grabaciones" />
+                    </ListItemButton>
+                </Link>
+                <Link to="/dashboard/suscripciones">
+                    <ListItemButton sx={{ pl: 4 }}>
+                        <ListItemText primary="Suscripciones" />
+                    </ListItemButton>
+                </Link>
             </List>
         </Collapse>
         {/*Estadísticas*/}
@@ -142,12 +156,11 @@ export default function NestedList() {
         </ListItemButton>
         <Collapse in={openSistema} timeout="auto" unmountOnExit>
             <List component="div" disablePadding>
-                <ListItemButton sx={{ pl: 4 }}>
-                    <ListItemText primary="Usuarios" />
-                </ListItemButton>
-                <ListItemButton sx={{ pl: 4 }}>
-                    <ListItemText primary="Permisologías" />
-                </ListItemButton>
+                <Link to="/dashboard/usuarios">
+                    <ListItemButton sx={{ pl: 4 }}>
+                        <ListItemText primary="Usuarios" />
+                    </ListItemButton>
+                </Link>
             </List>
         </Collapse>
     </List>

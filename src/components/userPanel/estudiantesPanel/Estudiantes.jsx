@@ -19,7 +19,10 @@ import TablePagination from '@mui/material/TablePagination';
 import { Link } from 'react-router-dom';
 
 
-
+/*
+    number: solo valores numericos
+    search: valores de texto
+*/
 const searchBarParameters = [
     { value: 'ref', label: 'Referencia', type: "number"},
     { value: 'nombre', label: 'Nombre y Apellido', type: "search"},
@@ -70,7 +73,7 @@ export default function Estudiantes({}) {
                     mobile: item.person.mobile
                 })
             }) 
-            setEstudiantes(estudiantes)
+            setEstudiantes(estudiantes);
             setBlockUI(false);
         }).catch((err) => {
           console.log(err);

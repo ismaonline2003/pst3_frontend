@@ -328,7 +328,7 @@ const EstudianteForm = ({}) => {
                     showEditBtn={true ? id == '0' : false}
                     deleteApplies={true}
                     handleDeleteBtn={handleDeleteBtn}
-                    />
+                />
             }
             {
                 reLoad && <Navigate to={`/dashboard/estudiantes/${newId}`} />
