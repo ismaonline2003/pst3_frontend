@@ -160,7 +160,7 @@ export default function PrimarySearchAppBar({isSideBarOpen, setIsSideBarOpen}) {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static">
+      <AppBar position="static" color="success">
         <Toolbar>
           <IconButton
             size="large"
@@ -177,7 +177,10 @@ export default function PrimarySearchAppBar({isSideBarOpen, setIsSideBarOpen}) {
             component="div"
             sx={{ display: { xs: 'none', sm: 'block' } }}
           >
-            PLATAFORMA ONLINE
+            POPPAERO-UPTCMS
+             {
+              //Plataforma Online para la publicación de Proyectos Agroecologicos y Emision de Radio Online de la UPTCMS
+             }
           </Typography>
           <Box sx={{ flexGrow: 1 }} />
           <Box sx={{ display: { xs: 'none', md: 'flex' } }}>

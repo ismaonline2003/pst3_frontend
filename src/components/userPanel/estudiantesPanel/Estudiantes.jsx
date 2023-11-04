@@ -101,7 +101,7 @@ export default function Estudiantes({}) {
             <br /> 
             <StyledH1>Estudiantes</StyledH1>
             <br />
-            <SearchBar selectOptions={searchBarParameters} externalHandleSearchBtn={handleSearchBtn} crearRoute={"/dashboard/estudiantes/0"}/>
+            <SearchBar selectOptions={searchBarParameters} externalHandleSearchBtn={handleSearchBtn} crearRoute={"/dashboard/estudiantes/0"} searchSelectValues={[]}/>
             <br />
             <div style={{ height: 400, width: '100%' }}>
             <Paper sx={{ width: '100%', mb: 2 }}>

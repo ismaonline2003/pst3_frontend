@@ -17,7 +17,7 @@ const recordsLimit = [
     { value: '1000', label: '1000'}
 ]
 
-export default function SearchBar({selectOptions, externalHandleSearchBtn, crearRoute}) {
+export default function SearchBar({selectOptions, externalHandleSearchBtn, crearRoute, searchSelectValues}) {
     const [ selectedOptionType, setSelectedOptionType ] = useState("search");
     const [ selectedOption, setSelectedOption ] = useState("");
     const [ searchValue, setSearchValue ] = useState("");
@@ -29,6 +29,7 @@ export default function SearchBar({selectOptions, externalHandleSearchBtn, crear
         if(filterOption.length > 0) {
             setSelectedOption(filterOption[0].value);
             setSelectedOptionType(filterOption[0].type);
+            console.log(Object.keys(searchSelectValues));
         }
     };
 
@@ -74,9 +75,28 @@ export default function SearchBar({selectOptions, externalHandleSearchBtn, crear
     return (
         <div>
             <div className='d-flex flex-row flex-wrap items-center'>
-                <TextField id="search-bar" label="Buscar" type={selectedOptionType} style={{width: '400px', margin: "10px" }}
+                {
+                    selectedOptionType != 'selection' && 
+                    <TextField id="search-bar" label="Buscar" type={selectedOptionType} style={{width: '400px', margin: "10px" }}
                     onChange={(e) => setSearchValue(e.target.value.trim())}
                 />
+                }
+                {
+                    selectedOptionType == 'selection' && Object.keys(searchSelectValues).includes(selectedOption) &&
+                    <TextField
+                        id="search-bar"
+                        select
+                        label="Buscar"
+                        style={{width: '400px', margin:"10px" }}
+                        onChange={(e) => setSearchValue(e.target.value)}
+                    >
+                        {searchSelectValues[selectedOption].map((option) => (
+                            <MenuItem key={option.value} value={option.value}>
+                                {option.label}
+                            </MenuItem>
+                        ))}
+                    </TextField>
+                }
                 <TextField
                     id="searchbar-parameters"
                     select

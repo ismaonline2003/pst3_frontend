@@ -166,7 +166,7 @@ export default function CanalesAudio({}) {
                             </Button>
                         </TableCell>
                         <TableCell align="center">
-                            <IconButton aria-label="delete" color="dark" onClick={(e) => eliminarCanal(row.id)}>
+                            <IconButton aria-label="delete" onClick={(e) => eliminarCanal(row.id)}>
                                 <DeleteIcon/>
                             </IconButton>
                         </TableCell>
