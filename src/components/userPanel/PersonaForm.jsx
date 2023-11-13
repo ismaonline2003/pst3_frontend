@@ -221,8 +221,7 @@ const PersonaForm = ({
                                     onClick={(e) => fotoCarnetInput.current.click()}
                                 >
                                     <p>Click Aqui para cambiar la foto</p>
-                                    <input type="file" id="fotoCarnetImage" ref={fotoCarnetInput} hidden
-                                    />
+                                    <input type="file" id="fotoCarnetImage" ref={fotoCarnetInput} hidden/>
                                 </FotoCarnetEditLayer>
                             }
                         </FotoCarnetEdit>
