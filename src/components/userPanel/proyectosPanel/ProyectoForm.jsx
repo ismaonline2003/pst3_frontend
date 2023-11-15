@@ -23,6 +23,7 @@ import {
 //icons
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 
 //simple table
 import Table from '@mui/material/Table';
@@ -44,6 +45,7 @@ import noEncontrado from '../../../icons/no-encontrado.jpg'
 import getTurnoName from '../../../helpers/getTurnoName';
 import DeleteDialog from '../../generales/DeleteDialog';
 import imgValidations from '../../../helpers/imgValidations';
+import docValidations from '../../../helpers/docValidations';
 
 const trayectoVals = [
     {
@@ -104,8 +106,11 @@ const ProyectoForm = ({}) => {
     const [estudiantesSearch, setEstudiantesSearch] = useState([]);
     const [currentSelectedStudentID, setCurrentSelectedStudentID] = useState(false);
     const newImage = useRef(null);
+    const newDoc = useRef(null);
     const [ newImageName, setNewImageName ] = useState('');
+    const [ newDocName, setNewDocName ] = useState('');
     const [ newImageDescription, setNewImageDescription] = useState('');
+    const [ docs2Add, setDocs2Add ] = useState([]);
 
 
     //form common fields
@@ -128,9 +133,18 @@ const ProyectoForm = ({}) => {
                 setShowNotification(true);
                 e.target.value = "";
             }
-            //let url = window.URL.createObjectURL(e.target.files[0]);
-            //setFotoCarnetStr(url);
-            //setFotoCarnetObj(e.target.files[0])
+        } 
+    }
+
+    if(newDoc && newDoc.current) {
+        newDoc.current.onchange = (e) => {
+            const validations = docValidations(e.target.files[0]);
+            if(validations.status != 'success') {
+                setNotificationMsg(validations.msg);
+                setNotificationType('error');
+                setShowNotification(true);
+                e.target.value = "";
+            }
         } 
     }
 
@@ -314,13 +328,22 @@ const ProyectoForm = ({}) => {
             formData.append('miniatura', miniatura);
         }
         imgs2Add.map((item) => {
+            console.log(item);
             formData.append('img', item);
         });
-        docsUpdated.map((item) => {
+        docs2Add.map((item) => {
+            console.log(item);
             formData.append('docs', item);
         });
+        console.log(formData.getAll('img'));
+        console.log(body);
         const config = {headers:{'authorization': token, 'Content-Type': 'multipart/form-data'}};
         let url = `${consts.backend_base_url}/api/proyecto`;
+        setNotificationMsg('Error');
+        setNotificationType('warning');
+        setShowNotification(true);
+        setBlockUI(false);
+        return;
         axios.post(url, formData, config).then((response) => {
             //update db fields
             setNotificationMsg("El proyecto fue creado exitosamente!!");
@@ -437,12 +460,23 @@ const ProyectoForm = ({}) => {
     const getNewImagePos = () => {
         let newImgPos = 0;
         let lastImageNumber = 0;
-        let sortedArr = imgs.sort((a) => a.posicion);
+        let sortedArr = imgs2Add.sort((a) => a.position);
         if(sortedArr.length > 0) {
-            lastImageNumber = sortedArr[sortedArr.length-1].posicion;
+            lastImageNumber = sortedArr[sortedArr.length-1].position;
         }
         newImgPos = lastImageNumber+1;
         return newImgPos;
+    }
+
+    const getNewDocPos = () => {
+        let newDocPos = 0;
+        let lastDocNumber = 0;
+        let sortedArr = docs2Add.sort((a) => a.position);
+        if(sortedArr.length > 0) {
+            lastDocNumber = sortedArr[sortedArr.length-1].position;
+        }
+        newDocPos = lastDocNumber+1;
+        return newDocPos;
     }
 
     const addNewImage = () => {
@@ -456,7 +490,7 @@ const ProyectoForm = ({}) => {
                 newImage.current.value = "";
                 return;
             }
-            let Imgurl = window.URL.createObjectURL(e.target.files[0]);
+            let Imgurl = window.URL.createObjectURL(newImage.current.files[0]);
             let imageObj = {
                 position: getNewImagePos(),
                 img:  newImage.current.files[0],
@@ -464,6 +498,7 @@ const ProyectoForm = ({}) => {
                 nombre: newImageName,
                 descripcion: newImageDescription
             };
+            console.log(imageObj);
             newImgs2Add.push(imageObj);
             setImgs2Add(newImgs2Add);
         } else {
@@ -472,6 +507,117 @@ const ProyectoForm = ({}) => {
             setShowNotification(true); 
         }
         
+    }
+
+    const changeImgVal = (key="", val="", id=0, is_new=false) => {
+        let imgsArr = [];
+        if(is_new) {
+            imgsArr = [...imgs2Add];
+            imgsArr.map((item, index) => {
+                if(item.position == id) {
+                    imgsArr[index][key] = val;
+                }
+            });
+            setImgs2Add(imgsArr);
+        }
+        if(!is_new) {
+            imgsArr = [...imgs];
+            imgsArr.map((item, index) => {
+                if(item.id == id) {
+                    imgsArr[index][key] = val;
+                }
+            });
+            setImgs(imgsArr);
+        }
+    }
+
+    const deleteImg = (id=0, is_new=false) => {
+        let imgsArr = [];
+        if(is_new) {
+            imgs2Add.map((item, index) => {
+                if(item.position != id) {
+                    imgsArr.push(item);
+                }
+            });
+            setImgs2Add(imgsArr);
+        }
+        if(!is_new) {
+            imgs.map((item, index) => {
+                if(item.id != id) {
+                    imgsArr.push(item);
+                }
+            });
+            setImgs(imgsArr);
+        }
+    }
+
+    const addNewDoc = () => {
+        if(newDoc.current.files.length > 0) {
+            let newDocs2Add = [...docs2Add];
+            const validations = docValidations(newDoc.current.files[0]);
+            if(validations.status != 'success') {
+                setNotificationMsg(validations.msg);
+                setNotificationType('error');
+                setShowNotification(true);
+                newImage.current.value = "";
+                return;
+            }
+            let docObj = {
+                position: getNewDocPos(),
+                doc:  newDoc.current.files[0],
+                file_name: newDoc.current.files[0].name,
+                nombre: newDocName
+            };
+            console.log(docObj);
+            newDocs2Add.push(docObj);
+            setDocs2Add(newDocs2Add);
+        } else {
+            setNotificationMsg("Debe subir un documento primero.");
+            setNotificationType('error');
+            setShowNotification(true); 
+        }
+    }
+
+    const changeDocName = (val="", id=0, is_new=false) => {
+        let docArr = [];
+        if(is_new) {
+            docArr = [...docs2Add];
+            docArr.map((item, index) => {
+                if(item.position == id) {
+                    docArr[index]['nombre'] = val;
+                }
+            });
+            setDocs2Add(docArr);
+        }
+        if(!is_new) {
+            docArr = [...docs];
+            docArr.map((item, index) => {
+                if(item.id == id) {
+                    docArr[index]['nombre'] = val;
+                }
+            });
+            setDocs(docArr);
+        }
+    }
+    
+    const deleteDoc = (id=0, is_new=false) => {
+        let docArr = [];
+        if(is_new) {
+            docs2Add.map((item, index) => {
+                if(item.position != id) {
+                    docArr.push(item);
+                }
+            });
+            setDocs2Add(docArr);
+        }
+        if(!is_new) {
+            docs.map((item, index) => {
+                if(item.id != id) {
+                    docArr.push(item);
+                }
+            });
+            setDocs(docArr);
+        }
     }
 
     return (
@@ -489,7 +635,8 @@ const ProyectoForm = ({}) => {
                 </div>
             }
             {
-                recordFound && showFormBtns && 
+                /*
+                showFormBtns && 
                 <FormBtns 
                     setUnlockFields={setUnlockFields} 
                     handleConfirmarBtn={handleConfirmarBtn} 
@@ -498,7 +645,9 @@ const ProyectoForm = ({}) => {
                     deleteApplies={true}
                     handleDeleteBtn={handleDeleteBtn}
                 />
+                */
             }
+            <Button variant="contained" color="primary" style={{marginLeft: '10px'}} onClick={(e) => createRecord()}>Crear</Button>
             {
                 reLoad && <Navigate to={`/dashboard/proyectos/${newId}`} />
             }
@@ -640,8 +789,10 @@ const ProyectoForm = ({}) => {
                                                             <TableCell align="left" className="text-center">{row.ci_type}-{row.ci}</TableCell>
                                                             <TableCell align="left" className="text-center">{row.nombre} {row.apellido}</TableCell>
                                                             <TableCell align="left" className="text-center">
-                                                                <DeleteIcon style={{fontSize:'30px', cursor: 'pointer'}} 
+                                                                <div className="text-center">
+                                                                    <DeleteIcon style={{fontSize:'30px', cursor: 'pointer'}} 
                                                                     onClick={(e) => removeIntegrante(row.id)}/>
+                                                                </div>
                                                             </TableCell>
                                                     </TableRow>
                                                 )
@@ -693,9 +844,6 @@ const ProyectoForm = ({}) => {
                                     <TableHead className="bg-neutral-800 ">
                                         <TableRow>
                                             <TableCell align="left" width="10%">
-                                                <span className='text-cyan-50'>#</span>
-                                            </TableCell>
-                                            <TableCell align="left" width="20%">
                                                 <span className='text-cyan-50'>Imagen</span>
                                             </TableCell>
                                             <TableCell align="left" width="30%">
@@ -710,27 +858,44 @@ const ProyectoForm = ({}) => {
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                    {integrantes.map((row, index) => {
+                                        {
+                                            /*
+                                                let imageObj = {
+                                                    position: getNewImagePos(),
+                                                    img:  newImage.current.files[0],
+                                                    url: Imgurl,
+                                                    nombre: newImageName,
+                                                    descripcion: newImageDescription
+                                                };
+                                            
+                                            */
+                                        }
+                                    {imgs2Add.map((row, index) => {
                                             return (
                                                 <TableRow 
                                                     className="text-center"
-                                                    key={row.id}
+                                                    key={row.position}
                                                     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                                                 >
-                                                    <TableCell align="left" width="10%">
-                                                        <span className='text-cyan-50'>#</span>
-                                                    </TableCell>
                                                     <TableCell align="left" width="20%">
-                                                        <span className='text-cyan-50'>Imagen</span>
+                                                        <img src={row.url} alt={`img-${row.position}`} style={{width:'60%'}}  />
                                                     </TableCell>
                                                     <TableCell align="left" width="30%">
-                                                        <span className='text-cyan-50'>Nombre</span>
+                                                        <TextField label="Nombre" variant="outlined" defaultValue={row.nombre} 
+                                                             sx={{ m: 1, width: '100%' }}
+                                                            onChange={(e) => changeImgVal("nombre", e.target.value, row.position, true)}/>
                                                     </TableCell>
-                                                    <TableCell align="left" width="40%">
-                                                        <span className='text-cyan-50'>Descripción</span>
+                                                    <TableCell align="left" width="50%">
+                                                        <TextField label="Descripción" variant="outlined" defaultValue={row.descripcion} 
+                                                             sx={{ m: 1, width: '100%' }}
+                                                            onChange={(e) => changeImgVal("descripcion", e.target.value, row.position, true)}/>
                                                     </TableCell>
                                                     <TableCell align="left" width="10%">
-                                                        <span className='text-cyan-50'>Acción</span>
+                                                        <div className='text-center'>
+                                                            <DeleteIcon style={{fontSize:'30px', cursor: 'pointer', margin: '0 auto'}} 
+                                                                onClick={(e) => deleteImg(row.position, true)}
+                                                            />
+                                                        </div>
                                                     </TableCell>
                                                 </TableRow>
                                             )
@@ -738,20 +903,17 @@ const ProyectoForm = ({}) => {
                                     {
                                         
                                         <TableRow  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                                            <TableCell align="left" width="10%">
-                                                <TextField id="newImagePos" label="Posición" disabled variant="outlined" value={getNewImagePos()}/>
-                                            </TableCell>
                                             <TableCell align="left" width="20%">
                                                 <Button component="label" color="secondary" variant="contained" startIcon={<CloudUploadIcon />}>
-                                                    Subir
+                                                    Cargar
                                                     <input type="file" id="img_to_upload" ref={newImage} hidden/>
                                                 </Button>
                                             </TableCell>
                                             <TableCell align="left" width="30%">
-                                                <TextField id="newImageName" label="Nombre" variant="outlined" defaultValue={""} onChange={(e) => setNewImageName(e.target.value)}/>
+                                                <TextField id="newImageName" sx={{ m: 1, width: '100%' }} label="Nombre" variant="outlined" defaultValue={""} onChange={(e) => setNewImageName(e.target.value)}/>
                                             </TableCell>
-                                            <TableCell align="left" width="40%">
-                                                <TextField id="newImageDescription" label="Descripción" variant="outlined" defaultValue={""} onChange={(e) => setNewImageDescription(e.target.value)}/>
+                                            <TableCell align="left" width="50%">
+                                                <TextField id="newImageDescription" sx={{ m: 1, width: '100%' }} label="Descripción" variant="outlined" defaultValue={""} onChange={(e) => setNewImageDescription(e.target.value)}/>
                                             </TableCell>
                                             <TableCell align="left" width="10%">
                                                 <Button variant="contained" color="primary" style={{marginLeft: '10px'}} 
@@ -773,6 +935,77 @@ const ProyectoForm = ({}) => {
                             <StyledH2>Documentos del Proyecto</StyledH2>
                         </div>
                         <br />
+                        <Paper sx={{ width: '100%', mb: 2 }}>
+                            <TableContainer component={Paper}>
+                                <Table sx={{ minWidth: '100%' }} aria-label="Proyectos" >
+                                    <TableHead className="bg-neutral-800 ">
+                                        <TableRow>
+                                            <TableCell align="left" width="20%">
+                                                <span className='text-cyan-50'>Documento</span>
+                                            </TableCell>
+                                            <TableCell align="left" width="60%">
+                                                <span className='text-cyan-50'>Nombre</span>
+                                            </TableCell>
+                                            <TableCell align="left" width="20%">
+                                                <span className='text-cyan-50'>Acción</span>
+                                            </TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                    {docs2Add.map((row, index) => {
+                                            return (
+                                                <TableRow 
+                                                    className="text-center"
+                                                    key={row.position}
+                                                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                                >
+                                                    <TableCell align="left" width="20%">
+                                                        <div className='text-center'>
+                                                            <InsertDriveFileIcon style={{fontSize:'30px', cursor: 'pointer', margin: '0 auto'}}/>
+                                                            <br></br>
+                                                            <span style={{fontSize:'10px'}}>{row.file_name}</span>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell align="left" width="60%">
+                                                        <TextField label="Nombre" variant="outlined" defaultValue={row.nombre} 
+                                                             sx={{ m: 1, width: '100%' }}
+                                                            onChange={(e) => changeDocName(e.target.value, row.position, true)}/>
+                                                    </TableCell>
+                                                    <TableCell align="left" width="20%">
+                                                        <div className='text-center'>
+                                                            <DeleteIcon style={{fontSize:'30px', cursor: 'pointer', margin: '0 auto'}} 
+                                                                onClick={(e) => deleteDoc(row.position, true)}
+                                                            />
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            )
+                                    })}
+                                    {
+                                        
+                                        <TableRow  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                            <TableCell align="left" width="20%">
+                                                <Button component="label" color="secondary" variant="contained" startIcon={<CloudUploadIcon />}>
+                                                    Cargar
+                                                    <input type="file" id="doc_to_upload" ref={newDoc} hidden/>
+                                                </Button>
+                                            </TableCell>
+                                            <TableCell align="left" width="30%">
+                                                <TextField id="newImageName" sx={{ m: 1, width: '100%' }} label="Nombre" variant="outlined" defaultValue={""} onChange={(e) => setNewDocName(e.target.value)}/>
+                                            </TableCell>
+                                            <TableCell align="left" width="10%">
+                                                <Button variant="contained" color="primary" style={{marginLeft: '10px'}} 
+                                                    onClick={(e) => addNewDoc()}
+                                                >
+                                                    Agregar
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    }
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        </Paper>
                     </FormContainer>
                 </Fragment>
             }
