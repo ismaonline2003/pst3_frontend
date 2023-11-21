@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext, Fragment, useRef } from 'react';
-import { useParams, Navigate, Link } from 'react-router-dom';
+import { useParams, Navigate, Link, useNavigate } from 'react-router-dom';
 import axios from "axios";
 import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
@@ -78,6 +78,8 @@ const ProyectoForm = ({}) => {
     const [reLoad, setReload] = useState(false);
     const [redirect, setRedirect] = useState(false);
     const [showFormBtns, setShowFormBtns] = useState(true);
+    const navigate = useNavigate();
+
     
     //db fields
     const [seccionID, setSeccionID] = useState(false);
@@ -123,6 +125,56 @@ const ProyectoForm = ({}) => {
     const [unlockFields, setUnlockFields] = useState(false);
     const StyledH1 = styledComponents.dahsboardPanelh1;
     const StyledH2 = styledComponents.dahsboardPanelh2;
+
+    const getImgsList = (data) => {
+        let imgsList = [];
+        data.proyecto_archivos.filter(e => e.tipo == 'IMG').map((item) => {
+            imgsList.append({
+                id: item.id,
+                position: item.posicion,
+                url: item.url,
+                nombre: item.nombre,
+                descripcion: item.descripcion
+            })
+        })
+        return imgsList
+    }
+
+    const getDocsList = (data) => {
+        let docsList = [];
+        data.proyecto_archivos.filter(e => e.tipo == 'DOC').map((item) => {
+            docsList.append({
+                id: item.id,
+                position: item.posicion,
+                url: item.url,
+                nombre: item.nombre
+            })
+        })
+        return docsList
+    }
+
+    const getIntegrantesList = (data) => {
+        let integrantesList = [];
+        data.inscripcions.map((item) => {
+            integrantesList.append({
+                id: item.id,
+                position: item.posicion,
+                url: item.url,
+                nombre: item.nombre
+            })
+        })
+        return integrantesList
+    }
+
+    const setProyectoInfo = (data) => {
+        setRecordData(data);
+        setNombre(data.name);
+        setDescripcion(data.descripcion);
+        setSeccionID(data.id_seccion);
+        setImgs(getImgsList(data));
+        setDocs(getDocsList(data));
+        setIntegrantes(getIntegrantesList(data));
+    }
 
     if(newImage && newImage.current) {
         newImage.current.onchange = (e) => {
@@ -317,42 +369,52 @@ const ProyectoForm = ({}) => {
         setBlockUI(true);
         const token = localStorage.getItem('token');
         const formData = new FormData();
+        let a = 0;
         let body = {
             id_seccion: seccionSelected,
             nombre: nombre,
             descripcion: editor.getHTML(),
-            integrantes: integrantes
+            integrantes: integrantes,
+            miniaturaAdded: false,
+            imgs: [],
+            docs: []
         };
-        formData.append('data', JSON.stringify(body));
+
         if(miniatura != false) {
-            formData.append('miniatura', miniatura);
+            formData.append('files', miniatura);
+            body.miniaturaAdded = true;
+            a += 1;
+        } 
+
+        for(let i = 0; i < imgs2Add.length; i++) {
+            let item = imgs2Add[i];
+            formData.append(`files`, item.img);
+            body.imgs.push({nombre: item.nombre, descripcion: item.descripcion, position: item.position, type: "img", index: a});
+            a += 1;
         }
-        imgs2Add.map((item) => {
-            console.log(item);
-            formData.append('img', item);
-        });
-        docs2Add.map((item) => {
-            console.log(item);
-            formData.append('docs', item);
-        });
-        console.log(formData.getAll('img'));
-        console.log(body);
+
+        for(let i = 0; i < docs2Add.length; i++) {
+            let item = docs2Add[i];
+            formData.append(`files`, item.doc);
+            body.docs.push({nombre: item.nombre, position: item.position, type: "doc", index: a});
+            a += 1;
+        }
+
+        formData.append('data', JSON.stringify(body));
         const config = {headers:{'authorization': token, 'Content-Type': 'multipart/form-data'}};
         let url = `${consts.backend_base_url}/api/proyecto`;
-        setNotificationMsg('Error');
-        setNotificationType('warning');
-        setShowNotification(true);
-        setBlockUI(false);
-        return;
         axios.post(url, formData, config).then((response) => {
-            //update db fields
+            setProyectoInfo(response.data);
             setNotificationMsg("El proyecto fue creado exitosamente!!");
             setNotificationType('success');
             setShowNotification(true);
             setReload(true);
             setBlockUI(false);
+            //
+            setTimeout(() => {
+                navigate(`/dashboard/proyectos/${response.data.id}`);
+            }, 3000);
         }).catch((err) => {
-            console.log(err);
             setNotificationMsg(err.response.data.message);
             setNotificationType('error');
             setShowNotification(true);
@@ -635,7 +697,6 @@ const ProyectoForm = ({}) => {
                 </div>
             }
             {
-                /*
                 showFormBtns && 
                 <FormBtns 
                     setUnlockFields={setUnlockFields} 
@@ -645,9 +706,10 @@ const ProyectoForm = ({}) => {
                     deleteApplies={true}
                     handleDeleteBtn={handleDeleteBtn}
                 />
+                /*
+                    <Button variant="contained" color="primary" style={{marginLeft: '10px'}} onClick={(e) => createRecord()}>Crear</Button>
                 */
             }
-            <Button variant="contained" color="primary" style={{marginLeft: '10px'}} onClick={(e) => createRecord()}>Crear</Button>
             {
                 reLoad && <Navigate to={`/dashboard/proyectos/${newId}`} />
             }
@@ -858,18 +920,6 @@ const ProyectoForm = ({}) => {
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        {
-                                            /*
-                                                let imageObj = {
-                                                    position: getNewImagePos(),
-                                                    img:  newImage.current.files[0],
-                                                    url: Imgurl,
-                                                    nombre: newImageName,
-                                                    descripcion: newImageDescription
-                                                };
-                                            
-                                            */
-                                        }
                                     {imgs2Add.map((row, index) => {
                                             return (
                                                 <TableRow 
