@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext, Fragment, useRef } from 'react';
 import { useParams, Navigate, Link, useNavigate } from 'react-router-dom';
 import axios from "axios";
+import parse from 'html-react-parser'
 import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
@@ -129,10 +130,10 @@ const ProyectoForm = ({}) => {
     const getImgsList = (data) => {
         let imgsList = [];
         data.proyecto_archivos.filter(e => e.tipo == 'IMG').map((item) => {
-            imgsList.append({
+            imgsList.push({
                 id: item.id,
                 position: item.posicion,
-                url: item.url,
+                url: item.url.replace(consts.back_public_file_route, ''),
                 nombre: item.nombre,
                 descripcion: item.descripcion
             })
@@ -143,10 +144,10 @@ const ProyectoForm = ({}) => {
     const getDocsList = (data) => {
         let docsList = [];
         data.proyecto_archivos.filter(e => e.tipo == 'DOC').map((item) => {
-            docsList.append({
+            docsList.push({
                 id: item.id,
                 position: item.posicion,
-                url: item.url,
+                url: item.url.replace(consts.back_public_file_route, ''),
                 nombre: item.nombre
             })
         })
@@ -156,24 +157,46 @@ const ProyectoForm = ({}) => {
     const getIntegrantesList = (data) => {
         let integrantesList = [];
         data.inscripcions.map((item) => {
-            integrantesList.append({
-                id: item.id,
-                position: item.posicion,
-                url: item.url,
-                nombre: item.nombre
-            })
+            let estudiante = data.seccion.estudiantes.filter(e => e.id == item.estudiante_id);
+            if(estudiante.length > 0) {
+                estudiante = estudiante[0];
+                integrantesList.push({
+                    id: estudiante.id,
+                    ci_type: estudiante.person.ci_type,
+                    ci: estudiante.person.ci,
+                    nombre: estudiante.person.name,
+                    apellido: estudiante.person.lastname
+                })
+            }
         })
         return integrantesList
     }
 
     const setProyectoInfo = (data) => {
         setRecordData(data);
-        setNombre(data.name);
+        setNombre(data.nombre);
         setDescripcion(data.descripcion);
         setSeccionID(data.id_seccion);
         setImgs(getImgsList(data));
         setDocs(getDocsList(data));
         setIntegrantes(getIntegrantesList(data));
+        //
+        setPnfs([]);
+        setSelectedPNF(false);
+        setSelectedTrayecto(data.seccion.trayecto);
+        setSecciones([]);
+        setSeccionSelected(false);
+        setSelectedYear(data.seccion.year);
+        setImgsDeleted([]);
+        setImgs2Add([]);
+        setDocsDeleted([]);
+        setDocsUpdated([]);
+        setEstudiantesSearch([]);
+        setCurrentSelectedStudentID(false);
+        setNewImageName('');
+        setNewDocName('');
+        setNewImageDescription('');
+        setDocs2Add([]);
     }
 
     if(newImage && newImage.current) {
@@ -309,21 +332,6 @@ const ProyectoForm = ({}) => {
         return arrReturn;
     }
 
-    const getRecordintegrantesList = (integrantesList) => {
-        let arrReturn = [];
-        integrantesList.map((item) => {
-            let integranteObj = {
-                id: item.inscripcion.estudiante_id,
-                nombre: item.inscripcion.estudiante.persona.nombre,
-                apellido: item.inscripcion.estudiante.persona.apellido,
-                ci_type: item.inscripcion.estudiante.persona.ci_type,
-                ci: item.inscripcion.estudiante.persona.ci
-            };
-            arrReturn.push(integranteObj);
-        });
-        return arrReturn;
-    }
-
     const updateRecord = () => {
         setBlockUI(true);
         const token = localStorage.getItem('token');
@@ -410,12 +418,16 @@ const ProyectoForm = ({}) => {
             setShowNotification(true);
             setReload(true);
             setBlockUI(false);
-            //
+            setRecordFound(true);
+            setUnlockFields(false);
+            /*
             setTimeout(() => {
                 navigate(`/dashboard/proyectos/${response.data.id}`);
             }, 3000);
+            */
         }).catch((err) => {
-            setNotificationMsg(err.response.data.message);
+            console.log(err);
+            setNotificationMsg(err);
             setNotificationType('error');
             setShowNotification(true);
             setBlockUI(false);
@@ -488,9 +500,9 @@ const ProyectoForm = ({}) => {
             setSeccionSelected(false);
         }
         if(recordData) {
-            setIntegrantes(getRecordintegrantesList(recordData.integrante_proyecto));
+            setIntegrantes(getIntegrantesList(recordData));
         } else {
-            setIntegrantes(getRecordintegrantesList([]));
+            setIntegrantes([]);
         }
     }, [selectedPNF, selectedYear, selectedTrayecto]);
 
@@ -697,6 +709,7 @@ const ProyectoForm = ({}) => {
                 </div>
             }
             {
+                /*
                 showFormBtns && 
                 <FormBtns 
                     setUnlockFields={setUnlockFields} 
@@ -706,9 +719,9 @@ const ProyectoForm = ({}) => {
                     deleteApplies={true}
                     handleDeleteBtn={handleDeleteBtn}
                 />
-                /*
-                    <Button variant="contained" color="primary" style={{marginLeft: '10px'}} onClick={(e) => createRecord()}>Crear</Button>
                 */
+                <Button variant="contained" color="primary" style={{marginLeft: '10px'}} onClick={(e) => createRecord()}>Crear</Button>
+
             }
             {
                 reLoad && <Navigate to={`/dashboard/proyectos/${newId}`} />
@@ -716,46 +729,6 @@ const ProyectoForm = ({}) => {
             {
                 redirect && <Navigate to="/dashboard/proyectos" />
             }
-            {
-                recordFound && 
-                <FormContainer>
-                    <div className='d-flex flex-row flex-wrap'>
-                        {
-                            !unlockFields && 
-                            <FormControl sx={{ m: 1, width: '45%' }} variant="outlined">
-                                <TextField id="nombre" label="Nombre" disabled variant="outlined" value={nombre}/>
-                            </FormControl>
-                        }
-                        {
-                            unlockFields && 
-                            <FormControl sx={{ m: 1, width: '45%' }} variant="outlined">
-                                <TextField id="nombre" label="Nombre" variant="outlined" defaultValue={nombre} onChange={(e) => setNombre(e.target.value)}/>
-                            </FormControl>
-                        }
-                        {
-                            !unlockFields && 
-                            <FormControl sx={{ m: 1, width: '45%' }} variant="outlined">
-                                <TextField id="trayecto" label="Trayecto" disabled variant="outlined" value={selectedTrayecto}/>
-                            </FormControl>
-                        }
-                        {
-                            unlockFields &&
-                            <FormControl sx={{ m: 1, width: '45%' }} variant="outlined">
-                                <TextField id="trayecto" select label="Trayecto" defaultValue={selectedTrayecto ? selectedTrayecto : "0"} onChange={(e) => setSelectedTrayecto(e.target.value)}>
-                                    {trayectoVals.map((option) => (
-                                        <MenuItem key={option.value} value={option.value}>
-                                            {option.label}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
-                            </FormControl>
-                        }
-                    </div>
-                </FormContainer>
-            }
-
-            {
-                !recordFound && 
                 <Fragment>
                     <FormContainer>
                         <div className="w-100 text-center">
@@ -763,60 +736,103 @@ const ProyectoForm = ({}) => {
                         </div>
                         <br />
                         <div className='d-flex flex-row flex-wrap'>
-                            <FormControl sx={{ m: 1, width: '95%' }} variant="outlined">
-                                <TextField id="nombre" label="Nombre" variant="outlined" defaultValue={""} onChange={(e) => setNombre(e.target.value)}/>
-                            </FormControl>
+                            {
+                                (recordFound && !unlockFields) && 
+                                <FormControl sx={{ m: 1, width: '95%' }} variant="outlined">
+                                    <TextField id="nombre" label="Nombre" disabled variant="outlined" value={nombre}/>
+                                </FormControl>
+                            }
+                            {
+                                (!recordFound || unlockFields) && 
+                                <FormControl sx={{ m: 1, width: '95%' }} variant="outlined">
+                                    <TextField id="nombre" label="Nombre" variant="outlined" defaultValue={nombre} onChange={(e) => setNombre(e.target.value)}/>
+                                </FormControl>
+                            }
                         </div>
                         <div className='d-flex flex-row flex-wrap'>
-                            <FormControl sx={{ m: 1, width: '22%' }} variant="outlined">
-                                <TextField id="carrera_universitaria" select label="Carrera" defaultValue={""}  onChange={(e) => setSelectedPNF(parseInt(e.target.value))}>
-                                    {pnfs.map((option) => (
-                                        <MenuItem key={option.id} value={option.id}>
-                                            {option.nombre}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
-                            </FormControl>
-                            <FormControl sx={{ m: 1, width: '22%' }} variant="outlined">
-                                <TextField id="year" label="Año" variant="outlined" type="number" defaultValue={(new Date).getFullYear()} onChange={(e) => parseInt(setSelectedYear(e.target.value))}/>
-                            </FormControl>
-                            <FormControl sx={{ m: 1, width: '22%' }} variant="outlined">
-                                <TextField id="trayecto" select label="Trayecto" defaultValue={"0"} onChange={(e) => setSelectedTrayecto(e.target.value)}>
-                                    {trayectoVals.map((option) => (
-                                        <MenuItem key={option.value} value={option.value}>
-                                            {option.label}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
-                            </FormControl>
-                            <FormControl sx={{ m: 1, width: '22%' }} variant="outlined">
-                                <TextField id="seccion" select label="Sección" defaultValue={seccionSelected ? (seccionSelected != false) : ''}  
-                                    onChange={(e) => setSeccionSelected(parseInt(e.target.value))}>
-                                    {secciones.map((option) => (
-                                        <MenuItem key={option.id} value={option.id}>
-                                            {option.nombre}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
-                            </FormControl>
+                            {
+                                (recordFound && !unlockFields) && 
+                                <Fragment>
+                                    <FormControl sx={{ m: 1, width: '22%' }} variant="outlined">
+                                        <TextField id="carrera_universitaria" label="Carrera Universitaria" disabled variant="outlined" value={recordData.seccion.carrera_universitarium.nombre}/>
+                                    </FormControl>
+                                    <FormControl sx={{ m: 1, width: '22%' }} variant="outlined">
+                                        <TextField id="year" label="Año" disabled variant="outlined" value={recordData.seccion.year}/>
+                                    </FormControl>
+                                    <FormControl sx={{ m: 1, width: '22%' }} variant="outlined">
+                                        <TextField id="trayecto" label="Trayecto" disabled variant="outlined" value={recordData.seccion.trayecto}/>
+                                    </FormControl>
+                                    <FormControl sx={{ m: 1, width: '22%' }} variant="outlined">
+                                        <TextField id="seccion" label="Sección" disabled variant="outlined" value={recordData.seccion.nombre}/>
+                                    </FormControl>
+                                </Fragment>
+                            }
+                            {
+                                (!recordFound || unlockFields) && 
+                                <Fragment>
+                                    <FormControl sx={{ m: 1, width: '22%' }} variant="outlined">
+                                        <TextField id="carrera_universitaria" select label="Carrera" defaultValue={""}  onChange={(e) => setSelectedPNF(parseInt(e.target.value))}>
+                                            {pnfs.map((option) => (
+                                                <MenuItem key={option.id} value={option.id}>
+                                                    {option.nombre}
+                                                </MenuItem>
+                                            ))}
+                                        </TextField>
+                                    </FormControl>
+                                    <FormControl sx={{ m: 1, width: '22%' }} variant="outlined">
+                                        <TextField id="year" label="Año" variant="outlined" type="number" defaultValue={(new Date).getFullYear()} onChange={(e) => parseInt(setSelectedYear(e.target.value))}/>
+                                    </FormControl>
+                                    <FormControl sx={{ m: 1, width: '22%' }} variant="outlined">
+                                        <TextField id="trayecto" select label="Trayecto" defaultValue={"0"} onChange={(e) => setSelectedTrayecto(e.target.value)}>
+                                            {trayectoVals.map((option) => (
+                                                <MenuItem key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </MenuItem>
+                                            ))}
+                                        </TextField>
+                                    </FormControl>
+                                    <FormControl sx={{ m: 1, width: '22%' }} variant="outlined">
+                                        <TextField id="seccion" select label="Sección" defaultValue={seccionSelected ? (seccionSelected != false) : ''}  
+                                            onChange={(e) => setSeccionSelected(parseInt(e.target.value))}>
+                                            {secciones.map((option) => (
+                                                <MenuItem key={option.id} value={option.id}>
+                                                    {option.nombre}
+                                                </MenuItem>
+                                            ))}
+                                        </TextField>
+                                    </FormControl>  
+                                </Fragment>
+                            }
                         </div>
                         <div className='d-flex flex-row flex-wrap'>
-                            <FormControl sx={{ m: 1, width: '95%' }} variant="outlined">
-                            <RichTextEditorProvider editor={editor}>
-                                <RichTextField
-                                    controls={
-                                    <MenuControlsContainer>
-                                        <MenuSelectHeading />
-                                        <MenuDivider />
-                                        <MenuButtonBold />
-                                        <MenuButtonItalic />
-                                        <MenuSelectTextAlign/>
-                                        {/* Add more controls of your choosing here */}
-                                    </MenuControlsContainer>
-                                    }
-                                />
-                            </RichTextEditorProvider>
-                            </FormControl>
+                            {
+                                (recordFound && !unlockFields) && 
+                                <Fragment>
+                                    <span style={{color: 'rgba(0, 0, 0, 0.38)', margin: '10px'}}>Descripción</span>
+                                    <FormControl sx={{ m: 1, width: '95%' }} variant="outlined" style={{border: '1px solid rgba(0, 0, 0, 0.38)', padding: '10px', borderRadius: '10px', color: 'rgba(0, 0, 0, 0.38)'}}>
+                                        {parse(descripcion)}
+                                    </FormControl>
+                                </Fragment>
+                            }
+                            {
+                                (!recordFound || unlockFields) && 
+                                <FormControl sx={{ m: 1, width: '95%' }} variant="outlined">
+                                    <RichTextEditorProvider editor={editor}>
+                                        <RichTextField
+                                            controls={
+                                            <MenuControlsContainer>
+                                                <MenuSelectHeading />
+                                                <MenuDivider />
+                                                <MenuButtonBold />
+                                                <MenuButtonItalic />
+                                                <MenuSelectTextAlign/>
+                                                {/* Add more controls of your choosing here */}
+                                            </MenuControlsContainer>
+                                            }
+                                        />
+                                    </RichTextEditorProvider>
+                                </FormControl>
+                            }
                         </div>
                     </FormContainer>
                     <br />
@@ -841,26 +857,46 @@ const ProyectoForm = ({}) => {
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
-                                        {integrantes.map((row, index) => {
-                                                return (
-                                                    <TableRow 
-                                                        className="text-center"
-                                                        key={row.id}
-                                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                                                        >
-                                                            <TableCell align="left" className="text-center">{row.ci_type}-{row.ci}</TableCell>
-                                                            <TableCell align="left" className="text-center">{row.nombre} {row.apellido}</TableCell>
-                                                            <TableCell align="left" className="text-center">
-                                                                <div className="text-center">
-                                                                    <DeleteIcon style={{fontSize:'30px', cursor: 'pointer'}} 
-                                                                    onClick={(e) => removeIntegrante(row.id)}/>
-                                                                </div>
-                                                            </TableCell>
-                                                    </TableRow>
-                                                )
-                                        })}
                                         {
-                                            (seccionSelected || seccionID) && 
+                                            (recordFound && !unlockFields) && 
+                                            integrantes.map((row, index) => {
+                                                    return (
+                                                        <TableRow 
+                                                            className="text-center"
+                                                            key={row.id}
+                                                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                                            >
+                                                                <TableCell align="left" className="text-center">{row.ci_type}-{row.ci}</TableCell>
+                                                                <TableCell align="left" className="text-center">{row.nombre} {row.apellido}</TableCell>
+                                                                <TableCell align="left" className="text-center">
+                                                                </TableCell>
+                                                        </TableRow>
+                                                    )
+                                            })
+                                        }
+                                        {
+                                            (!recordFound || unlockFields) && 
+                                            integrantes.map((row, index) => {
+                                                    return (
+                                                        <TableRow 
+                                                            className="text-center"
+                                                            key={row.id}
+                                                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                                            >
+                                                                <TableCell align="left" className="text-center">{row.ci_type}-{row.ci}</TableCell>
+                                                                <TableCell align="left" className="text-center">{row.nombre} {row.apellido}</TableCell>
+                                                                <TableCell align="left" className="text-center">
+                                                                    <div className="text-center">
+                                                                        <DeleteIcon style={{fontSize:'30px', cursor: 'pointer'}} 
+                                                                        onClick={(e) => removeIntegrante(row.id)}/>
+                                                                    </div>
+                                                                </TableCell>
+                                                        </TableRow>
+                                                    )
+                                            })
+                                        }
+                                        {
+                                            ((!recordFound || unlockFields) && (seccionSelected || seccionID)) && 
                                             <TableRow  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                                                 <TableCell align="left" width="30%">
                                                     <TextField id="student_searchbar" label="Buscar Estudiante" variant="outlined" 
@@ -920,7 +956,35 @@ const ProyectoForm = ({}) => {
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                    {imgs2Add.map((row, index) => {
+                                    {
+                                        (recordFound && !unlockFields) && 
+                                        imgs.map((row) => {
+                                            const imgUrl = `${consts.backend_base_url}/api/files/getFile/${row.url}`;
+                                            return (
+                                            <TableRow 
+                                                    className="text-center"
+                                                    key={row.position}
+                                                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                                >
+                                                    <TableCell align="left" width="20%">
+                                                        <img src={imgUrl} alt={`img-${row.position}`} style={{width:'60%'}}  />
+                                                    </TableCell>
+                                                    <TableCell align="left" width="30%">
+                                                        <TextField label="Nombre" variant="outlined" disabled value={row.nombre} sx={{ m: 1, width: '100%' }}/>
+                                                    </TableCell>
+                                                    <TableCell align="left" width="40%">
+                                                        <TextField label="Descripción" variant="outlined" disabled value={row.descripcion}  sx={{ m: 1, width: '100%' }}/>
+                                                    </TableCell>
+                                                    <TableCell align="left" width="10%">
+                                                        <a href={imgUrl} target="_blank">Ver</a>
+                                                    </TableCell>
+                                                </TableRow>
+                                            )
+                                        })
+                                    }
+                                    {
+                                        (!recordFound || unlockFields) && 
+                                        imgs2Add.map((row, index) => {
                                             return (
                                                 <TableRow 
                                                     className="text-center"
@@ -935,7 +999,7 @@ const ProyectoForm = ({}) => {
                                                              sx={{ m: 1, width: '100%' }}
                                                             onChange={(e) => changeImgVal("nombre", e.target.value, row.position, true)}/>
                                                     </TableCell>
-                                                    <TableCell align="left" width="50%">
+                                                    <TableCell align="left" width="40%">
                                                         <TextField label="Descripción" variant="outlined" defaultValue={row.descripcion} 
                                                              sx={{ m: 1, width: '100%' }}
                                                             onChange={(e) => changeImgVal("descripcion", e.target.value, row.position, true)}/>
@@ -949,9 +1013,9 @@ const ProyectoForm = ({}) => {
                                                     </TableCell>
                                                 </TableRow>
                                             )
-                                    })}
+                                        })}
                                     {
-                                        
+                                        (!recordFound || unlockFields) && 
                                         <TableRow  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                                             <TableCell align="left" width="20%">
                                                 <Button component="label" color="secondary" variant="contained" startIcon={<CloudUploadIcon />}>
@@ -962,7 +1026,7 @@ const ProyectoForm = ({}) => {
                                             <TableCell align="left" width="30%">
                                                 <TextField id="newImageName" sx={{ m: 1, width: '100%' }} label="Nombre" variant="outlined" defaultValue={""} onChange={(e) => setNewImageName(e.target.value)}/>
                                             </TableCell>
-                                            <TableCell align="left" width="50%">
+                                            <TableCell align="left" width="40%">
                                                 <TextField id="newImageDescription" sx={{ m: 1, width: '100%' }} label="Descripción" variant="outlined" defaultValue={""} onChange={(e) => setNewImageDescription(e.target.value)}/>
                                             </TableCell>
                                             <TableCell align="left" width="10%">
@@ -1002,9 +1066,12 @@ const ProyectoForm = ({}) => {
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                    {docs2Add.map((row, index) => {
+                                    {
+                                        (recordFound && !unlockFields) && 
+                                        docs.map((row) => {
+                                            const docUrl = `${consts.backend_base_url}/api/files/getFile/${row.url}`;
                                             return (
-                                                <TableRow 
+                                            <TableRow 
                                                     className="text-center"
                                                     key={row.position}
                                                     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
@@ -1012,27 +1079,51 @@ const ProyectoForm = ({}) => {
                                                     <TableCell align="left" width="20%">
                                                         <div className='text-center'>
                                                             <InsertDriveFileIcon style={{fontSize:'30px', cursor: 'pointer', margin: '0 auto'}}/>
-                                                            <br></br>
-                                                            <span style={{fontSize:'10px'}}>{row.file_name}</span>
                                                         </div>
                                                     </TableCell>
                                                     <TableCell align="left" width="60%">
-                                                        <TextField label="Nombre" variant="outlined" defaultValue={row.nombre} 
-                                                             sx={{ m: 1, width: '100%' }}
-                                                            onChange={(e) => changeDocName(e.target.value, row.position, true)}/>
+                                                        <TextField label="Nombre" variant="outlined" disabled value={row.nombre} sx={{ m: 1, width: '100%' }}/>
                                                     </TableCell>
                                                     <TableCell align="left" width="20%">
-                                                        <div className='text-center'>
-                                                            <DeleteIcon style={{fontSize:'30px', cursor: 'pointer', margin: '0 auto'}} 
-                                                                onClick={(e) => deleteDoc(row.position, true)}
-                                                            />
-                                                        </div>
+                                                        <a href={docUrl} target="_blank">Ver</a>
                                                     </TableCell>
                                                 </TableRow>
                                             )
-                                    })}
+                                        })
+                                    }
                                     {
-                                        
+                                        (!recordFound || unlockFields) && 
+                                        docs2Add.map((row, index) => {
+                                                return (
+                                                    <TableRow 
+                                                        className="text-center"
+                                                        key={row.position}
+                                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                                    >
+                                                        <TableCell align="left" width="20%">
+                                                            <div className='text-center'>
+                                                                <InsertDriveFileIcon style={{fontSize:'30px', cursor: 'pointer', margin: '0 auto'}}/>
+                                                                <br></br>
+                                                                <span style={{fontSize:'10px'}}>{row.file_name}</span>
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell align="left" width="60%">
+                                                            <TextField label="Nombre" variant="outlined" defaultValue={row.nombre} 
+                                                                sx={{ m: 1, width: '100%' }}
+                                                                onChange={(e) => changeDocName(e.target.value, row.position, true)}/>
+                                                        </TableCell>
+                                                        <TableCell align="left" width="20%">
+                                                            <div className='text-center'>
+                                                                <DeleteIcon style={{fontSize:'30px', cursor: 'pointer', margin: '0 auto'}} 
+                                                                    onClick={(e) => deleteDoc(row.position, true)}
+                                                                />
+                                                            </div>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                )
+                                        })}
+                                    {
+                                        (!recordFound || unlockFields) && 
                                         <TableRow  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                                             <TableCell align="left" width="20%">
                                                 <Button component="label" color="secondary" variant="contained" startIcon={<CloudUploadIcon />}>
@@ -1058,7 +1149,6 @@ const ProyectoForm = ({}) => {
                         </Paper>
                     </FormContainer>
                 </Fragment>
-            }
             {
                 showDeleteDialog &&
                 <DeleteDialog showDeleteDialog={showDeleteDialog} setShowDeleteDialog={setShowDeleteDialog} handleDeleteConfirm={handleDeleteConfirm}></DeleteDialog>

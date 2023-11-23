@@ -19,6 +19,7 @@
     "@tiptap/pm": "^2.1.12",
     "@tiptap/react": "^2.1.12",
     "@tiptap/starter-kit": "^2.1.12",
+    "html-react-parser": "^5.0.6",
     "mui-tiptap": "^1.8.5",
     "react": "^18.2.0",
     "react-audio-voice-recorder": "^2.1.2",
