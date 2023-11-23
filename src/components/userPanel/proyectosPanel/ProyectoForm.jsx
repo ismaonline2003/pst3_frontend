@@ -420,13 +420,11 @@ const ProyectoForm = ({}) => {
             setBlockUI(false);
             setRecordFound(true);
             setUnlockFields(false);
-            /*
+            setNewId(response.data.id);
             setTimeout(() => {
-                navigate(`/dashboard/proyectos/${response.data.id}`);
+                setReload(true);
             }, 3000);
-            */
         }).catch((err) => {
-            console.log(err);
             setNotificationMsg(err);
             setNotificationType('error');
             setShowNotification(true);
@@ -709,7 +707,6 @@ const ProyectoForm = ({}) => {
                 </div>
             }
             {
-                /*
                 showFormBtns && 
                 <FormBtns 
                     setUnlockFields={setUnlockFields} 
@@ -719,8 +716,7 @@ const ProyectoForm = ({}) => {
                     deleteApplies={true}
                     handleDeleteBtn={handleDeleteBtn}
                 />
-                */
-                <Button variant="contained" color="primary" style={{marginLeft: '10px'}} onClick={(e) => createRecord()}>Crear</Button>
+                /*<Button variant="contained" color="primary" style={{marginLeft: '10px'}} onClick={(e) => createRecord()}>Crear</Button>*/
 
             }
             {
