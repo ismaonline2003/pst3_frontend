@@ -127,6 +127,10 @@ const ProyectoForm = ({}) => {
     const StyledH1 = styledComponents.dahsboardPanelh1;
     const StyledH2 = styledComponents.dahsboardPanelh2;
 
+    if(editor) {
+        editor.setEditable(descripcion);
+    }
+
     const getImgsList = (data) => {
         let imgsList = [];
         data.proyecto_archivos.filter(e => e.tipo == 'IMG').map((item) => {
@@ -299,14 +303,19 @@ const ProyectoForm = ({}) => {
         const config = {headers:{ authorization: token}};
         let url = `${consts.backend_base_url}/api/proyecto/${id}`;
         axios.get(url, config).then((response) => {
+            console.log(response);
             //setear campos de la base de datos
-            setRecordData(response.data);
+            setProyectoInfo(response.data);
+            searchPNFS();
             setBlockUI(false);
+            setRecordFound(true);
+            setUnlockFields(false);
         }).catch((err) => {
-          setNotificationMsg("Ocurrió un error inesperado... Intentelo mas tarde.");
-          setNotificationType('error');
-          setShowNotification(true);
-          setBlockUI(false);
+            console.log(err);
+            setNotificationMsg("Ocurrió un error inesperado... Intentelo mas tarde.");
+            setNotificationType('error');
+            setShowNotification(true);
+            setBlockUI(false);
         });
     }
 
@@ -445,13 +454,9 @@ const ProyectoForm = ({}) => {
         return confirmarBtnReturn;
     }
 
-    const _resetRecordData = () => {
-       //resetear los campos de la base de datos
-    }
-
     const handleCancelarBtn = (e) => {
         if(id != '0') {
-            _resetRecordData();
+            setProyectoInfo(recordData);
         } else {
             setRedirect(true);
         }
