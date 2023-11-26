@@ -18,7 +18,8 @@ import {
   MenuSelectHeading,
   MenuSelectTextAlign,
   RichTextEditorProvider,
-  RichTextField
+  RichTextField,
+  RichTextReadOnly
 } from "mui-tiptap";
 
 //icons
@@ -34,6 +35,16 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+
+//Images
+import Box from '@mui/material/Box';
+import ImageList from '@mui/material/ImageList';
+import ImageListItem from '@mui/material/ImageListItem';
+import ImageListItemBar from '@mui/material/ImageListItemBar';
+import ListSubheader from '@mui/material/ListSubheader';
+import IconButton from '@mui/material/IconButton';
+import InfoIcon from '@mui/icons-material/Info';
+
 
 //own
 import AppContext from '../../../context/App';
@@ -114,6 +125,10 @@ const ProyectoForm = ({}) => {
     const [ newDocName, setNewDocName ] = useState('');
     const [ newImageDescription, setNewImageDescription] = useState('');
     const [ docs2Add, setDocs2Add ] = useState([]);
+    const [ defaultPnfId, setDefaultPnfId] = useState("");
+    const [ defaultYear, setDefaultYear] = useState((new Date()).getFullYear());
+    const [ defaultTrayecto, setDefaultTrayecto] = useState("0");
+    const [ defaultSeccion, setDefaultSeccion] = useState("");
 
 
     //form common fields
@@ -176,6 +191,21 @@ const ProyectoForm = ({}) => {
         return integrantesList
     }
 
+    const setDefaultSeccionValues = () => {
+        if(recordFound) {
+            setDefaultPnfId(recordData.seccion.carrera_universitarium.id);
+            setDefaultYear(recordData.seccion.year);
+            setDefaultTrayecto(recordData.seccion.trayecto);
+            setDefaultSeccion(recordData.seccion.id);
+        }
+        if(!recordFound) {
+            setDefaultPnfId("");
+            setDefaultYear((new Date()).getFullYear());
+            setDefaultTrayecto("0");
+            setDefaultSeccion("");
+        }
+    }
+
     const setProyectoInfo = (data) => {
         setRecordData(data);
         setNombre(data.nombre);
@@ -186,10 +216,10 @@ const ProyectoForm = ({}) => {
         setIntegrantes(getIntegrantesList(data));
         //
         setPnfs([]);
-        setSelectedPNF(false);
-        setSelectedTrayecto(data.seccion.trayecto);
         setSecciones([]);
-        setSeccionSelected(false);
+        setSelectedPNF(data.seccion.carrera_universitarium.id);
+        setSelectedTrayecto(data.seccion.trayecto);
+        setSeccionSelected(data.seccion.id);
         setSelectedYear(data.seccion.year);
         setImgsDeleted([]);
         setImgs2Add([]);
@@ -238,6 +268,7 @@ const ProyectoForm = ({}) => {
         let url = `${consts.backend_base_url}/api/carrera_universitaria`;
         axios.get(url, config).then((response) => {
             setPnfs(response.data);
+            setDefaultSeccionValues();
         }).catch((err) => {
             setNotificationMsg("Ocurrió un error inesperado... Intentelo mas tarde.");
             setNotificationType('error');
@@ -319,12 +350,15 @@ const ProyectoForm = ({}) => {
         });
     }
 
+    //integrantes in update
+
     const getIntegrantesDeleted = () => {
         let arrReturn = [];
-        recordData.integrante_proyecto.map((item) => {
+        console.log(recordData);
+        recordData.inscripcions.map((item) => {
             let filter = integrantes.filter(integranteRecord => integranteRecord.id == item.estudiante_id);
             if(filter.length == 0) {
-                arrReturn.push(filter[0].id);
+                arrReturn.push({id: item.integrante_proyecto.id});
             }
         });
         return arrReturn;
@@ -333,41 +367,140 @@ const ProyectoForm = ({}) => {
     const getAddedIntegrantes = () => {
         let arrReturn = [];
         integrantes.map((item) => {
-            let filter = recordData.integrante_proyecto.filter(integranteRecord => integranteRecord.estudiante_id == item.id);
+            let filter = recordData.inscripcions.filter(integranteRecord => integranteRecord.estudiante_id == item.id);
             if(filter.length == 0) {
-                arrReturn.push(filter[0].estudiante_id);
+                arrReturn.push({
+                    id: item.id,
+                    ci_type: item.ci_type,
+                    ci: item.ci,
+                    nombre: item.name,
+                    apellido: item.lastname
+                })
             }
         });
         return arrReturn;
     }
 
+    //imgs and docs in update methods
+
+    const getAddedFiles = (formData) => {
+        let filesObj = {imgs:[], docs: [], formData: {}};
+        let a = 0;
+
+        for(let i = 0; i < imgs2Add.length; i++) {
+            let item = imgs2Add[i];
+            formData.append(`files`, item.img);
+            filesObj.imgs.push({nombre: item.nombre, descripcion: item.descripcion, position: item.position, type: "img", index: a});
+            a += 1;
+        }
+
+        for(let i = 0; i < docs2Add.length; i++) {
+            let item = docs2Add[i];
+            formData.append(`files`, item.doc);
+            filesObj.docs.push({nombre: item.nombre, position: item.position, type: "doc", index: a});
+            a += 1;
+        }
+
+        filesObj.formData = formData;
+
+        return filesObj;
+    }
+
+    const getImgsDeleted = () => {
+        let imgsList = [];
+        recordData.proyecto_archivos.filter(item => item.tipo == 'IMG').map((item) => {
+            let itemSearch = imgs.filter(e => e.id == item.id);
+            if(itemSearch.length == 0) {
+                imgsList.push({id: item.id});
+            }
+        })
+        return imgsList;
+    }
+
+    const getImgsUpdated = () => {
+        let imgsList = [];
+        recordData.proyecto_archivos.filter(item => item.tipo == 'IMG').map((item) => {
+            let itemSearch = imgs.filter(e => e.id == item.id);
+            if(itemSearch.length > 0) {
+                imgsList.push({
+                    id: itemSearch[0].id,
+                    nombre: itemSearch[0].nombre,
+                    descripcion: itemSearch[0].descripcion
+                });
+            }
+        })
+        return imgsList;
+    }
+
+    const getDocsDeleted = () => {
+        let docsList = [];
+        recordData.proyecto_archivos.filter(item => item.tipo == 'DOC').map((item) => {
+            let itemSearch = docs.filter(e => e.id == item.id);
+            if(itemSearch.length == 0) {
+                docsList.push({id: item.id});
+            }
+        });
+        return docsList;
+    }
+
+    const getDocsUpdated = () => {
+        let docsList = [];
+        recordData.proyecto_archivos.filter(item => item.tipo == 'DOC').map((item) => {
+            let itemSearch = docs.filter(e => e.id == item.id);
+            if(itemSearch.length > 0) {
+                docsList.push({
+                    id: itemSearch[0].id,
+                    nombre: itemSearch[0].nombre
+                });
+            }
+        });
+        return docsList;
+    }
+
     const updateRecord = () => {
         setBlockUI(true);
         const token = localStorage.getItem('token');
-        const formData = new FormData();
+        let formData = new FormData();
+        const addedFiles = getAddedFiles(formData);
+        formData = addedFiles.formData;
+
+        //integrnates
         const integrantesDeleted = getIntegrantesDeleted();
         const AddedIntegrantes = getAddedIntegrantes();
+        //imgs
+        const addedImgs = addedFiles.imgs;
+        const imgsDeleted = getImgsDeleted();
+        const imgsUpdated = getImgsUpdated();
+        //docs
+        const addedDocs = addedFiles.docs;
+        const docsDeleted = getDocsDeleted();
+        const docsUpdated = getDocsUpdated();
+
         let body = {
+            id: id,
             id_seccion: seccionSelected,
             nombre: nombre,
             descripcion: editor.getHTML(),
+            //integrantes
             addedIntegrantes: AddedIntegrantes,
             deletedIntegrantes: integrantesDeleted,
-            deletedImgs: imgsDeleted, //solo van a ir los ids de la tabla (proyecto - archivo)
-            deletedDocs: docsDeleted //solo van a ir los ids de la tabla (proyecto - archivo)
+            //imgs
+            addedImgs: addedImgs,
+            imgsUpdated: imgsUpdated,
+            deletedImgs: imgsDeleted,
+            //docs
+            addedDocs:addedDocs,
+            deletedDocs: docsDeleted,
+            docsUpdated:docsUpdated
         };
+
         formData.append('data', JSON.stringify(body));
         if(miniatura != false) {
             formData.append('miniatura', miniatura);
         }
-        imgs2Add.map((item) => {
-            formData.append('img', item);
-        });
-        docsUpdated.map((item) => {
-            formData.append('docs', item);
-        });
+        console.log(body);
         const config = {headers:{'authorization': token, 'Content-Type': 'multipart/form-data'}};
-        let url = `${consts.backend_base_url}/api/proyecto`;
+        let url = `${consts.backend_base_url}/api/proyecto/${id}`;
         axios.put(url, formData, config).then((response) => {
             //update db fields
             setBlockUI(false);
@@ -422,6 +555,7 @@ const ProyectoForm = ({}) => {
         let url = `${consts.backend_base_url}/api/proyecto`;
         axios.post(url, formData, config).then((response) => {
             setProyectoInfo(response.data);
+            setDefaultSeccionValues();
             setNotificationMsg("El proyecto fue creado exitosamente!!");
             setNotificationType('success');
             setShowNotification(true);
@@ -456,7 +590,10 @@ const ProyectoForm = ({}) => {
 
     const handleCancelarBtn = (e) => {
         if(id != '0') {
+            let pnfsCopy = [...pnfs];
             setProyectoInfo(recordData);
+            setPnfs(pnfsCopy);
+            setDefaultSeccionValues();
         } else {
             setRedirect(true);
         }
@@ -604,6 +741,7 @@ const ProyectoForm = ({}) => {
                     imgsArr[index][key] = val;
                 }
             });
+            console.log(imgsArr);
             setImgs(imgsArr);
         }
     }
@@ -697,6 +835,22 @@ const ProyectoForm = ({}) => {
         }
     }
 
+    useEffect(() => {
+    if (!editor || editor.isDestroyed) {
+        return;
+    }
+    if (!editor.isFocused || !editor.isEditable) {
+        queueMicrotask(() => {
+        const currentSelection = editor.state.selection;
+        editor
+            .chain()
+            .setContent(descripcion)
+            .setTextSelection(currentSelection)
+            .run();
+        });
+    }
+    }, [descripcion, editor, editor?.isEditable, editor?.isFocused]);
+
     return (
         <div className='m-4'>
             {
@@ -770,39 +924,40 @@ const ProyectoForm = ({}) => {
                             }
                             {
                                 (!recordFound || unlockFields) && 
-                                <Fragment>
-                                    <FormControl sx={{ m: 1, width: '22%' }} variant="outlined">
-                                        <TextField id="carrera_universitaria" select label="Carrera" defaultValue={""}  onChange={(e) => setSelectedPNF(parseInt(e.target.value))}>
-                                            {pnfs.map((option) => (
-                                                <MenuItem key={option.id} value={option.id}>
-                                                    {option.nombre}
-                                                </MenuItem>
-                                            ))}
-                                        </TextField>
-                                    </FormControl>
-                                    <FormControl sx={{ m: 1, width: '22%' }} variant="outlined">
-                                        <TextField id="year" label="Año" variant="outlined" type="number" defaultValue={(new Date).getFullYear()} onChange={(e) => parseInt(setSelectedYear(e.target.value))}/>
-                                    </FormControl>
-                                    <FormControl sx={{ m: 1, width: '22%' }} variant="outlined">
-                                        <TextField id="trayecto" select label="Trayecto" defaultValue={"0"} onChange={(e) => setSelectedTrayecto(e.target.value)}>
-                                            {trayectoVals.map((option) => (
-                                                <MenuItem key={option.value} value={option.value}>
-                                                    {option.label}
-                                                </MenuItem>
-                                            ))}
-                                        </TextField>
-                                    </FormControl>
-                                    <FormControl sx={{ m: 1, width: '22%' }} variant="outlined">
-                                        <TextField id="seccion" select label="Sección" defaultValue={seccionSelected ? (seccionSelected != false) : ''}  
-                                            onChange={(e) => setSeccionSelected(parseInt(e.target.value))}>
-                                            {secciones.map((option) => (
-                                                <MenuItem key={option.id} value={option.id}>
-                                                    {option.nombre}
-                                                </MenuItem>
-                                            ))}
-                                        </TextField>
-                                    </FormControl>  
-                                </Fragment>
+                                        <Fragment>
+                                            {/*getSeccionDefaultVals()*/}
+                                            <FormControl sx={{ m: 1, width: '22%' }} variant="outlined">
+                                                <TextField id="carrera_universitaria" select label="Carrera" defaultValue={defaultPnfId}  onChange={(e) => setSelectedPNF(parseInt(e.target.value))}>
+                                                    {pnfs.map((option) => (
+                                                        <MenuItem key={option.id} value={option.id}>
+                                                            {option.nombre}
+                                                        </MenuItem>
+                                                    ))}
+                                                </TextField>
+                                            </FormControl>
+                                            <FormControl sx={{ m: 1, width: '22%' }} variant="outlined">
+                                                <TextField id="year" label="Año" variant="outlined" type="number" defaultValue={defaultYear} onChange={(e) => parseInt(setSelectedYear(e.target.value))}/>
+                                            </FormControl>
+                                            <FormControl sx={{ m: 1, width: '22%' }} variant="outlined">
+                                                <TextField id="trayecto" select label="Trayecto" defaultValue={defaultTrayecto} onChange={(e) => setSelectedTrayecto(e.target.value)}>
+                                                    {trayectoVals.map((option) => (
+                                                        <MenuItem key={option.value} value={option.value}>
+                                                            {option.label}
+                                                        </MenuItem>
+                                                    ))}
+                                                </TextField>
+                                            </FormControl>
+                                            <FormControl sx={{ m: 1, width: '22%' }} variant="outlined">
+                                                <TextField id="seccion" select label="Sección" defaultValue={defaultSeccion}  
+                                                    onChange={(e) => setSeccionSelected(parseInt(e.target.value))}>
+                                                    {secciones.map((option) => (
+                                                        <MenuItem key={option.id} value={option.id}>
+                                                            {option.nombre}
+                                                        </MenuItem>
+                                                    ))}
+                                                </TextField>
+                                            </FormControl>  
+                                        </Fragment>
                             }
                         </div>
                         <div className='d-flex flex-row flex-wrap'>
@@ -811,7 +966,7 @@ const ProyectoForm = ({}) => {
                                 <Fragment>
                                     <span style={{color: 'rgba(0, 0, 0, 0.38)', margin: '10px'}}>Descripción</span>
                                     <FormControl sx={{ m: 1, width: '95%' }} variant="outlined" style={{border: '1px solid rgba(0, 0, 0, 0.38)', padding: '10px', borderRadius: '10px', color: 'rgba(0, 0, 0, 0.38)'}}>
-                                        {parse(descripcion)}
+                                        <RichTextReadOnly content={descripcion} extensions={[StarterKit]} />
                                     </FormControl>
                                 </Fragment>
                             }
@@ -937,112 +1092,157 @@ const ProyectoForm = ({}) => {
                             <StyledH2>Imagenes del Proyecto</StyledH2>
                         </div>
                         <br />
-                        <Paper sx={{ width: '100%', mb: 2 }}>
-                            <TableContainer component={Paper}>
-                                <Table sx={{ minWidth: '100%' }} aria-label="Proyectos" >
-                                    <TableHead className="bg-neutral-800 ">
-                                        <TableRow>
-                                            <TableCell align="left" width="10%">
-                                                <span className='text-cyan-50'>Imagen</span>
-                                            </TableCell>
-                                            <TableCell align="left" width="30%">
-                                                <span className='text-cyan-50'>Nombre</span>
-                                            </TableCell>
-                                            <TableCell align="left" width="40%">
-                                                <span className='text-cyan-50'>Descripción</span>
-                                            </TableCell>
-                                            <TableCell align="left" width="10%">
-                                                <span className='text-cyan-50'>Acción</span>
-                                            </TableCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
+                        {
+                            unlockFields && 
+                            <Paper sx={{ width: '100%', mb: 2 }}>
+                                <TableContainer component={Paper}>
+                                    <Table sx={{ minWidth: '100%' }} aria-label="Proyectos" >
+                                        <TableHead className="bg-neutral-800 ">
+                                            <TableRow>
+                                                <TableCell align="left" width="10%">
+                                                    <span className='text-cyan-50'>Imagen</span>
+                                                </TableCell>
+                                                <TableCell align="left" width="30%">
+                                                    <span className='text-cyan-50'>Nombre</span>
+                                                </TableCell>
+                                                <TableCell align="left" width="40%">
+                                                    <span className='text-cyan-50'>Descripción</span>
+                                                </TableCell>
+                                                <TableCell align="left" width="10%">
+                                                    <span className='text-cyan-50'>Acción</span>
+                                                </TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                        {
+                                            recordFound && 
+                                            imgs.map((row) => {
+                                                const imgUrl = `${consts.backend_base_url}/api/files/getFile/${row.url}`;
+                                                return (
+                                                <TableRow 
+                                                        className="text-center"
+                                                        key={row.id}
+                                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                                    >
+                                                        <TableCell align="left" width="20%">
+                                                            <img src={imgUrl} alt={`img-${row.position}`} style={{width:'60%'}}  />
+                                                        </TableCell>
+                                                        <TableCell align="left" width="30%">
+                                                            <TextField label="Nombre" variant="outlined" defaultValue={row.nombre}
+                                                                sx={{ m: 1, width: '100%' }}
+                                                                onChange={(e) => changeImgVal("nombre", e.target.value, row.id, false)}/>
+                                                        </TableCell>
+                                                        <TableCell align="left" width="40%">
+                                                            <TextField label="Descripción" variant="outlined" defaultValue={row.descripcion} 
+                                                                    sx={{ m: 1, width: '100%' }}
+                                                                    onChange={(e) => changeImgVal("descripcion", e.target.value, row.id, false)}/>
+                                                        </TableCell>
+                                                        <TableCell align="left" width="10%">
+                                                            <div className='text-center'>
+                                                                <DeleteIcon style={{fontSize:'30px', cursor: 'pointer', margin: '0 auto'}} 
+                                                                    onClick={(e) => deleteImg(row.id, false)}
+                                                                />
+                                                            </div>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                )
+                                            })
+                                        }
+                                        {
+                                            imgs2Add.map((row, index) => {
+                                                return (
+                                                    <TableRow 
+                                                        className="text-center"
+                                                        key={row.position}
+                                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                                    >
+                                                        <TableCell align="left" width="20%">
+                                                            <img src={row.url} alt={`img-${row.position}`} style={{width:'60%'}}  />
+                                                        </TableCell>
+                                                        <TableCell align="left" width="30%">
+                                                            <TextField label="Nombre" variant="outlined" defaultValue={row.nombre} 
+                                                                sx={{ m: 1, width: '100%' }}
+                                                                onChange={(e) => changeImgVal("nombre", e.target.value, row.position, true)}/>
+                                                        </TableCell>
+                                                        <TableCell align="left" width="40%">
+                                                            <TextField label="Descripción" variant="outlined" defaultValue={row.descripcion} 
+                                                                sx={{ m: 1, width: '100%' }}
+                                                                onChange={(e) => changeImgVal("descripcion", e.target.value, row.position, true)}/>
+                                                        </TableCell>
+                                                        <TableCell align="left" width="10%">
+                                                            <div className='text-center'>
+                                                                <DeleteIcon style={{fontSize:'30px', cursor: 'pointer', margin: '0 auto'}} 
+                                                                    onClick={(e) => deleteImg(row.position, true)}
+                                                                />
+                                                            </div>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                )
+                                            })}
+                                        {
+                                            <TableRow  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                                <TableCell align="left" width="20%">
+                                                    <Button component="label" color="secondary" variant="contained" startIcon={<CloudUploadIcon />}>
+                                                        Cargar
+                                                        <input type="file" id="img_to_upload" ref={newImage} hidden/>
+                                                    </Button>
+                                                </TableCell>
+                                                <TableCell align="left" width="30%">
+                                                    <TextField id="newImageName" sx={{ m: 1, width: '100%' }} label="Nombre" variant="outlined" defaultValue={""} onChange={(e) => setNewImageName(e.target.value)}/>
+                                                </TableCell>
+                                                <TableCell align="left" width="40%">
+                                                    <TextField id="newImageDescription" sx={{ m: 1, width: '100%' }} label="Descripción" variant="outlined" defaultValue={""} onChange={(e) => setNewImageDescription(e.target.value)}/>
+                                                </TableCell>
+                                                <TableCell align="left" width="10%">
+                                                    <Button variant="contained" color="primary" style={{marginLeft: '10px'}} 
+                                                        onClick={(e) => addNewImage()}
+                                                    >
+                                                        Agregar
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        }
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                            </Paper>
+                        }
+                        {
+                            (!unlockFields && recordFound) && 
+                                <ImageList sx={{ width: '95%', height: 500 }}>
+                                    <ImageListItem key="Subheader" cols={2}>
+                                        <ListSubheader component="div">Imagenes</ListSubheader>
+                                    </ImageListItem>
                                     {
                                         (recordFound && !unlockFields) && 
-                                        imgs.map((row) => {
-                                            const imgUrl = `${consts.backend_base_url}/api/files/getFile/${row.url}`;
+                                            imgs.map((item) => {
+                                            const imgUrl = `${consts.backend_base_url}/api/files/getFile/${item.url}`;
                                             return (
-                                            <TableRow 
-                                                    className="text-center"
-                                                    key={row.position}
-                                                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                                                >
-                                                    <TableCell align="left" width="20%">
-                                                        <img src={imgUrl} alt={`img-${row.position}`} style={{width:'60%'}}  />
-                                                    </TableCell>
-                                                    <TableCell align="left" width="30%">
-                                                        <TextField label="Nombre" variant="outlined" disabled value={row.nombre} sx={{ m: 1, width: '100%' }}/>
-                                                    </TableCell>
-                                                    <TableCell align="left" width="40%">
-                                                        <TextField label="Descripción" variant="outlined" disabled value={row.descripcion}  sx={{ m: 1, width: '100%' }}/>
-                                                    </TableCell>
-                                                    <TableCell align="left" width="10%">
-                                                        <a href={imgUrl} target="_blank">Ver</a>
-                                                    </TableCell>
-                                                </TableRow>
+                                                <ImageListItem key={imgUrl}>
+                                                <img
+                                                    srcSet={`${imgUrl}?w=248&fit=crop&auto=format&dpr=2 2x`}
+                                                    src={`${imgUrl}?w=248&fit=crop&auto=format`}
+                                                    alt={item.nombre}
+                                                    loading="lazy"
+                                                />
+                                                <ImageListItemBar
+                                                    title={item.nombre}
+                                                    subtitle={""}
+                                                    actionIcon={
+                                                    <IconButton
+                                                        sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
+                                                        aria-label={`info about ${item.nombre}`}
+                                                    >
+                                                        <InfoIcon />
+                                                    </IconButton>
+                                                    }
+                                                />
+                                                </ImageListItem>
                                             )
                                         })
                                     }
-                                    {
-                                        (!recordFound || unlockFields) && 
-                                        imgs2Add.map((row, index) => {
-                                            return (
-                                                <TableRow 
-                                                    className="text-center"
-                                                    key={row.position}
-                                                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                                                >
-                                                    <TableCell align="left" width="20%">
-                                                        <img src={row.url} alt={`img-${row.position}`} style={{width:'60%'}}  />
-                                                    </TableCell>
-                                                    <TableCell align="left" width="30%">
-                                                        <TextField label="Nombre" variant="outlined" defaultValue={row.nombre} 
-                                                             sx={{ m: 1, width: '100%' }}
-                                                            onChange={(e) => changeImgVal("nombre", e.target.value, row.position, true)}/>
-                                                    </TableCell>
-                                                    <TableCell align="left" width="40%">
-                                                        <TextField label="Descripción" variant="outlined" defaultValue={row.descripcion} 
-                                                             sx={{ m: 1, width: '100%' }}
-                                                            onChange={(e) => changeImgVal("descripcion", e.target.value, row.position, true)}/>
-                                                    </TableCell>
-                                                    <TableCell align="left" width="10%">
-                                                        <div className='text-center'>
-                                                            <DeleteIcon style={{fontSize:'30px', cursor: 'pointer', margin: '0 auto'}} 
-                                                                onClick={(e) => deleteImg(row.position, true)}
-                                                            />
-                                                        </div>
-                                                    </TableCell>
-                                                </TableRow>
-                                            )
-                                        })}
-                                    {
-                                        (!recordFound || unlockFields) && 
-                                        <TableRow  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                                            <TableCell align="left" width="20%">
-                                                <Button component="label" color="secondary" variant="contained" startIcon={<CloudUploadIcon />}>
-                                                    Cargar
-                                                    <input type="file" id="img_to_upload" ref={newImage} hidden/>
-                                                </Button>
-                                            </TableCell>
-                                            <TableCell align="left" width="30%">
-                                                <TextField id="newImageName" sx={{ m: 1, width: '100%' }} label="Nombre" variant="outlined" defaultValue={""} onChange={(e) => setNewImageName(e.target.value)}/>
-                                            </TableCell>
-                                            <TableCell align="left" width="40%">
-                                                <TextField id="newImageDescription" sx={{ m: 1, width: '100%' }} label="Descripción" variant="outlined" defaultValue={""} onChange={(e) => setNewImageDescription(e.target.value)}/>
-                                            </TableCell>
-                                            <TableCell align="left" width="10%">
-                                                <Button variant="contained" color="primary" style={{marginLeft: '10px'}} 
-                                                    onClick={(e) => addNewImage()}
-                                                >
-                                                    Agregar
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    }
-                                    </TableBody>
-                                </Table>
-                            </TableContainer>
-                        </Paper>
+                                </ImageList>
+                        }
                     </FormContainer>
                     <br />
                     <FormContainer>
@@ -1083,10 +1283,44 @@ const ProyectoForm = ({}) => {
                                                         </div>
                                                     </TableCell>
                                                     <TableCell align="left" width="60%">
-                                                        <TextField label="Nombre" variant="outlined" disabled value={row.nombre} sx={{ m: 1, width: '100%' }}/>
+                                                        <p>{row.nombre}</p>
                                                     </TableCell>
                                                     <TableCell align="left" width="20%">
                                                         <a href={docUrl} target="_blank">Ver</a>
+                                                    </TableCell>
+                                                </TableRow>
+                                            )
+                                        })
+                                    }
+
+                                    {
+                                        unlockFields && 
+                                        docs.map((row) => {
+                                            const docUrl = `${consts.backend_base_url}/api/files/getFile/${row.url}`;
+                                            return (
+                                            <TableRow 
+                                                    className="text-center"
+                                                    key={row.position}
+                                                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                                >
+                                                    <TableCell align="left" width="20%">
+                                                        <div className='text-center'>
+                                                            <InsertDriveFileIcon style={{fontSize:'30px', cursor: 'pointer', margin: '0 auto'}}/>
+                                                            <br />
+                                                            <a href={docUrl} target="_blank">Ver</a>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell align="left" width="60%">
+                                                        <TextField label="Nombre" variant="outlined" defaultValue={row.nombre} 
+                                                            sx={{ m: 1, width: '100%' }}
+                                                            onChange={(e) => changeDocName(e.target.value, row.id, false)}/>
+                                                    </TableCell>
+                                                    <TableCell align="left" width="20%">
+                                                        <div className='text-center'>
+                                                            <DeleteIcon style={{fontSize:'30px', cursor: 'pointer', margin: '0 auto'}} 
+                                                                onClick={(e) => deleteDoc(row.id, false)}
+                                                            />
+                                                        </div>
                                                     </TableCell>
                                                 </TableRow>
                                             )
