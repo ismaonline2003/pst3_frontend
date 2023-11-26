@@ -10,6 +10,11 @@ const styledComponents = {
         fontSize: '1.6rem',
         fontWeight: '700'
     }),
+    dahsboardPanelh3: styled('h2')({
+        color: 'rgb(51 65 85)',
+        fontSize: '1.4rem',
+        fontWeight: '400'
+    }),
     fotoCarnet: styled('img')(({ theme }) => ({ 
         width: '100px',
         height: '100px',

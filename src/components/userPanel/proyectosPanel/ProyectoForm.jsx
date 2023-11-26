@@ -109,10 +109,7 @@ const ProyectoForm = ({}) => {
     const [secciones, setSecciones] = useState([]);
     const [seccionSelected, setSeccionSelected] = useState(false);
     const [selectedYear, setSelectedYear] = useState((new Date()).getFullYear());
-    const [imgsDeleted, setImgsDeleted] = useState([]);
     const [imgs2Add, setImgs2Add] = useState([]);
-    const [docsDeleted, setDocsDeleted] = useState([]);
-    const [docsUpdated, setDocsUpdated] = useState([]);
     const editor = useEditor({
         extensions: [StarterKit],
         content: "<p>Descripción</p>",
@@ -141,6 +138,7 @@ const ProyectoForm = ({}) => {
     const [unlockFields, setUnlockFields] = useState(false);
     const StyledH1 = styledComponents.dahsboardPanelh1;
     const StyledH2 = styledComponents.dahsboardPanelh2;
+    const StyledH3 = styledComponents.dahsboardPanelh3;
 
     if(editor) {
         editor.setEditable(descripcion);
@@ -221,10 +219,7 @@ const ProyectoForm = ({}) => {
         setSelectedTrayecto(data.seccion.trayecto);
         setSeccionSelected(data.seccion.id);
         setSelectedYear(data.seccion.year);
-        setImgsDeleted([]);
         setImgs2Add([]);
-        setDocsDeleted([]);
-        setDocsUpdated([]);
         setEstudiantesSearch([]);
         setCurrentSelectedStudentID(false);
         setNewImageName('');
@@ -493,16 +488,17 @@ const ProyectoForm = ({}) => {
             deletedDocs: docsDeleted,
             docsUpdated:docsUpdated
         };
+        console.log(body, body);
 
         formData.append('data', JSON.stringify(body));
         if(miniatura != false) {
             formData.append('miniatura', miniatura);
         }
-        console.log(body);
         const config = {headers:{'authorization': token, 'Content-Type': 'multipart/form-data'}};
         let url = `${consts.backend_base_url}/api/proyecto/${id}`;
         axios.put(url, formData, config).then((response) => {
             //update db fields
+            setProyectoInfo(response.data);
             setBlockUI(false);
             setNotificationMsg(response.data.message);
             setNotificationType('success');
@@ -628,6 +624,8 @@ const ProyectoForm = ({}) => {
     useEffect(() => {
         if(id != 0) {
             searchRecord();
+        } else {
+            setUnlockFields(true);
         }
         searchPNFS();
     }, []);
@@ -658,6 +656,7 @@ const ProyectoForm = ({}) => {
             newIntegrante.rel_id = false;
             newIntegrantesArr.push(newIntegrante[0]);
         }
+        console.log(newIntegrantesArr);
         setIntegrantes(newIntegrantesArr);
     }
 
@@ -835,21 +834,28 @@ const ProyectoForm = ({}) => {
         }
     }
 
+    const setEditorContent = () => {
+        if (!editor || editor.isDestroyed) {
+            return;
+        }
+        if (!editor.isFocused || !editor.isEditable) {
+            if(descripcion != "") {
+                queueMicrotask(() => {
+                    const currentSelection = editor.state.selection;
+                    editor
+                    .chain()
+                    .setContent(descripcion)
+                    .setTextSelection(currentSelection)
+                    .run();
+                });
+            }
+        }
+    }
+
     useEffect(() => {
-    if (!editor || editor.isDestroyed) {
-        return;
-    }
-    if (!editor.isFocused || !editor.isEditable) {
-        queueMicrotask(() => {
-        const currentSelection = editor.state.selection;
-        editor
-            .chain()
-            .setContent(descripcion)
-            .setTextSelection(currentSelection)
-            .run();
-        });
-    }
-    }, [descripcion, editor, editor?.isEditable, editor?.isFocused]);
+        setEditorContent();
+    }, [recordData]);
+    
 
     return (
         <div className='m-4'>
@@ -890,6 +896,14 @@ const ProyectoForm = ({}) => {
                             <StyledH2>Datos Generales del Proyecto</StyledH2>
                         </div>
                         <br />
+                        <div className='d-flex flex-row flex-wrap'>
+                            {
+                                (recordFound && !unlockFields) && 
+                                <div className='m-4'>
+                                    <StyledH3><strong>Referencia:</strong> {id}</StyledH3>
+                                </div>
+                            }
+                        </div>
                         <div className='d-flex flex-row flex-wrap'>
                             {
                                 (recordFound && !unlockFields) && 
@@ -1095,6 +1109,7 @@ const ProyectoForm = ({}) => {
                         {
                             unlockFields && 
                             <Paper sx={{ width: '100%', mb: 2 }}>
+                                {console.log('unlockFields', unlockFields)}
                                 <TableContainer component={Paper}>
                                     <Table sx={{ minWidth: '100%' }} aria-label="Proyectos" >
                                         <TableHead className="bg-neutral-800 ">
@@ -1179,7 +1194,6 @@ const ProyectoForm = ({}) => {
                                                     </TableRow>
                                                 )
                                             })}
-                                        {
                                             <TableRow  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                                                 <TableCell align="left" width="20%">
                                                     <Button component="label" color="secondary" variant="contained" startIcon={<CloudUploadIcon />}>
@@ -1201,7 +1215,6 @@ const ProyectoForm = ({}) => {
                                                     </Button>
                                                 </TableCell>
                                             </TableRow>
-                                        }
                                         </TableBody>
                                     </Table>
                                 </TableContainer>
@@ -1209,7 +1222,7 @@ const ProyectoForm = ({}) => {
                         }
                         {
                             (!unlockFields && recordFound) && 
-                                <ImageList sx={{ width: '95%', height: 500 }}>
+                            <ImageList sx={{ width: '95%', height: 500 }}>
                                     <ImageListItem key="Subheader" cols={2}>
                                         <ListSubheader component="div">Imagenes</ListSubheader>
                                     </ImageListItem>
@@ -1241,7 +1254,7 @@ const ProyectoForm = ({}) => {
                                             )
                                         })
                                     }
-                                </ImageList>
+                            </ImageList>
                         }
                     </FormContainer>
                     <br />
