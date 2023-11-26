@@ -872,7 +872,7 @@ const ProyectoForm = ({}) => {
                 </div>
             }
             {
-                showFormBtns && 
+                !(!recordFound && id != 0) && showFormBtns && 
                 <FormBtns 
                     setUnlockFields={setUnlockFields} 
                     handleConfirmarBtn={handleConfirmarBtn} 
@@ -890,6 +890,9 @@ const ProyectoForm = ({}) => {
             {
                 redirect && <Navigate to="/dashboard/proyectos" />
             }
+
+            {
+                !(!recordFound && id != 0) && 
                 <Fragment>
                     <FormContainer>
                         <div className="w-100 text-center">
@@ -1305,7 +1308,6 @@ const ProyectoForm = ({}) => {
                                             )
                                         })
                                     }
-
                                     {
                                         unlockFields && 
                                         docs.map((row) => {
@@ -1397,9 +1399,25 @@ const ProyectoForm = ({}) => {
                         </Paper>
                     </FormContainer>
                 </Fragment>
+            }
+
             {
                 showDeleteDialog &&
                 <DeleteDialog showDeleteDialog={showDeleteDialog} setShowDeleteDialog={setShowDeleteDialog} handleDeleteConfirm={handleDeleteConfirm}></DeleteDialog>
+            }
+            {
+                (!recordFound && id != 0) && 
+                <FormContainer>
+                    <div className='text-center'>
+                        <img src={noEncontrado} alt="no-encontrado" style={{width: '300px', margin: '0 auto', marginTop:'10px'}}/>
+                        <StyledH2 className='mt-5'>El proyecto no fue encontrado</StyledH2>
+                        <div className='text-center d-flex flex-row flex-wrap w-100 mt-5'>
+                            <Link to={"/dashboard/proyectos"}>
+                                <Button variant="contained" color="primary" style={{marginLeft: '10px'}}>Volver</Button>
+                            </Link>
+                        </div>
+                    </div>
+                </FormContainer>
             }
 
         </div>
