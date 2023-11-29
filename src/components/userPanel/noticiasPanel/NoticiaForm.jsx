@@ -645,6 +645,21 @@ const NoticiaForm = ({}) => {
                 <DeleteDialog showDeleteDialog={showDeleteDialog} setShowDeleteDialog={setShowDeleteDialog} handleDeleteConfirm={handleDeleteConfirm}></DeleteDialog>
             }
 
+            {
+                (!recordFound && id != 0) && 
+                <FormContainer>
+                    <div className='text-center'>
+                        <img src={noEncontrado} alt="no-encontrado" style={{width: '300px', margin: '0 auto', marginTop:'10px'}}/>
+                        <StyledH2 className='mt-5'>La noticia no fue encontrada</StyledH2>
+                        <div className='text-center d-flex flex-row flex-wrap w-100 mt-5'>
+                            <Link to={"/dashboard/noticias"}>
+                                <Button variant="contained" color="primary" style={{marginLeft: '10px'}}>Volver</Button>
+                            </Link>
+                        </div>
+                    </div>
+                </FormContainer>
+            }
+
         </div>
     )
 }
