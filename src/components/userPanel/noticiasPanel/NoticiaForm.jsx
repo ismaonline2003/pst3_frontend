@@ -73,7 +73,7 @@ const NoticiaForm = ({}) => {
     //bd values
     const [nombre, setNombre] = useState("");
     const [descripcion, setDescripcion] = useState("");
-    const [contenido, setContenido] = useState( `<p>Hola</p>`);
+    const [contenido, setContenido] = useState( `<p>Contenido</p>`);
     const [miniatura, setMiniaturaUrl] = useState("");
     const [userId, setUserId] = useState(false);
     const [categId, setCategId] = useState(false);
@@ -85,6 +85,7 @@ const NoticiaForm = ({}) => {
     const [newImgsList, setNewImgsList] = useState([]);
     const [newMiniaturaObj, setNewMiniaturaObj] = useState(false);
     const [showEditMiniatura, setShowEditMiniatura] = useState(false);
+    const [booleanPostChecked, setBooleanPostChecked] = useState(false);
     const ImgsInput = useRef(null);
     const miniaturaInput = useRef(null);
     const StyledH1 = styledComponents.dahsboardPanelh1;
@@ -163,14 +164,14 @@ const NoticiaForm = ({}) => {
 
     useEffect(() => {
         setEditorContent();
-    }, [recordData]);
+    }, [recordData, contenido]);
 
     const setNoticiaInfo = (data) => {
         setRecordData(data);
         setNombre(data.nombre);
         setDescripcion(data.descripcion);
         setContenido(data.contenido);
-        setMiniaturaUrl(data.miniatura);
+        setMiniaturaUrl(`${consts.backend_base_url}/${data.miniatura}`);
         setUserId(data.user.id);
         setCategId(data.categoria_noticium.id);
         setPostDate(data.fecha_publicacion);
@@ -214,7 +215,7 @@ const NoticiaForm = ({}) => {
             objReturn = {'status': 'failed', 'data': {}, 'msg': 'Se debe definir un nombre para la noticia.'};
             return objReturn;
         }
-        if(!newMiniaturaObj) {
+        if(!newMiniaturaObj && id == 0) {
             objReturn = {'status': 'failed', 'data': {}, 'msg': 'Debe cargar una miniatura para la noticia'};
             return objReturn;
         }
@@ -237,6 +238,7 @@ const NoticiaForm = ({}) => {
             let url = `${consts.backend_base_url}/api/noticia/${id}`;
             axios.get(url, config).then((response) => {
                 setNoticiaInfo(response.data);
+                setRecordFound(true);
                 setBlockUI(false);
             }).catch((err) => {
                 if(err.response.status == 404) {
@@ -258,19 +260,49 @@ const NoticiaForm = ({}) => {
     const updateRecordData = () => {
         setBlockUI(true);
         const token = localStorage.getItem('token');
+        const userData = JSON.parse(localStorage.getItem('userData'));
+        const formData = new FormData();
+        const new_imgs = getNewImgs();
+        const deleted_imgs = getDeletedImgs();
         let body = {
-            nombre: nombre
+            id: id,
+            nombre: nombre.trim(),
+            descripcion: descripcion,
+            contenido: editor.getHTML(),
+            addedImgs: new_imgs.url,
+            deletedImgs: deleted_imgs,
+            miniaturaUpdated: false,
+            miniaturaFileIndex: 0,
+            categId: false,
+            userId: userData.id,
+            post: booleanPostChecked
         };
-        const config = {headers:{'authorization': token}};
+        if(categId) {
+            body.categId = parseInt(categId);
+        }
+
+        let a = 0;
+        for(let i = 0; i < new_imgs.file.length; i++) {
+            formData.append('files', new_imgs.file[i]);
+            a += 1;
+        }
+        if(miniatura != recordData.miniatura && newMiniaturaObj) {
+            body.miniaturaUpdated = true;
+            body.miniaturaFileIndex = a;
+            formData.append('files', newMiniaturaObj.file);
+        }
+        formData.append('data', JSON.stringify(body));
+        const config = {headers:{'authorization': token, 'Content-Type': 'multipart/form-data'}};
         let url = `${consts.backend_base_url}/api/noticia/${id}`;
-        axios.put(url, body, config).then((response) => {
-            //set record data
+        axios.put(url, formData, config).then((response) => {
+            setNoticiaInfo(response.data.data);
             setBlockUI(false);
             setNotificationMsg(response.data.message);
             setNotificationType('success');
             setShowNotification(true);
         }).catch((err) => {
-            setNotificationMsg(err.response.data.message);
+            console.log(err);
+            setNotificationMsg("Ocurrió un error inesperado. Intentelo mas tarde...");
             setNotificationType('error');
             setShowNotification(true);
             setBlockUI(false);
@@ -340,14 +372,9 @@ const NoticiaForm = ({}) => {
         return confirmarBtnReturn;
     }
 
-    const _setRecordData = (data) => {
-        setRecordData(data);
-        setNombre(data.nombre);
-    }
-
     const handleCancelarBtn = (e) => {
         if(id != '0') {
-            _setRecordData(recordData);
+            setNoticiaInfo(recordData);
         } else {
             setRedirect(true);
         }
@@ -457,67 +484,101 @@ const NoticiaForm = ({}) => {
                 redirect && <Navigate to="/dashboard/noticias" />
             }
             {
-                recordFound && id != 0 &&
+                recordFound &&
                 <FormContainer>
+                    <div className='d-flex flex-row flex-wrap text-center mb-4'>
+                        {
+                            !unlockFields &&
+                            <MiniaturaImg src={miniatura ? miniatura : SinFotoPerfil} alt="miniatura-noticia"/>  
+                        } 
+                        {
+                            unlockFields &&
+                            <Fragment>
+                                <MiniaturaImgEdit 
+                                    style={{backgroundImage: `url('${miniatura ? miniatura : SinFotoPerfil}')`}}   
+                                    onMouseEnter={() => setShowEditMiniatura(true)} 
+                                    onMouseLeave={() => setShowEditMiniatura(false)}
+                                >
+                                    {
+                                        showEditMiniatura &&
+                                        <MiniaturaImgEditLayer
+                                            onClick={(e) => miniaturaInput.current.click()}
+                                        >
+                                            <p>Click Aqui para cambiar la foto</p>
+                                            <input type="file" id="miniaturaInput" ref={miniaturaInput} hidden/>
+                                        </MiniaturaImgEditLayer>
+                                    }
+                                </MiniaturaImgEdit>
+                                {
+                                    miniatura &&
+                                    <Button variant="outlined" color="error" style={{margin: '10px'}} onClick={(e) => _handleEliminarMiniaturaBtn(e)}>Eliminar Miniatura</Button>
+                                }
+                            </Fragment>
+                        }
+                    </div>
                     <div className='d-flex flex-row flex-wrap'>
                         {
                             !unlockFields && 
-                            <FormControl sx={{ m: 1, width: '45%' }} variant="outlined">
+                            <FormControl sx={{ m: 1, width: '95%' }} variant="outlined">
                                 <TextField id="nombre" label="Nombre" disabled variant="outlined" value={nombre}/>
                             </FormControl>
                         }
                         {
                             unlockFields && 
-                            <FormControl sx={{ m: 1, width: '45%' }} variant="outlined">
+                            <FormControl sx={{ m: 1, width: '95%' }} variant="outlined">
                                 <TextField id="nombre" label="Nombre" variant="outlined" defaultValue={nombre} onChange={(e) => setNombre(e.target.value)}/>
                             </FormControl>
                         }
+
                     </div>
-                </FormContainer>
-            }
-            {
-                recordFound && id == 0 &&
-                <FormContainer>
-                    {/*
-                            const miniaturaImg = styledComponents.miniaturaImg;
-    const miniaturaImgEdit = styledComponents.miniaturaImgEdit;
-    const miniaturaImgEditLayer = styledComponents.miniaturaImgEditLayer;
-    const miniaturaSmall = styledComponents.miniaturaSmall;
-                    
-                    */}
-                    <div className='d-flex flex-row flex-wrap mb-4 items-center justify-center text-center'>
-                        <MiniaturaImgEdit 
-                            style={{backgroundImage: `url('${miniatura ? miniatura : SinFotoPerfil}')`}}   
-                            onMouseEnter={() => setShowEditMiniatura(true)} 
-                            onMouseLeave={() => setShowEditMiniatura(false)}
-                        >
-                            {
-                                showEditMiniatura &&
-                                <MiniaturaImgEditLayer
-                                    onClick={(e) => miniaturaInput.current.click()}
-                                >
-                                    <p>Click Aqui para cambiar la foto</p>
-                                    <input type="file" id="miniaturaInput" ref={miniaturaInput} hidden/>
-                                </MiniaturaImgEditLayer>
-                            }
-                        </MiniaturaImgEdit>
+                    <div className='d-flex flex-row flex-wrap'>
                         {
-                            miniatura &&
-                            <Button variant="outlined" color="error" style={{margin: '10px'}} onClick={(e) => _handleEliminarMiniaturaBtn(e)}>Eliminar Miniatura</Button>
+                            !unlockFields && 
+                            <FormControl sx={{ m: 1, width: '95%' }} variant="outlined">
+                                <TextField id="descripcion" label="Descripción" disabled variant="outlined" value={nombre}/>
+                            </FormControl>
+                        }
+                        {
+                            unlockFields && 
+                            <FormControl sx={{ m: 1, width: '95%' }} variant="outlined">
+                                <TextField id="descripcion" label="Descripción" variant="outlined" defaultValue={descripcion} onChange={(e) => setDescripcion(e.target.value)}/>
+                            </FormControl>
+                        }
+
+                    </div>
+                    <div className='d-flex flex-row flex-wrap'>
+                        {
+                            !unlockFields && 
+                            <FormControl sx={{ m: 1, width: '95%' }} variant="outlined">
+                                <TextField id="categ_id" label="Categoría" disabled variant="outlined" value={recordData.categoria_noticium.nombre}/>
+                            </FormControl>
+                        }
+                        {
+                            unlockFields && 
+                            <FormControl sx={{ m: 1, width: '30%' }} variant="outlined">
+                                <TextField id="categ_id" select label="Categoría" defaultValue={categId ? categId : ""} onChange={(e) => setCategId(e.target.value)}>
+                                    {categorias.map((option) => (
+                                        <MenuItem key={option.id} value={option.id}>
+                                            {option.nombre}
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+                            </FormControl>
                         }
                     </div>
-                    <div className='d-flex flex-row flex-wrap'>
-                        <FormControl sx={{ m: 1, width: '95%' }} variant="outlined">
-                            <TextField id="nombre" label="Nombre" variant="outlined" defaultValue={""} onChange={(e) => setNombre(e.target.value)}/>
-                        </FormControl>
-                    </div>
-                    <div className='d-flex flex-row flex-wrap'>
-                        <FormControl sx={{ m: 1, width: '95%' }} variant="outlined">
-                            <TextField id="descripcion" label="Descripción" variant="outlined" defaultValue={""} onChange={(e) => setDescripcion(e.target.value)}/>
-                        </FormControl>
-                    </div>
-                    <div className='d-flex flex-row flex-wrap'>
-                        <FormControl sx={{ m: 1, width: '95%' }} variant="outlined">
+                    <div className='d-flex flex-row flex-wrap mb-4 items-center justify-center text-center'>
+                        {
+                            !unlockFields && 
+                            <Fragment className="text-left">
+                                <span style={{color: 'rgba(0, 0, 0, 0.38)', margin: '10px'}}>Contenido</span>
+                                <FormControl sx={{ m: 1, width: '95%' }} variant="outlined" style={{border: '1px solid rgba(0, 0, 0, 0.38)', padding: '10px', borderRadius: '10px', color: 'rgba(0, 0, 0, 0.38)'}}>
+                                    <RichTextReadOnly content={contenido} extensions={[StarterKit, Image]} />
+                                </FormControl>
+                            </Fragment>
+                        }
+                        {
+                            unlockFields && 
+                            <FormControl sx={{ m: 1, width: '95%' }} variant="outlined">
                             {/*<RichTextReadOnly content={contenido} extensions={extensions} />*/}
                             <input type="file" id="imgsInput" ref={ImgsInput} hidden/>
                             <RichTextEditorProvider editor={editor}>
@@ -560,21 +621,20 @@ const NoticiaForm = ({}) => {
                                 />
                             </RichTextEditorProvider>
                         </FormControl>
-                    </div>
-                    <div className='d-flex flex-row flex-wrap'>
-                        <FormControl sx={{ m: 1, width: '30%' }} variant="outlined">
-                            <TextField id="categ_id" select label="Categoría" defaultValue={""} onChange={(e) => setCategId(e.target.value)}>
-                                {categorias.map((option) => (
-                                    <MenuItem key={option.id} value={option.id}>
-                                        {option.nombre}
-                                    </MenuItem>
-                                ))}
-                            </TextField>
-                        </FormControl>
+                        }
                     </div>
                     <div className='d-flex flex-row flex-wrap m-4'>
-                        <div style={{width:'100px !important'}}><StyledH4>Publicar</StyledH4></div>
-                        <div style={{width:'100px !important'}}><Switch {...postBooleanLabel} /></div>
+                        <div style={{width:'100px !important'}}>
+                            {
+                                !postDate &&
+                                <StyledH4>Publicar</StyledH4>
+                            }
+                                                        {
+                                postDate &&
+                                <StyledH4>Ocultar</StyledH4>
+                            }
+                        </div>
+                        <div style={{width:'100px !important'}}><Switch {...postBooleanLabel} onClick={(e) => setBooleanPostChecked(e.target.checked)}/></div>
                     </div>
                     
                 </FormContainer>

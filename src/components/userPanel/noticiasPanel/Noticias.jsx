@@ -107,7 +107,7 @@ export default function Noticias({}) {
                                             <TableCell component="th" scope="row">
                                                 {row.id}
                                             </TableCell>
-                                            <TableCell align="left">{row.miniatura}</TableCell>
+                                            <TableCell align="left"><img src={`${consts.backend_base_url}/${row.miniatura}`} alt={`img-noticia-${row.id}`} style={{width: '100px'}}/></TableCell>
                                             <TableCell align="left">{row.categoria_noticium.nombre}</TableCell>
                                             <TableCell align="left">{row.nombre}</TableCell>
                                             <TableCell align="left">{row.user.person.name} {row.user.person.lastname}</TableCell>
