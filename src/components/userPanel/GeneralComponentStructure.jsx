@@ -36,6 +36,11 @@ const GeneralComponentStructure = ({}) => {
     const StyledH1 = styledComponents.dahsboardPanelh1;
     const StyledH2 = styledComponents.dahsboardPanelh2;
 
+    const _setRecordData = (data) => {
+        setRecordData(data);
+        setNombre(data.nombre);
+    }
+
     const recordValidations = () =>  {
         let objReturn = {'status': 'success', 'data': {}, 'msg': ''};
         const currentDate = new Date();
@@ -45,10 +50,7 @@ const GeneralComponentStructure = ({}) => {
             return objReturn;
         }
         setNombre(nombre.trim());
-        if(nombre.length > 6) {
-            objReturn = {'status': 'failed', 'data': {}, 'msg': 'El nombre de la sección no debe sobrepasar los 6 caracteres.'};
-            return objReturn;
-        }
+
         return objReturn;
     }
 
@@ -57,9 +59,10 @@ const GeneralComponentStructure = ({}) => {
         if(id != "0") {
             const token = localStorage.getItem('token');
             const config = {headers:{ authorization: token}};
-            let url = `${consts.backend_base_url}/api/noticia/${id}`;
+            let url = `${consts.backend_base_url}/api/categoria_noticia/${id}`;
             axios.get(url, config).then((response) => {
                 //set record data
+                _setRecordData(response.data);
                 setBlockUI(false);
             }).catch((err) => {
                 if(err.response.status == 404) {
@@ -85,9 +88,10 @@ const GeneralComponentStructure = ({}) => {
             nombre: nombre
         };
         const config = {headers:{'authorization': token}};
-        let url = `${consts.backend_base_url}/api/noticia/${id}`;
+        let url = `${consts.backend_base_url}/api/categoria_noticia/${id}`;
         axios.put(url, body, config).then((response) => {
             //set record data
+            _setRecordData(response.data);
             setBlockUI(false);
             setNotificationMsg(response.data.message);
             setNotificationType('success');
@@ -107,10 +111,10 @@ const GeneralComponentStructure = ({}) => {
             nombre: nombre
         };
         const config = {headers:{'authorization': token}};
-        let url = `${consts.backend_base_url}/api/noticia`;
+        let url = `${consts.backend_base_url}/api/categoria_noticia`;
         axios.post(url, body, config).then((response) => {
             //set record data
-            
+            _setRecordData(response.data);
             setNotificationMsg("El registro fue creado exitosamente!!");
             setNotificationType('success');
             setShowNotification(true);
@@ -138,11 +142,6 @@ const GeneralComponentStructure = ({}) => {
         return confirmarBtnReturn;
     }
 
-    const _setRecordData = (data) => {
-        setRecordData(data);
-        setNombre(data.nombre);
-    }
-
     const handleCancelarBtn = (e) => {
         if(id != '0') {
             _setRecordData(recordData);
@@ -159,7 +158,7 @@ const GeneralComponentStructure = ({}) => {
         setBlockUI(true);
         const token = localStorage.getItem('token');
         const config = {headers:{'authorization': token}};
-        let url = `${consts.backend_base_url}/api/noticia/${id}`;
+        let url = `${consts.backend_base_url}/api/categoria_noticia/${id}`;
         axios.delete(url, config).then((response) => {
             setBlockUI(false);
             setNotificationMsg(response.data.message);
@@ -207,10 +206,10 @@ const GeneralComponentStructure = ({}) => {
                 />
             }
             {
-                reLoad && <Navigate to={`/dashboard/noticias/${newId}`} />
+                reLoad && <Navigate to={`/dashboard/categorias_noticias/${newId}`} />
             }
             {
-                redirect && <Navigate to="/dashboard/noticias" />
+                redirect && <Navigate to="/dashboard/categorias_noticias" />
             }
             {
                 recordFound && 
