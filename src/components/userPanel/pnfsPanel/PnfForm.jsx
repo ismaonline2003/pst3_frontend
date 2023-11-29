@@ -16,7 +16,7 @@ import Button from '@mui/material/Button';
 import getTurnoName from '../../../helpers/getTurnoName';
 import DeleteDialog from '../../generales/DeleteDialog';
 
-const CategoriaNoticiaForm = ({}) => {
+const PnfForm = ({}) => {
     //logic
     const [reLoad, setReload] = useState(false);
     const [redirect, setRedirect] = useState(false);
@@ -24,8 +24,9 @@ const CategoriaNoticiaForm = ({}) => {
     const [recordData, setRecordData] = useState(false);
 
     //bd values
+    const [nombrePnf, setNombrePnf] = useState("");
     const [nombre, setNombre] = useState("");
-    const [descripcion, setDescripcion] = useState("");
+    const [codigoPnf, setCodigoPnf] = useState("");
 
     //Ui fields
     const [showDeleteDialog, setShowDeleteDialog ] = useState(false);
@@ -40,7 +41,8 @@ const CategoriaNoticiaForm = ({}) => {
     const _setRecordData = (data) => {
         setRecordData(data);
         setNombre(data.nombre);
-        setDescripcion(data.descripcion);
+        setNombrePnf(data.nombre_pnf);
+        setCodigoPnf(data.codigo_pnf);
     }
 
     const recordValidations = () =>  {
@@ -61,7 +63,7 @@ const CategoriaNoticiaForm = ({}) => {
         if(id != "0") {
             const token = localStorage.getItem('token');
             const config = {headers:{ authorization: token}};
-            let url = `${consts.backend_base_url}/api/categoria_noticia/${id}`;
+            let url = `${consts.backend_base_url}/api/carrera_universitaria/${id}`;
             axios.get(url, config).then((response) => {
                 //set record data
                 _setRecordData(response.data);
@@ -89,10 +91,11 @@ const CategoriaNoticiaForm = ({}) => {
         const token = localStorage.getItem('token');
         let body = {
             nombre: nombre,
-            descripcion: descripcion
+            nombre_pnf: nombrePnf,
+            codigo_pnf: codigoPnf
         };
         const config = {headers:{'authorization': token}};
-        let url = `${consts.backend_base_url}/api/categoria_noticia/${id}`;
+        let url = `${consts.backend_base_url}/api/carrera_universitaria/${id}`;
         axios.put(url, body, config).then((response) => {
             //set record data
             _setRecordData(response.data);
@@ -113,10 +116,11 @@ const CategoriaNoticiaForm = ({}) => {
         const token = localStorage.getItem('token');
         let body = {
             nombre: nombre,
-            descripcion: descripcion
+            nombre_pnf: nombrePnf,
+            codigo_pnf: codigoPnf
         };
         const config = {headers:{'authorization': token}};
-        let url = `${consts.backend_base_url}/api/categoria_noticia`;
+        let url = `${consts.backend_base_url}/api/carrera_universitaria`;
         axios.post(url, body, config).then((response) => {
             //set record data
             _setRecordData(response.data);
@@ -164,7 +168,7 @@ const CategoriaNoticiaForm = ({}) => {
         setBlockUI(true);
         const token = localStorage.getItem('token');
         const config = {headers:{'authorization': token}};
-        let url = `${consts.backend_base_url}/api/categoria_noticia/${id}`;
+        let url = `${consts.backend_base_url}/api/carrera_universitaria/${id}`;
         axios.delete(url, config).then((response) => {
             setBlockUI(false);
             setNotificationMsg(response.data.message);
@@ -191,13 +195,13 @@ const CategoriaNoticiaForm = ({}) => {
             {
                 id == '0' && recordFound && 
                 <div className='text-center mb-10'>
-                    <StyledH1>Crear una Nueva Categoría de Noticia</StyledH1>
+                    <StyledH1>Registrar un Nuevo PNF</StyledH1>
                 </div>
             }
             {
                 id != '0' && recordFound &&
                 <div className='text-center mb-10'>
-                    <StyledH1>Actualizar Categoría de Noticia</StyledH1>
+                    <StyledH1>Actualizar PNF</StyledH1>
                 </div>
             }
             {
@@ -212,14 +216,28 @@ const CategoriaNoticiaForm = ({}) => {
                 />
             }
             {
-                reLoad && <Navigate to={`/dashboard/categorias_noticias/${newId}`} />
+                reLoad && <Navigate to={`/dashboard/pnfs/${newId}`} />
             }
             {
-                redirect && <Navigate to="/dashboard/categorias_noticias" />
+                redirect && <Navigate to="/dashboard/pnfs" />
             }
             {
                 recordFound && 
                 <FormContainer>
+                    <div className='d-flex flex-row flex-wrap'>
+                        {
+                            !unlockFields && 
+                            <FormControl sx={{ m: 1, width: '95%' }} variant="outlined">
+                                <TextField id="nombre_pnf" label="Nombre Pnf" disabled variant="outlined" value={nombrePnf}/>
+                            </FormControl>
+                        }
+                        {
+                            unlockFields && 
+                            <FormControl sx={{ m: 1, width: '95%' }} variant="outlined">
+                                <TextField id="nombre_pnf" label="Nombre Pnf" variant="outlined" defaultValue={nombrePnf} onChange={(e) => setNombrePnf(e.target.value)}/>
+                            </FormControl>
+                        }
+                    </div>
                     <div className='d-flex flex-row flex-wrap'>
                         {
                             !unlockFields && 
@@ -238,13 +256,13 @@ const CategoriaNoticiaForm = ({}) => {
                         {
                             !unlockFields && 
                             <FormControl sx={{ m: 1, width: '95%' }} variant="outlined">
-                                <TextField id="descripcion" label="Descripción" disabled variant="outlined" value={descripcion}/>
+                                <TextField id="codigo_pnf" label="Código Pnf" disabled variant="outlined" value={codigoPnf}/>
                             </FormControl>
                         }
                         {
                             unlockFields && 
                             <FormControl sx={{ m: 1, width: '95%' }} variant="outlined">
-                                <TextField id="descripcion" label="Descripción" variant="outlined" defaultValue={descripcion} onChange={(e) => setDescripcion(e.target.value)}/>
+                                <TextField id="codigo_pnf" label="Código Pnf" variant="outlined" defaultValue={codigoPnf} onChange={(e) => setCodigoPnf(e.target.value)}/>
                             </FormControl>
                         }
                     </div>
@@ -259,9 +277,9 @@ const CategoriaNoticiaForm = ({}) => {
                 <FormContainer>
                     <div className='text-center'>
                         <img src={noEncontrado} alt="no-encontrado" style={{width: '300px', margin: '0 auto', marginTop:'10px'}}/>
-                        <StyledH2 className='mt-5'>La Categoría de Noticia no fue encontrada</StyledH2>
+                        <StyledH2 className='mt-5'>El Pnf no fue encontrado</StyledH2>
                         <div className='text-center d-flex flex-row flex-wrap w-100 mt-5'>
-                            <Link to={"/dashboard/categorias_noticias"}>
+                            <Link to={"/dashboard/pnfs"}>
                                 <Button variant="contained" color="primary" style={{marginLeft: '10px'}}>Volver</Button>
                             </Link>
                         </div>
@@ -274,4 +292,4 @@ const CategoriaNoticiaForm = ({}) => {
     )
 }
 
-export default CategoriaNoticiaForm;
+export default PnfForm;

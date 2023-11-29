@@ -15,7 +15,7 @@ import RadioIcon from '@mui/icons-material/Radio';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import WysiwygIcon from '@mui/icons-material/Wysiwyg';
 import LeaderboardIcon from '@mui/icons-material/Leaderboard';
-
+import HomeIcon from '@mui/icons-material/Home';
 
 
 export default function NestedList() {
@@ -39,12 +39,20 @@ export default function NestedList() {
           Panel de Usuario
         </ListSubheader>
       }
-    >
+    >   
+        <Link to="/dashboard">
+            <ListItemButton>
+                    <ListItemIcon>
+                        <HomeIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Inicio" />
+            </ListItemButton>
+        </Link>
         {/*Sección de Datos Académicos*/}
         <ListItemButton onClick={handleClick}>
             <ListItemIcon>
-            <SchoolIcon />
-                </ListItemIcon>
+                <SchoolIcon />
+            </ListItemIcon>
             <ListItemText primary="Datos Académicos" />
             {openAcademico ? <ExpandLess /> : <ExpandMore />}
         </ListItemButton>
@@ -63,6 +71,11 @@ export default function NestedList() {
                 <Link to="/dashboard/secciones">
                     <ListItemButton sx={{ pl: 4 }}>
                         <ListItemText primary="Secciones" />
+                    </ListItemButton>
+                </Link>
+                <Link to="/dashboard/pnfs">
+                    <ListItemButton sx={{ pl: 4 }}>
+                        <ListItemText primary="PNFS" />
                     </ListItemButton>
                 </Link>
             </List>
@@ -135,15 +148,56 @@ export default function NestedList() {
         </ListItemButton>
         <Collapse in={openEstadisticas} timeout="auto" unmountOnExit>
             <List component="div" disablePadding>
-                <ListItemButton sx={{ pl: 4 }}>
-                    <ListItemText primary="Relación Oyentes/Suscripciones" />
-                </ListItemButton>
-                <ListItemButton sx={{ pl: 4 }}>
-                    <ListItemText primary="Tiempo de visualización" />
-                </ListItemButton>
-                <ListItemButton sx={{ pl: 4 }}>
-                    <ListItemText primary="Visitas al Portal" />
-                </ListItemButton>
+                <Link to="/dashboard/estadisticas/interaccionWebsite">
+                    <ListItemButton sx={{ pl: 4 }}>
+                        <ListItemText primary="Interacción Website" />
+                    </ListItemButton>
+                </Link>
+                <Link to="/dashboard/estadisticas/nVisitasWebsite">
+                    <ListItemButton sx={{ pl: 4 }}>
+                        <ListItemText primary="Número de visitas Website" />
+                    </ListItemButton>
+                </Link>
+                <Link to="/dashboard/estadisticas/visitasCategoriaWebsite">
+                    <ListItemButton sx={{ pl: 4 }}>
+                        <ListItemText primary="Visitas por categoria Website" />
+                    </ListItemButton>
+                </Link>
+                <Link to="/dashboard/estadisticas/visitasArticuloWebsite">
+                    <ListItemButton sx={{ pl: 4 }}>
+                        <ListItemText primary="Visitas por articulo Website" />
+                    </ListItemButton>
+                </Link>
+                <Link to="/dashboard/estadisticas/visitasMensualesWebsite">
+                    <ListItemButton sx={{ pl: 4 }}>
+                        <ListItemText primary="Visitantes Mensuales Website" />
+                    </ListItemButton>
+                </Link>
+                <Link to="/dashboard/estadisticas/likesWebsite">
+                    <ListItemButton sx={{ pl: 4 }}>
+                        <ListItemText primary="Likes Website" />
+                    </ListItemButton>
+                </Link>
+                <Link to="/dashboard/estadisticas/comentariosWebsite">
+                    <ListItemButton sx={{ pl: 4 }}>
+                        <ListItemText primary="Comentarios Website" />
+                    </ListItemButton>
+                </Link>
+                <Link to="/dashboard/estadisticas/visitasRadioOnline">
+                    <ListItemButton sx={{ pl: 4 }}>
+                        <ListItemText primary="Visitas Radio Online" />
+                    </ListItemButton>
+                </Link>
+                <Link to="/dashboard/estadisticas/timepoSintonizacionRadio">
+                    <ListItemButton sx={{ pl: 4 }}>
+                        <ListItemText primary="Tiempo de Sintonización Radio" />
+                    </ListItemButton>
+                </Link>
+                <Link to="/dashboard/estadisticas/nSuscripcionesRadio">
+                    <ListItemButton sx={{ pl: 4 }}>
+                        <ListItemText primary="Número de Suscripciones Radio" />
+                    </ListItemButton>
+                </Link>
             </List>
         </Collapse>
         {/*Sección de Sistema*/}
@@ -159,6 +213,16 @@ export default function NestedList() {
                 <Link to="/dashboard/usuarios">
                     <ListItemButton sx={{ pl: 4 }}>
                         <ListItemText primary="Usuarios" />
+                    </ListItemButton>
+                </Link>
+                <Link to="/dashboard/iniciosSesion">
+                    <ListItemButton sx={{ pl: 4 }}>
+                        <ListItemText primary="Inicios de Sesión" />
+                    </ListItemButton>
+                </Link>
+                <Link to="/dashboard/logs">
+                    <ListItemButton sx={{ pl: 4 }}>
+                        <ListItemText primary="Logs" />
                     </ListItemButton>
                 </Link>
             </List>

@@ -1,4 +1,5 @@
 import * as React from 'react';
+import {Navigate } from 'react-router-dom';
 import { styled, alpha } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -57,6 +58,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 
 export default function PrimarySearchAppBar({isSideBarOpen, setIsSideBarOpen}) {
+  const [loginRedirect, setLoginRedirect] = React.useState(false);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
 
@@ -80,6 +82,14 @@ export default function PrimarySearchAppBar({isSideBarOpen, setIsSideBarOpen}) {
     setMobileMoreAnchorEl(event.currentTarget);
   };
 
+  const handleCerrarSesionBtn = () => {
+    localStorage.setItem('token', '');
+    localStorage.setItem('token_exp_time', '');
+    localStorage.setItem('userData', '{}');
+    setLoginRedirect(true);
+    window.location.reload(true);
+  };
+
   const menuId = 'primary-search-account-menu';
   const renderMenu = (
     <Menu
@@ -98,7 +108,7 @@ export default function PrimarySearchAppBar({isSideBarOpen, setIsSideBarOpen}) {
       onClose={handleMenuClose}
     >
       <MenuItem onClick={handleMenuClose}>Mi Perfil</MenuItem>
-      <MenuItem onClick={handleMenuClose}>Cerrar Sesión</MenuItem>
+      <MenuItem onClick={handleCerrarSesionBtn}>Cerrar Sesión</MenuItem>
     </Menu>
   );
 
@@ -160,6 +170,7 @@ export default function PrimarySearchAppBar({isSideBarOpen, setIsSideBarOpen}) {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
+      {loginRedirect && <Navigate to={`/login`} />}
       <AppBar position="static" color="success">
         <Toolbar>
           <IconButton
@@ -177,12 +188,20 @@ export default function PrimarySearchAppBar({isSideBarOpen, setIsSideBarOpen}) {
             component="div"
             sx={{ display: { xs: 'none', sm: 'block' } }}
           >
-            POPPAERO-UPTCMS
+            AgroOnline-UPTECMS
              {
               //Plataforma Online para la publicación de Proyectos Agroecologicos y Emision de Radio Online de la UPTCMS
              }
           </Typography>
-          <Box sx={{ flexGrow: 1 }} />
+          <Box sx={{ flexGrow: 1 }} >
+             <div className='text-center w-100'>
+              <p className='p-2 font-bold'>
+                República Bolivariana de Venezuela<br />
+                Ministerio del Poder Popular para la Educación Universitaria<br />
+                Universidad Politécnica Territorial de Caracas "Mariscal Sucre"<br />
+              </p>
+             </div>
+          </Box>
           <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
             {/*Icono de Mensajes */}
             <IconButton size="large" aria-label="show 0 new mails" color="inherit">

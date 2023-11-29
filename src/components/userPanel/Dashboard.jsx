@@ -18,6 +18,8 @@ import Profesores from './profesoresPanel/Profesores';
 import ProfesorForm from './profesoresPanel/ProfesorForm';
 import Secciones from './seccionesPanel/Secciones';
 import SeccionForm from './seccionesPanel/SeccionForm';
+import Pnfs from './pnfsPanel/Pnfs';
+import PnfForm from './pnfsPanel/PnfForm';
 import Proyectos from './proyectosPanel/Proyectos';
 import ProyectoForm from './proyectosPanel/ProyectoForm';
 import Noticias from './noticiasPanel/Noticias';
@@ -30,7 +32,9 @@ import Suscripciones from './suscripcionesPanel/Suscripciones';
 import SuscripcionForm from './suscripcionesPanel/SuscripcionForm';
 import Usuarios from './usuariosPanel/Usuarios';
 import UsuarioForm from './usuariosPanel/UsuarioForm';
-
+import Footer from './Footer';
+import InteraccionWebsite from './estadisticasPanel/InteraccionWebsite';
+import VistasWebsite from './estadisticasPanel/VistasWebsite';
 
 const paneles = {
     emision_panel: EmisionPanel,
@@ -41,6 +45,8 @@ const paneles = {
     profesor_form: ProfesorForm,
     secciones: Secciones,
     seccion_form: SeccionForm,
+    pnfs: Pnfs,
+    pnf_form: PnfForm,
     proyectos: Proyectos,
     proyecto_form: ProyectoForm,
     noticias: Noticias,
@@ -52,7 +58,9 @@ const paneles = {
     suscripciones: Suscripciones,
     suscripcionForm: SuscripcionForm,
     usuarios: Usuarios,
-    usuarioForm: UsuarioForm
+    usuarioForm: UsuarioForm,
+    interaccionWebsite: InteraccionWebsite,
+    nVisitasWebsite: VistasWebsite
 }
 
 const Dashboard = ({sessionVals, panelName}) => {
@@ -84,17 +92,18 @@ const Dashboard = ({sessionVals, panelName}) => {
     }, [sessionVals]);
 
     return (
-        <Box sx={{ flexGrow: 1 }}>
+        <Box sx={{ flexGrow: 1 }} marginBottom={'0'}>
             <AppBar isSideBarOpen={isSideBarOpen} setIsSideBarOpen={setIsSideBarOpen}></AppBar>
-            <Box sx={{ flexGrow: 1 }}>
-                <Grid  container spacing={2}>
+            <Box sx={{ flexGrow: 1 }} marginBottom={'0'}>
+                <Grid  container spacing={2} marginBottom={'0'}>
                     <Grid item xs={sideBarXs}>
                         {isSideBarOpen ? <SideBar /> : <Fragment/>}
                     </Grid>
-                    <Grid item xs={contentScreenXs}>
-                        <Container className='p-0 m-0 w-100'>
+                    <Grid item xs={contentScreenXs} marginBottom={'0'}>
+                        <Container className='p-0 w-100' style={{height: '100%'}}>
                             <Panel className='p-0 m-0 w-100'/>
                         </Container>
+                        <Footer/>
                     </Grid>
                 </Grid>
             </Box>

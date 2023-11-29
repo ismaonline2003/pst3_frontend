@@ -127,6 +127,10 @@ function App() {
                   <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"secciones"}/>}/>
                   <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"seccion_form"}/>}/>
                 </Route>
+                <Route path="pnfs" >
+                  <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"pnfs"}/>}/>
+                  <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"pnf_form"}/>}/>
+                </Route>
                 <Route path="proyectos" >
                   <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"proyectos"}/>}/>
                   <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"proyecto_form"}/>}/>
@@ -147,9 +151,27 @@ function App() {
                   <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"suscripciones"}/>}/>
                   <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"suscripcion_form"}/>}/>
                 </Route>
+                <Route path="estadisticas" >
+                    <Route path="interaccionWebsite" element={<Dashboard sessionVals={sessionVals} panelName={"interaccionWebsite"}/>}/>
+                    <Route path="nVisitasWebsite" element={<Dashboard sessionVals={sessionVals} panelName={"nVisitasWebsite"}/>}/>
+                    <Route path="visitasCategoriaWebsite" element={<Dashboard sessionVals={sessionVals} panelName={"visitasCategoriaWebsite"}/>}/>
+                    <Route path="visitasArticuloWebsite" element={<Dashboard sessionVals={sessionVals} panelName={"visitasArticuloWebsite"}/>}/>
+                    <Route path="visitasMensualesWebsite" element={<Dashboard sessionVals={sessionVals} panelName={"visitasMensualesWebsite"}/>}/>
+                    <Route path="likesWebsite" element={<Dashboard sessionVals={sessionVals} panelName={"likesWebsite"}/>}/>
+                    <Route path="comentariosWebsite" element={<Dashboard sessionVals={sessionVals} panelName={"comentariosWebsite"}/>}/>
+                    <Route path="visitasRadioOnline" element={<Dashboard sessionVals={sessionVals} panelName={"visitasRadioOnline"}/>}/>
+                    <Route path="timepoSintonizacionRadio" element={<Dashboard sessionVals={sessionVals} panelName={"timepoSintonizacionRadio"}/>}/>
+                    <Route path="nSuscripcionesRadio" element={<Dashboard sessionVals={sessionVals} panelName={"nSuscripcionesRadio"}/>}/>
+                </Route>
                 <Route path="usuarios" >
                   <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"usuarios"}/>}/>
-                  <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"usuario_form"}/>}/>
+                    <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"usuario_form"}/>}/>
+                </Route>
+                <Route path="iniciosSesion" >
+                  <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"inicios_sesion"}/>}/>
+                </Route>
+                <Route path="logs" >
+                  <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"logs"}/>}/>
                 </Route>
               </Route>
               <Route path="/radioOnline" element={<OnlineRadio />} />
