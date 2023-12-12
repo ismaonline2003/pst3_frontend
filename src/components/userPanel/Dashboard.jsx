@@ -58,7 +58,7 @@ const paneles = {
     suscripciones: Suscripciones,
     suscripcionForm: SuscripcionForm,
     usuarios: Usuarios,
-    usuarioForm: UsuarioForm,
+    usuario_form: UsuarioForm,
     interaccionWebsite: InteraccionWebsite,
     nVisitasWebsite: VistasWebsite
 }
