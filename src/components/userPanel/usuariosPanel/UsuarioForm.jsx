@@ -58,18 +58,29 @@ const UsuarioForm = ({}) => {
     const _setRecordData = (data) => {
         setRecordData(data);
         setLogin(data.login);
+        setPersonaID(data.person_id);
+        setPersonaData(data.person);
+        setFechaVerificacion(data.verifiedDate);
     }
 
     const recordValidations = () =>  {
         let objReturn = {'status': 'success', 'data': {}, 'msg': ''};
         const currentDate = new Date();
         const currentYear = currentDate.getFullYear();
+        let emailRegExp =  /^\w+([.-_+]?\w+)*@\w+([.-]?\w+)*(\.\w{2,10})+$/g;
         if(login.trim() == "") {
             objReturn = {'status': 'failed', 'data': {}, 'msg': 'Se debe definir un email valido para el usuario.'};
             return objReturn;
         }
         setLogin(login);
-
+        if(!emailRegExp.test(login)) {
+            objReturn = {status: 'error', data: {}, message: 'El correo electrónico especificado es inválido.'};
+            return objReturn;
+        }
+        if(!personaSelected) {
+            objReturn = {status: 'error', data: {}, message: 'Debe seleccionar una persona para el usuario.'};
+            return objReturn;
+        }
         return objReturn;
     }
 
@@ -127,7 +138,10 @@ const UsuarioForm = ({}) => {
         setBlockUI(true);
         const token = localStorage.getItem('token');
         let body = {
-            login: login
+            login: login,
+            id_persona: personaSelected,
+            password: newPassword,
+            password_repeat: newPasswordRepeated
         };
         const config = {headers:{'authorization': token}};
         let url = `${consts.backend_base_url}/api/users`;
@@ -322,11 +336,11 @@ const UsuarioForm = ({}) => {
                         <FormControl sx={{ m: 1, width: '10%' }} variant="outlined">
                             {
                                 showNewPassword && 
-                                <VisibilityOffIcon style={{fontSize: '1.6rem', marginLeft: '10px', cursor: 'pointer'}} onClick={(e) => _handleShowNewPasswordBtn(!showNewPassword)}/>
+                                <VisibilityOffIcon style={{fontSize: '2.2rem', marginLeft: '10px', cursor: 'pointer'}} onClick={(e) => _handleShowNewPasswordBtn(!showNewPassword)}/>
                             }
                             {
                                 !showNewPassword && 
-                                <RemoveRedEyeIcon style={{fontSize: '1.6rem', marginLeft: '10px', cursor: 'pointer'}}  onClick={(e) => _handleShowNewPasswordBtn(!showNewPassword)}/>
+                                <RemoveRedEyeIcon style={{fontSize: '2.2rem', marginLeft: '10px', cursor: 'pointer'}}  onClick={(e) => _handleShowNewPasswordBtn(!showNewPassword)}/>
                             }
                         </FormControl>
                     </div>
@@ -337,11 +351,11 @@ const UsuarioForm = ({}) => {
                         <FormControl sx={{ m: 1, width: '10%' }} variant="outlined">
                             {
                                 showNewPasswordRepeated && 
-                                <VisibilityOffIcon style={{fontSize: '1.6rem', marginLeft: '10px', cursor: 'pointer'}} onClick={(e) => _handleShowNewPasswordRepeatedBtn(!showNewPasswordRepeated)}/>
+                                <VisibilityOffIcon style={{fontSize: '2.2rem', marginLeft: '10px', cursor: 'pointer'}} onClick={(e) => _handleShowNewPasswordRepeatedBtn(!showNewPasswordRepeated)}/>
                             }
                             {
                                 !showNewPasswordRepeated && 
-                                <RemoveRedEyeIcon style={{fontSize: '1.6rem', marginLeft: '10px', cursor: 'pointer'}}  onClick={(e) => _handleShowNewPasswordRepeatedBtn(!showNewPasswordRepeated)}/>
+                                <RemoveRedEyeIcon style={{fontSize: '2.2em', marginLeft: '10px', cursor: 'pointer'}}  onClick={(e) => _handleShowNewPasswordRepeatedBtn(!showNewPasswordRepeated)}/>
                             }
                         </FormControl>
                     </div>
