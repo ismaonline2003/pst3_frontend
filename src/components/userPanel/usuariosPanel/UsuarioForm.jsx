@@ -27,6 +27,27 @@ import DeleteDialog from '../../generales/DeleteDialog';
 
 const changePasswordLabel = { inputProps: { 'aria-label': 'Cambiar Contraseña' } };
 
+const rolesStr = {"A": "Administrador", "P": "Profesor", "ER": "Emisor de Radio", "E": "Emisor"};
+
+const rolVals = [
+    {
+        value: 'A',
+        label: 'Administrador',
+    },
+    {
+        value: 'P',
+        label: 'Profesor',
+    },
+    {
+        value: 'ER',
+        label: 'Emisor de Radio',
+    },
+    {
+        value: 'E',
+        label: 'Emisor',
+    }
+];
+
 
 const UsuarioForm = ({}) => {
     //logic
@@ -39,6 +60,7 @@ const UsuarioForm = ({}) => {
     const [personaID, setPersonaID] = useState(0);
     const [personaData, setPersonaData] = useState({});
     const [login, setLogin] = useState("");
+    const [rol, setRol] = useState("E");
     const [fechaVerificacion, setFechaVerificacion] = useState("");
 
 
@@ -71,6 +93,7 @@ const UsuarioForm = ({}) => {
         setPersonaID(data.person_id);
         setPersonaData(data.person);
         setFechaVerificacion(data.verifiedDate);
+        setRol(data.rol);
     }
 
     const recordValidations = () =>  {
@@ -135,6 +158,10 @@ const UsuarioForm = ({}) => {
                 return objReturn;
             }
         }
+        if(!["A","P","ER","E"].includes(rol)) {
+            objReturn = {status: 'failed', data: {}, msg: `El rol de usuario es inválido, debe seleccionar uno de los siguientes roles: "Administrador", "Profesor", "Emisor de Radio", "Espectador"`};
+            return objReturn;
+        }
         return objReturn;
     }
 
@@ -174,7 +201,8 @@ const UsuarioForm = ({}) => {
             login: login,
             change_password: showPasswordFields,
             password: newPassword,
-            password_repeat: newPasswordRepeated
+            password_repeat: newPasswordRepeated,
+            rol: rol
         };
         const config = {headers:{'authorization': token}};
         let url = `${consts.backend_base_url}/api/users/${id}`;
@@ -201,7 +229,8 @@ const UsuarioForm = ({}) => {
             login: login,
             id_persona: personaSelected,
             password: newPassword,
-            password_repeat: newPasswordRepeated
+            password_repeat: newPasswordRepeated,
+            rol: rol
         };
         const config = {headers:{'authorization': token}};
         let url = `${consts.backend_base_url}/api/users`;
@@ -309,7 +338,7 @@ const UsuarioForm = ({}) => {
     
       }
 
-      const _handleShowNewPasswordRepeatedBtn = (val) => {
+    const _handleShowNewPasswordRepeatedBtn = (val) => {
         setShowNewPasswordRepeated(val);
         if(val) {
             setNewPasswordRepeatedInputType('text');
@@ -317,8 +346,7 @@ const UsuarioForm = ({}) => {
         if(!val) {
             setNewPasswordRepeatedInputType('password');
         }
-    
-      }
+    }
 
     return (
         <div className='m-4'>
@@ -372,6 +400,26 @@ const UsuarioForm = ({}) => {
                         <FormControl sx={{ m: 1, width: '95%' }} variant="outlined">
                             <TextField id="persona_id" label="Datos del Usuario" disabled variant="outlined" value={`${personaData.name} ${personaData.lastname} - C.I: ${personaData.ci_type}-${personaData.ci}`}/>
                         </FormControl>
+                    </div>
+                    <div className='d-flex flex-row flex-wrap'>
+                        {
+                            !unlockFields && 
+                            <FormControl sx={{ m: 1, width: '95%' }} variant="outlined">
+                                <TextField id="rol" label="Rol de Usuario" disabled variant="outlined" value={rolesStr[rol]}/>
+                            </FormControl>
+                        }
+                        {
+                            unlockFields && 
+                            <FormControl sx={{ m: 1, width: '90%' }} variant="outlined">
+                                <TextField id="rol" select label="Rol de Usuario" defaultValue={rol} onChange={(e) => setRol(e.target.value)}>
+                                    {rolVals.map((option) => (
+                                        <MenuItem key={option.value} value={option.value}>
+                                            {option.label}
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+                            </FormControl>
+                        }
                     </div>
                     <div className='d-flex flex-row flex-wrap'>
                         {
@@ -437,6 +485,17 @@ const UsuarioForm = ({}) => {
                                 {personasList.map((option) => (
                                     <MenuItem key={option.id} value={option.id}>
                                         {option.name} {option.lastname} - C.I: {option.ci_type}-{option.ci}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                        </FormControl>
+                    </div>
+                    <div className='d-flex flex-row flex-wrap'>
+                        <FormControl sx={{ m: 1, width: '90%' }} variant="outlined">
+                            <TextField id="rol" select label="Rol de Usuario" defaultValue={rol} onChange={(e) => setRol(e.target.value)}>
+                                {rolVals.map((option) => (
+                                    <MenuItem key={option.value} value={option.value}>
+                                        {option.label}
                                     </MenuItem>
                                 ))}
                             </TextField>
