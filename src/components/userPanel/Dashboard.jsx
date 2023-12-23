@@ -56,7 +56,8 @@ const paneles = {
     grabaciones: Grabaciones,
     grabacion_form: GrabacionForm,
     suscripciones: Suscripciones,
-    suscripcionForm: SuscripcionForm,
+    suscripcion_form: SuscripcionForm,
+    suscripciones_web: Suscripciones,
     usuarios: Usuarios,
     usuario_form: UsuarioForm,
     interaccionWebsite: InteraccionWebsite,
@@ -101,7 +102,15 @@ const Dashboard = ({sessionVals, panelName}) => {
                     </Grid>
                     <Grid item xs={contentScreenXs} marginBottom={'0'}>
                         <Container className='p-0 w-100' style={{height: '100%'}}>
-                            <Panel className='p-0 m-0 w-100'/>
+                            {
+                                panelName != 'suscripciones_web' &&
+                                <Panel className='p-0 m-0 w-100'/>
+                            }
+
+                            {
+                                (panelName == 'suscripciones_web' || panelName == 'suscripciones_web_form')  &&
+                                <Panel className='p-0 m-0 w-100' tipoDomain="portal_noticias"/>
+                            }  
                         </Container>
                         <Footer/>
                     </Grid>

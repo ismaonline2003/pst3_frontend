@@ -22,11 +22,13 @@ import consts from '../../../settings/consts';
 
 const searchBarParameters = [
     { value: 'ref', label: 'Referencia', type: "number"},
-    { value: 'nombre', label: 'Nombre', type: "search"}
+    { value: 'username', label: 'Nombre de Usuario', type: "search"},
+    { value: 'persona', label: 'Persona', type: "search"},
+    { value: 'fecha_suscripcion', label: 'Fecha', type: "date"}
 ];
 const searchSelectValues = [];
 
-export default function Suscripciones({}) {
+export default function Suscripciones({tipo}) {
     const StyledH1 = styledComponents.dahsboardPanelh1;
     const [ records, setRecords ] = useState([]);
     const { blockUI, setBlockUI, setNotificationMsg, setNotificationType, setShowNotification} = useContext(AppContext);
@@ -48,10 +50,15 @@ export default function Suscripciones({}) {
         setBlockUI(true);
         const token = localStorage.getItem('token');
         const config = {headers:{ authorization: token}};
-        let url = `${consts.backend_base_url}/api/suscripcion?limit=${searchVals.limit}`;
-        if(searchVals.parameter != "" && searchVals.value != "") {
-            url += `&parameter=${searchVals.parameter}&value=${searchVals.value}`;
+        let tipo_suscripcion = "portal_noticias";
+        if(!tipo) {
+            tipo_suscripcion = "radio";
         }
+        let url = `${consts.backend_base_url}/api/suscripcion?limit=${searchVals.limit}&tipo=${tipo_suscripcion}`;
+        if(searchVals.parameter != "" && searchVals.value != "") {
+            url += `&parameter=${searchVals.parameter}&value=${searchVals.value}&tipo=${tipo_suscripcion}`;
+        }
+        console.log(tipo);
         axios.get(url, config).then((response) => {
             console.log(response.data);
             setRecords(response.data);

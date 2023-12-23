@@ -151,6 +151,10 @@ function App() {
                   <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"suscripciones"}/>}/>
                   <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"suscripcion_form"}/>}/>
                 </Route>
+                <Route path="suscripciones_web" >
+                  <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"suscripciones_web"}/>}/>
+                  <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"suscripcion_web_form"}/>}/>
+                </Route>
                 <Route path="estadisticas" >
                     <Route path="interaccionWebsite" element={<Dashboard sessionVals={sessionVals} panelName={"interaccionWebsite"}/>}/>
                     <Route path="nVisitasWebsite" element={<Dashboard sessionVals={sessionVals} panelName={"nVisitasWebsite"}/>}/>
