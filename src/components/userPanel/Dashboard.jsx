@@ -35,6 +35,9 @@ import UsuarioForm from './usuariosPanel/UsuarioForm';
 import Footer from './Footer';
 import InteraccionWebsite from './estadisticasPanel/InteraccionWebsite';
 import VistasWebsite from './estadisticasPanel/VistasWebsite';
+import IniciosSesionLogs from './auditoria/iniciosSesionLogs';
+import Logs from './auditoria/Logs';
+
 
 const paneles = {
     emision_panel: EmisionPanel,
@@ -60,6 +63,8 @@ const paneles = {
     suscripciones_web: Suscripciones,
     usuarios: Usuarios,
     usuario_form: UsuarioForm,
+    inicios_sesion: IniciosSesionLogs,
+    logs: Logs,
     interaccionWebsite: InteraccionWebsite,
     nVisitasWebsite: VistasWebsite
 }

@@ -1,12 +1,8 @@
 import * as React from 'react';
 import { useState, useEffect, useContext } from 'react';
 import axios from "axios";
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import SearchBar from '../SearchBar';
-import styledComponents from '../../styled';
-import AppContext from '../../../context/App';
-import consts from '../../../settings/consts';
-import getTurnoName from '../../../helpers/getTurnoName';
+import { Link } from 'react-router-dom';
+
 //simple table
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -16,67 +12,24 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import TablePagination from '@mui/material/TablePagination';
-//link
-import { Link } from 'react-router-dom';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 
 
-/*
-    number: solo valores numericos
-    search: valores de texto
-*/
+//own 
+import SearchBar from '../SearchBar';
+import styledComponents from '../../styled';
+import AppContext from '../../../context/App';
+import consts from '../../../settings/consts';
+import SearchBarReadOnly from '../SearchBarReadOnly';
+
 const searchBarParameters = [
     { value: 'ref', label: 'Referencia', type: "number"},
-    { value: 'nombre', label: 'Nombre', type: "search"},
-    { value: 'seccion', label: 'Seccion', type: "search"},
-    { value: 'trayecto', label: 'Trayecto', type: "selection"},
-    { value: 'turno', label: 'Turno', type: "selection"},
-    { value: 'pnf', label: 'PNF', type: "search"}
+    { value: 'usuario', label: 'Usuario', type: "search"},
+    { value: 'fecha', label: 'Fecha', type: "date"}
 ];
+const searchSelectValues = [];
 
-const searchSelectValues = {
-    'trayecto': [
-        {
-            value: '0',
-            label: 'Inicial',
-        },
-        {
-            value: '1',
-            label: '1',
-        },
-        {
-            value: '2',
-            label: '2',
-        },
-        {
-            value: '3',
-            label: '3',
-        },
-        {
-            value: '4',
-            label: '4',
-        },
-        {
-            value: '5',
-            label: '5',
-        }
-    ],
-    'turno': [
-        {
-        value: '1',
-        label: 'Mañana',
-        },
-        {
-        value: '2',
-        label: 'Tarde',
-        },
-        {
-        value: '3',
-        label: 'Noche',
-        }
-    ]
-}
-
-export default function Proyectos({}) {
+export default function IniciosSesionLogs({}) {
     const StyledH1 = styledComponents.dahsboardPanelh1;
     const [ records, setRecords ] = useState([]);
     const { blockUI, setBlockUI, setNotificationMsg, setNotificationType, setShowNotification} = useContext(AppContext);
@@ -98,7 +51,7 @@ export default function Proyectos({}) {
         setBlockUI(true);
         const token = localStorage.getItem('token');
         const config = {headers:{ authorization: token}};
-        let url = `${consts.backend_base_url}/api/proyecto?limit=${searchVals.limit}`;
+        let url = `${consts.backend_base_url}/api/logs_sistema/api/login?limit=${searchVals.limit}`;
         if(searchVals.parameter != "" && searchVals.value != "") {
             url += `&parameter=${searchVals.parameter}&value=${searchVals.value}`;
         }
@@ -127,9 +80,9 @@ export default function Proyectos({}) {
     return (
         <React.Fragment>
             <br /> 
-            <StyledH1>Proyectos</StyledH1>
+            <StyledH1>Inicios de Sesión</StyledH1>
             <br />
-            <SearchBar selectOptions={searchBarParameters} externalHandleSearchBtn={handleSearchBtn} crearRoute={"/dashboard/proyectos/0"} searchSelectValues={searchSelectValues} />
+            <SearchBarReadOnly selectOptions={searchBarParameters} externalHandleSearchBtn={handleSearchBtn} crearRoute={""} searchSelectValues={searchSelectValues}/>
             <br />
             <div style={{ height: 400, width: '100%' }}>
             <Paper sx={{ width: '100%', mb: 2 }}>
@@ -138,14 +91,12 @@ export default function Proyectos({}) {
                         <TableHead>
                             <TableRow>
                                 <TableCell align="left">Ref</TableCell>
-                                <TableCell align="left">Nombre</TableCell>
-                                <TableCell align="left">Sección</TableCell>
-                                <TableCell align="left">Trayecto</TableCell>
-                                <TableCell align="left">PNF</TableCell>
-                                <TableCell align="left">Ver</TableCell>
+                                <TableCell align="left">Usuario</TableCell>
+                                <TableCell align="left">Fecha</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
+                        {console.log(records)}
                         {records.filter((item, index) => index < (page+1)*rowsPerPage && index >= (page)*rowsPerPage).map((row, index) => {
                                 return (
                                     <TableRow
@@ -155,14 +106,9 @@ export default function Proyectos({}) {
                                             <TableCell component="th" scope="row">
                                                 {row.id}
                                             </TableCell>
-                                            <TableCell align="left">{row.nombre}</TableCell>
-                                            <TableCell align="left">{row.seccion.nombre}</TableCell>
-                                            <TableCell align="left">{row.seccion.trayecto}</TableCell>
-                                            <TableCell align="left">{row.seccion.pnf_id}</TableCell>
-                                            <TableCell align="left">
-                                                <Link to={`/dashboard/proyectos/${row.id}`}>
-                                                    <VisibilityIcon color="secondary"/>
-                                                </Link>
+                                            <TableCell align="left">{row.user.person.name} {row.user.person.lastname} - {row.user.login}</TableCell>
+                                            <TableCell component="th" scope="row">
+                                                {row.fecha}
                                             </TableCell>
                                     </TableRow>
                                 )
@@ -184,4 +130,3 @@ export default function Proyectos({}) {
         </React.Fragment>
     );
 }
-

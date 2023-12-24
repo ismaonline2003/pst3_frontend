@@ -125,6 +125,9 @@ export default function SearchBarReadOnly({selectOptions, externalHandleSearchBt
                     ))}
                 </TextField>
             </div>
+            <div>
+                <Button variant="contained" onClick={(e) => handleSearchBtn()} style={{marginLeft: '10px'}}>Buscar</Button>
+            </div>
         </div>
     );
 }
