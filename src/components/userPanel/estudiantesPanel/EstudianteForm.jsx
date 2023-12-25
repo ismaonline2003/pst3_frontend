@@ -71,7 +71,6 @@ const EstudianteForm = ({}) => {
             const config = {headers:{ authorization: token}};
             let url = `${consts.backend_base_url}/api/estudiante/${id}`;
             axios.get(url, config).then((response) => {
-                console.log(response);
                 setEstudiante(response.data);
                 setCIType(response.data.person.ci_type ? response.data.person.ci_type : "V");
                 setCI(response.data.person.ci);
@@ -84,9 +83,10 @@ const EstudianteForm = ({}) => {
                 setAddress(response.data.person.address);
                 setYearIngreso(response.data.year_ingreso);
                 setNroExpediente(response.data.nro_expediente);
-                if(response.data.person.foto_carnet) {
-                    const base64Img = sequelizeImg2Base64(response.data.person.foto_carnet);
-                    setFotoCarnetStr(base64Img.b64str);
+                if(response.data.person.foto_carnet_filename) {
+                    //const base64Img = sequelizeImg2Base64(response.data.person.foto_carnet);
+                    //setFotoCarnetStr(base64Img.b64str);
+                    setFotoCarnetStr(`${consts.backend_base_url}/api/files/getFile/${response.data.person.foto_carnet_filename}`);
                 }
                 setBlockUI(false);
             }).catch((err) => {
@@ -188,9 +188,10 @@ const EstudianteForm = ({}) => {
             setAddress(response.data.person.address);
             setYearIngreso(response.data.year_ingreso);
             setNroExpediente(response.data.nro_expediente);
-            if(response.data.person.foto_carnet) {
-                const base64Img = sequelizeImg2Base64(response.data.person.foto_carnet);
-                setFotoCarnetStr(base64Img.b64str);
+            if(response.data.person.foto_carnet_filename) {
+                //const base64Img = sequelizeImg2Base64(response.data.person.foto_carnet);
+                //setFotoCarnetStr(base64Img.b64str);
+                setFotoCarnetStr(`${consts.backend_base_url}/api/files/getFile/${response.data.person.foto_carnet_filename}`);
             }
             setBlockUI(false);
             setNotificationMsg("El estudiante fue creado satisfactoriamente!!");
@@ -257,9 +258,10 @@ const EstudianteForm = ({}) => {
         setYearIngreso(estudiante.year_ingreso);
         setNroExpediente(estudiante.nro_expediente);
         setFotoCarnetObj(undefined);
-        if(estudiante.person.foto_carnet) {
-            const base64Img = sequelizeImg2Base64(estudiante.person.foto_carnet);
-            setFotoCarnetStr(base64Img.b64str);
+        if(estudiante.person.foto_carnet_filename) {
+            //const base64Img = sequelizeImg2Base64(response.data.person.foto_carnet);
+            //setFotoCarnetStr(base64Img.b64str);
+            setFotoCarnetStr(`${consts.backend_base_url}/api/files/getFile/${estudiante.person.foto_carnet_filename}`);
         }
     }
 
