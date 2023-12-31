@@ -289,10 +289,6 @@ export default function EmisionPanel({}) {
         });
     }, []);
 
-    useCallback(() => {
-        console.log('hola mundo desde useCallBack')
-    }, [fechaInicio]);
-
     return (
         <React.Fragment>
             <br />
