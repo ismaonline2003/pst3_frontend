@@ -32,11 +32,13 @@ import Suscripciones from './suscripcionesPanel/Suscripciones';
 import SuscripcionForm from './suscripcionesPanel/SuscripcionForm';
 import Usuarios from './usuariosPanel/Usuarios';
 import UsuarioForm from './usuariosPanel/UsuarioForm';
-import Footer from './Footer';
+//estadisticas
 import InteraccionWebsite from './estadisticasPanel/InteraccionWebsite';
 import VistasWebsite from './estadisticasPanel/VistasWebsite';
+//
 import IniciosSesionLogs from './auditoria/iniciosSesionLogs';
 import Logs from './auditoria/Logs';
+import Footer from './Footer';
 
 
 const paneles = {

@@ -36,3 +36,11 @@
     transform: rotate(360deg);
   }
 }
+
+.emision_microphone_icon {
+  font-size: '4rem' !important;
+}
+
+.emision_microphone_icon:hover {
+  font-size: '5rem' !important;
+}

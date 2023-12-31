@@ -1,48 +1,24 @@
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 //styledComponents
 import styledComponents from '../../styled';
 //consts
 import consts from '../../../settings/consts'
-//tabla
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
-//botones
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import DeleteIcon from '@mui/icons-material/Delete';
-import Fab from '@mui/material/Fab';
-import AddIcon from '@mui/icons-material/Add';
-//web socket
-import { io } from "socket.io-client";
+import KeyboardVoiceIcon from '@mui/icons-material/KeyboardVoice';
+
+const defaultMicrophoneIconColor = 'primary';
+const defaultMicrophoneIconStyles = {fontSize: '4rem'};
+const hoverMicrophoneIconStyles = {fontSize: '5rem', transition: '.3s ease all', cursor: 'pointer', borderRadius: '50%'};
 
 
-export default function CanalesAudio({}) {
-    const StyledH1 = styledComponents.dahsboardPanelh1;
+export default function CanalesAudio({emisionState, socket}) {
+    console.log('emisionState', emisionState);
+    const StyledH2 = styledComponents.dahsboardPanelh2;
     const [ canalesList, setCanalesList] = useState([]);
+    const [ selectedCanalID, setSelectedCanalID] = useState(false);
     const [ wsObj, setWswsObj ] = useState(undefined);
-    const socket = io(consts.ws_server_url);
-    const onSocketConnection = () => {
-      const engine = socket.io.engine;
-      console.log("Socket Connection"); 
-      // x8WIv7-mJelg7on_ALbx
-      //socket.on("radio_audio", onRadioAudio); 
-    };
-
-    const onSocketDisconnection = () => {
-      console.log(socket.id); // undefined
-    }
-
-    socket.on("connect", onSocketConnection);
-    socket.on("disconnect", onSocketDisconnection);
-    socket.on("connect_error", (err) => {
-        console.log(`connect_error due to ${err.message}`);
-      });
+    const [ microphoneIconStyles, setMicrophoneIconStyles ] = useState(defaultMicrophoneIconStyles);
+    const [ microphoneIconColor, setMicrophoneIconColor ] = useState(defaultMicrophoneIconColor);
 
     const activarDispositivo = (canalID) => {    
         navigator.mediaDevices
@@ -75,7 +51,7 @@ export default function CanalesAudio({}) {
                     canal[0].device_media_recorder.onstart = (ev) => {
                         setTimeout(() => {
                             canal[0].device_media_recorder.stop();
-                        }, 9000);
+                        }, 5000);
                     }
 
                     canal[0].device_media_recorder.start();
@@ -125,68 +101,44 @@ export default function CanalesAudio({}) {
         }
     }, [])
 
+    const _onClickKeyboardVoiceIcon = (canal) => {
+        activarDispositivo(canal.id);
+        setSelectedCanalID(canal.id);
+        setMicrophoneIconColor('error');
+    }
+
+    const _onMouseOverKeyboardVoiceIcon = (e) => {
+        setMicrophoneIconStyles(hoverMicrophoneIconStyles);
+        if(!selectedCanalID) {
+            setMicrophoneIconColor('warning');
+        }
+    }
+
+    const _onMouseOutKeyboardVoiceIcon = (e) => {
+        setMicrophoneIconStyles(defaultMicrophoneIconStyles);
+        if(!selectedCanalID) {
+            setMicrophoneIconColor('primary');
+        }
+    }
+
     return (
         <React.Fragment>
-            <StyledH1>Canales de Dispositivos de Audio</StyledH1>
-            <br />
-            <TableContainer component={Paper}>
-            <Table sx={{ minWidth: 650 }} aria-label="simple table">
-                <TableHead>
-                <TableRow>
-                    <TableCell align="center">#</TableCell>
-                    <TableCell align="center">Activar</TableCell>
-                    <TableCell align="center">Eliminar</TableCell>
-                </TableRow>
-                </TableHead>
-                <TableBody>
-                {canalesList.map((row) => (
-                    <TableRow
-                        key={row.id}
-                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+            <div className='d-flex justify-center text-center'>
+                {
+                    emisionState == 'online'  &&
+                    <KeyboardVoiceIcon style={microphoneIconStyles} 
+                        variant="contained" 
+                        color={microphoneIconColor}
+                        disableElevation 
+                        onMouseOver={(e) => _onMouseOverKeyboardVoiceIcon(e)}
+                        onMouseOut={(e) => _onMouseOutKeyboardVoiceIcon(e)}
+                        onClick={(e) => _onClickKeyboardVoiceIcon(canalesList[0])}
                     >
-                        <TableCell align="center">{row.nro}</TableCell>
-                        <TableCell align="center">
-                            {/*
-                                <Button variant="contained" disableElevation color="warning">
-                                    Activar Dispositivo
-                                </Button>
-                                <AudioRecorder 
-                                    onRecordingComplete={addAudioElement}
-                                    showVisualizer={true}
-                                    audioTrackConstraints={{
-                                        noiseSuppression: true,
-                                        echoCancellation: true,
-                                    }} 
-                                    downloadFileExtension="mp3"
-                                />
-                            */}
-
-                            <Button variant="contained" disableElevation color="warning" onClick={(e) => activarDispositivo(row.id)}>
-                                Activar
-                            </Button>
-                        </TableCell>
-                        <TableCell align="center">
-                            <IconButton aria-label="delete" onClick={(e) => eliminarCanal(row.id)}>
-                                <DeleteIcon/>
-                            </IconButton>
-                        </TableCell>
-                    </TableRow>
-                ))}
-                <TableRow
-                    key={"add-canal-audio-row"}
-                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                >
-                        <TableCell align="right"></TableCell>
-                        <TableCell align="right"></TableCell>
-                        <TableCell align="right">
-                            <Fab color="primary" aria-label="add"  onClick={(e) => agregarCanal()}>
-                                <AddIcon />
-                            </Fab>
-                        </TableCell>
-                    </TableRow>
-                </TableBody>
-            </Table>
-            </TableContainer>
+                        Activar
+                    </KeyboardVoiceIcon>
+                }
+            </div>
+            <br />
         </React.Fragment>
     );
 }
