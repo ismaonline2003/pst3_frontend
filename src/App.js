@@ -11,6 +11,7 @@ import SimpleNotification from './components/generales/SimpleNotification';
 import './App.css';
 import Signup from './components/Signup';
 import RecoverPassword from './components/RecoverPassword';
+import UserVerification from './components/UserVerification';
 
 function App() {
   let default_session_obj = {
@@ -90,9 +91,11 @@ function App() {
     return (
      <AppContext.Provider value={{blockUI, setBlockUI, setNotificationMsg, setNotificationType, setShowNotification}}>
         <Routes value="dark">
+          <Route path="/" element={<Login sessionVals={sessionVals} setSessionVals={setSessionVals} setIsLogged={setIsLogged} panel=""/>} />
           <Route path="/login" element={<Login sessionVals={sessionVals} setSessionVals={setSessionVals} setIsLogged={setIsLogged} panel=""/>} />
           <Route path="/signup" element={<Signup sessionVals={sessionVals} setSessionVals={setSessionVals} setIsLogged={setIsLogged} panel=""/>} />
           <Route path="/recoverPassword" element={<RecoverPassword sessionVals={sessionVals} setSessionVals={setSessionVals} setIsLogged={setIsLogged} panel=""/>} />
+          <Route path="/userVerification/:id" element={<UserVerification sessionVals={sessionVals} setSessionVals={setSessionVals} setIsLogged={setIsLogged} panel=""/>} />
           <Route path="/radioOnline" element={<OnlineRadio />} />
         </Routes>
         {

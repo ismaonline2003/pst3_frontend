@@ -21,7 +21,7 @@ import AppContext from '../context/App';
 import styledComponents from './styled';
 import PublicHeader from './PublicHeader';
 import Footer from '../components/userPanel/Footer';
-import SuccessIcon from '../icons/success.png'
+import SuccessIcon from '../icons/success.png';
 
 const ContainerComponent = styled('div')({
   padding: '20px'
@@ -355,19 +355,15 @@ const Signup = ({sessionVals, setSessionVals, setIsLogged}) => {
                 
             </FormGroup>
           </CardContent>
-          <CardActions>
             {
               !registerSuccess && 
-              <div className='w-100 m-4 d-flex flex-row flex-wrap'>
-                <FormControl sx={{marginLeft: '20px'}}>
-                  <Button variant="contained" color="success" onClick={handleSubmit}>Registrarse</Button>
-                </FormControl>
-                <div className="w-100" style={{marginLeft: '20px', marginTop: '10px', textAlign: 'center'}}>
-                  <a href='/login'>Volver al Inicio de Sesión</a>
-                </div>
-              </div>       
+              <CardActions className='d-flex justify-around p-4'>
+                <Button variant="contained" color="success" onClick={handleSubmit}>Enviar</Button>
+                <Link to={"/login"}>
+                  <Button variant="contained" color="primary">Volver</Button>
+                </Link>
+              </CardActions>
             }
-          </CardActions>
         </Card>
       </ContainerComponent>
       <Footer />
