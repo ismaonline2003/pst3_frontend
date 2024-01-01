@@ -30,3 +30,14 @@ code {
     transform: rotate(360deg);
   }
 }
+
+a {
+  color: rgba(0, 0, 0, 0.6) !important
+}
+
+a:hover {
+  cursor: pointer;
+  color: blue;
+  transition: .3s ease all;
+  text-decoration: underline;
+}

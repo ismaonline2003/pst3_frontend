@@ -12,6 +12,7 @@ export default function BoostrapModal({props}) {
     return (
         <BootstrapDialog
             maxWidth={maxWidth}
+            fullWidth={maxWidth}
             onClose={(e) => setShowModal(false)}
             aria-labelledby="modal-title"
             open={showModal}

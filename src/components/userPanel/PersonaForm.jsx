@@ -1,16 +1,21 @@
 import { useState, useEffect, useContext, useRef } from 'react';
+
+//material UI
 import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
 import Input from '@mui/material/Input';
-import styledComponents from '../styled';
-import imgValidations from '../../helpers/imgValidations';
-import MenuItem from '@mui/material/MenuItem';
-import AppContext from '../../context/App';
-import getFormattedDate from '../../helpers/getFormattedDate';
-import SinFotoPerfil from '../../icons/sin-foto-perfil.png';
 import Button from '@mui/material/Button';
 import { createTheme, ThemeProvider, useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import MenuItem from '@mui/material/MenuItem';
+
+//own
+import styledComponents from '../styled';
+import imgValidations from '../../helpers/imgValidations';
+import AppContext from '../../context/App';
+import getFormattedDate from '../../helpers/getFormattedDate';
+import SinFotoPerfil from '../../icons/sin-foto-perfil.png';
+
 
 const ci_vals = [
     {

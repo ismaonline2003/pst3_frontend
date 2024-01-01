@@ -72,12 +72,6 @@ export default function EmisionPanel({}) {
     const [ onlineTime, setOnlineTime] = useState("");
     const { blockUI, setBlockUI, setNotificationMsg, setNotificationType, setShowNotification} = useContext(AppContext);
 
-    const CanalesAudioMemo = memo(({ emisionState, socket }) => {
-        return (
-            <CanalesAudio emisionState={emisionState} socket={socket}/>
-        );
-      });
-
     if(editor) {
         editor.setEditable(descripcion);
     }

@@ -1,13 +1,9 @@
-import { React, useState, useContext, useEffect, useRef, Fragment } from 'react'
-import { io } from "socket.io-client";
+import { React, useState, useContext, useEffect, useMemo, Fragment } from 'react'
+import { Link } from 'react-router-dom';
 import parser from 'html-react-parser';
 import axios from "axios";
-import styledComponents from '../styled';
-import { Container, FormGroup, FormControl, InputLabel, Input, Button } from '@mui/material';
-import { styled } from '@mui/system';
-import consts from '../../settings/consts';
-import AppContext from '../../context/App';
-import IconButton from '../../icons/radio-online-icon.svg'
+
+//material ui
 import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -16,6 +12,18 @@ import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import TextField from '@mui/material/TextField';
 import SendIcon from '@mui/icons-material/Send';
+import { Container, FormGroup, FormControl, InputLabel, Input, Button } from '@mui/material';
+import { styled } from '@mui/system';
+
+//socket io
+import { io } from "socket.io-client";
+
+//own
+import styledComponents from '../styled';
+import consts from '../../settings/consts';
+import AppContext from '../../context/App';
+import IconButton from '../../icons/radio-online-icon.svg'
+
 
 const ContainerComponent = styled('div')({
   padding: '20px'
@@ -25,8 +33,8 @@ const ContainerComponent = styled('div')({
 const OnlineRadio = ({}) => {
   const { blockUI, setBlockUI, setNotificationMsg, setNotificationType, setShowNotification} = useContext(AppContext);
   const [ audioBlobURL, setAudioBlobURL ] = useState("");
-  const [ username, setUsername] = useState("Usuario 1");
-  const [ userID, setUserID] = useState(1);
+  const [ username, setUsername] = useState("");
+  const [ userID, setUserID] = useState(false);
   const [ recordData, setRecordData ] = useState({});
   const [ titulo, setTitulo ] = useState("");
   const [ descripcion, setDescripcion ] = useState("");
@@ -34,16 +42,16 @@ const OnlineRadio = ({}) => {
   const [ emisionTimeStr, setEmisionTimeStr ] = useState("");
   const [ chatMessages, setChatMessages ] = useState([]);
   const [ draftMessage, setDraftMessage] = useState("");
+  const [ showSetupDialog, setShowSetupDialog ] = useState(false);
 
   //const playElement = useRef();
   const H1 = styledComponents.radioOnlineh1;
   const ImgIcon = styledComponents.radioOnlineIcon;
-  const socket = io(consts.ws_server_url);
+  const socket = useMemo(() =>  io(consts.ws_server_url), [recordData]);
 
   const messageValidations = () => {
     let objReturn = {'status': 'success', 'data': {}, 'msg': ''};
     let userMsgs = chatMessages.filter((msg) => msg.user_id === userID);
-    console.log(userMsgs);
     if(draftMessage.trim() == "") {
         objReturn = {'status': 'failed', 'data': {}, 'msg': 'Debe escribir algo en el mensaje'};
         return objReturn;
@@ -75,7 +83,7 @@ const OnlineRadio = ({}) => {
       setShowNotification(true);
       return;
     }
-    socket.emit("chatMessage", { user_id: userID, username: username, content: draftMessage});
+    socket.emit("newMessage", { user_id: userID, username: username, content: draftMessage});
     setDraftMessage("");
   }
 
@@ -94,6 +102,7 @@ const OnlineRadio = ({}) => {
 
   const onChatMessage = (data) => {
     let newChatMessagesList = [...chatMessages];
+    console.log(newChatMessagesList);
     newChatMessagesList.push(data);
     setChatMessages(newChatMessagesList);
   }
@@ -102,16 +111,16 @@ const OnlineRadio = ({}) => {
     const engine = socket.io.engine;
     console.log("Socket Connection"); // x8WIv7-mJelg7on_ALbx
     socket.on("radioAudio", onRadioAudio); 
-    socket.on("chatMessage", onChatMessage); 
+    socket.on("messages", onChatMessage); 
+    socket.on("connect_error", (err) => {
+      console.log(`connect_error due to ${err.message}`);
+    });
   };
 
   const onSocketDisconnection = () => {
     console.log("onSocketDisconnection");
     console.log(socket.id); // undefined
   }
-
-  socket.on("connect", onSocketConnection);
-  socket.on("disconnect", onSocketDisconnection);
 
   const getEmissionTime = () => { 
     if(fechaInicio) {
@@ -180,13 +189,27 @@ const OnlineRadio = ({}) => {
     });
   }
 
+  const _handleSetupBtn = () => {
+    setShowSetupDialog(true);
+  }
+
+  
+  const handleBtnConfirmSetupDialog = () => {
+    console.log('handleBtnConfirmSetupDialog')
+  }
+
   useEffect(() => {
     getEmissionTime();
   }, [fechaInicio])
 
   useEffect(() => {
     searchCurrentEmision();
-  }, [])
+  }, []);
+
+  if(socket) {
+    socket.on("connect", onSocketConnection);
+    socket.on("disconnect", onSocketDisconnection);
+  }
 
   return (
     <ContainerComponent>
@@ -219,7 +242,7 @@ const OnlineRadio = ({}) => {
         </Grid>
         <Grid item xs={4} className="text-left">
           <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
-            <ListItem alignItems="flex-start">
+            <ListItem alignItems="flex-start" key={"chat_message_title"}>
               <h3 className='font-bold'>Chat En Vivo</h3>
             </ListItem>
             {
@@ -232,7 +255,7 @@ const OnlineRadio = ({}) => {
                 */
                 return (
                   <Fragment>
-                    <ListItem alignItems="flex-start">
+                    <ListItem alignItems="flex-start" key={message.id}>
                       <ListItemText
                         secondary={
                           <div>
@@ -257,23 +280,47 @@ const OnlineRadio = ({}) => {
             }
             <br />
             <ListItem alignItems="flex-start">
-                <div className="w-100 p-0">
-                  <TextField
-                      id="textarea-chat"
-                      label="Enviar Mensaje"
-                      multiline
-                      rows={4}
-                      variant="filled"
-                      value={draftMessage}
-                      className='w-100'
-                      onChange={(e) => setDraftMessage(e.target.value)}
-                    />
-                    <br />
-                    <br />
-                    <Button variant="contained" color="info" endIcon={<SendIcon />} onClick={(e) => sendMessage(e)}>
-                      Enviar
-                    </Button>
-                </div>
+                  {
+                    userID &&
+                    <div className="w-100 p-0">
+                      <TextField
+                        id="textarea-chat"
+                        label="Enviar Mensaje"
+                        multiline
+                        rows={4}
+                        variant="filled"
+                        value={draftMessage}
+                        className='w-100'
+                        onChange={(e) => setDraftMessage(e.target.value)}
+                      />
+                      <br />
+                      <br />
+                      <Button variant="contained" color="info" endIcon={<SendIcon />} onClick={(e) => sendMessage(e)}>
+                        Enviar
+                      </Button>
+                    </div>
+                  }
+                  {
+                    !userID &&
+                    <div className="w-100 p-0">
+                      <TextField
+                        id="textarea-chat"
+                        label="Inicie Sesión para enviar un mensaje"
+                        disabled
+                        multiline
+                        rows={4}
+                        variant="filled"
+                        className='w-100'
+                      />
+                      <br />
+                      <br />
+                      <Link to={"/login"} target='_blank'>
+                        <Button variant="contained" color="primary">
+                          Iniciar Sesión
+                        </Button>
+                      </Link>
+                    </div>
+                  }
             </ListItem>
           </List>
         </Grid>

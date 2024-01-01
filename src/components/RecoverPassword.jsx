@@ -11,14 +11,14 @@ import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import Footer from '../components/userPanel/Footer';
+import Footer from './userPanel/Footer';
 
 const ContainerComponent = styled('div')({
   padding: '20px'
 });
 
 
-const Login = ({sessionVals, setSessionVals, setIsLogged}) => {
+const RecoverPassword = ({sessionVals, setSessionVals, setIsLogged}) => {
   const [login, setLogin] = useState('');
   const [password, setPassword] = useState('');
   const {blockUI, setBlockUI, setNotificationMsg, setNotificationType, setShowNotification} = useContext(AppContext);
@@ -104,16 +104,16 @@ const Login = ({sessionVals, setSessionVals, setIsLogged}) => {
           <CardContent>
             <FormGroup> 
               <div class="m-4 text-center">
-                  <StyledH1>Iniciar Sesión</StyledH1>
+                  <StyledH1>Registro de Usuario</StyledH1>
               </div>
               <FormControl sx={{m: '10px'}}>
                 <InputLabel htmlFor="login">Correo Electrónico</InputLabel>
                 <Input id="login" aria-describedby="Correo Electrónico" onChange={(e) => _onLogin(e)}/>
               </FormControl>
-              <FormControl sx={{marginTop: '20px'}}>
+              <FormControl sx={{m: '20px'}}>
                 <InputLabel htmlFor="password">Contraseña</InputLabel>
                 <div className='w-100'>
-                  <Input style={{width: '90%', padding: '10px'}} id="password" type={inputPasswordType} aria-describedby="Contraseña" onChange={(e) => _onPassword(e)}/>
+                  <Input style={{width: '90%'}} id="password" type={inputPasswordType} aria-describedby="Contraseña" onChange={(e) => _onPassword(e)}/>
                   {
                     showPassword && 
                     <RemoveRedEyeIcon style={{fontSize: '2.2rem', marginLeft: '10px', cursor: 'pointer'}} onClick={(e) => _handleShowPasswordBtn(!showPassword)}/>
@@ -124,11 +124,6 @@ const Login = ({sessionVals, setSessionVals, setIsLogged}) => {
                   }
                 </div>
               </FormControl>
-              <div class="text-center w-100">
-                  <a href='/signup'>¿No posee una cuenta? Registrese en este enlace</a>
-                  <br />
-                  <a href='/recoverPassword'>¿Olvidó su contraseña? Presione aquí para recuperar contraseña</a>
-              </div>
             </FormGroup>
           </CardContent>
           <CardActions>
@@ -143,4 +138,4 @@ const Login = ({sessionVals, setSessionVals, setIsLogged}) => {
   )
 };
 
-export default Login;
+export default RecoverPassword;

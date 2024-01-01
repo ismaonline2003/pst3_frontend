@@ -10,6 +10,11 @@ const styledComponents = {
         fontSize: '1.6rem',
         fontWeight: '700'
     }),
+    dahsboardPanelh2Success: styled('h2')({
+        color: '#64CCC5',
+        fontSize: '1.6rem',
+        fontWeight: '700'
+    }),
     dahsboardPanelh3: styled('h2')({
         color: 'rgb(51 65 85)',
         fontSize: '1.4rem',

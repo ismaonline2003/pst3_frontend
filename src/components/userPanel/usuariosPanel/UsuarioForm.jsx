@@ -19,7 +19,7 @@ import FormBtns from '../FormBtns';
 import sequelizeImg2Base64 from '../../../helpers/sequelizeImg2Base64';
 import getFormattedDate from '../../../helpers/getFormattedDate';
 import styledComponents from '../../styled'
-import FormContainer from '../FormContainer'
+import FormContainer from '../FormContainer';
 import noEncontrado from '../../../icons/no-encontrado.jpg'
 import getTurnoName from '../../../helpers/getTurnoName';
 import DeleteDialog from '../../generales/DeleteDialog';
