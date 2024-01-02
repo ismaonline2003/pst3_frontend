@@ -1,17 +1,21 @@
+import { React, useState, createContext, useEffect } from 'react';
+import {Routes, Route } from 'react-router-dom';
 //import { HelmetProvider } from 'react-helmet-async'; 
+
+//material UI
+import Backdrop from '@mui/material/Backdrop';
+import CircularProgress from '@mui/material/CircularProgress';
+
+//own
 import Login from './components/Login';
 import OnlineRadio from './components/onlineRadio/OnlineRadio';
 import Dashboard from './components/userPanel/Dashboard';
-import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
-import { React, useState, createContext, useEffect } from 'react';
-import {Routes, Route } from 'react-router-dom';
 import AppContext from './context/App';
 import SimpleNotification from './components/generales/SimpleNotification';
-import './App.css';
 import Signup from './components/Signup';
 import RecoverPassword from './components/RecoverPassword';
 import UserVerification from './components/UserVerification';
+import UserPasswordResetRequest from './components/UserPasswordResetRequest';
 
 function App() {
   let default_session_obj = {
@@ -90,11 +94,12 @@ function App() {
   if(sessionVals.isExpired) {
     return (
      <AppContext.Provider value={{blockUI, setBlockUI, setNotificationMsg, setNotificationType, setShowNotification}}>
-        <Routes value="dark">
+        <Routes value="dark">/**userPasswordResetRequest */
           <Route path="/" element={<Login sessionVals={sessionVals} setSessionVals={setSessionVals} setIsLogged={setIsLogged} panel=""/>} />
           <Route path="/login" element={<Login sessionVals={sessionVals} setSessionVals={setSessionVals} setIsLogged={setIsLogged} panel=""/>} />
           <Route path="/signup" element={<Signup sessionVals={sessionVals} setSessionVals={setSessionVals} setIsLogged={setIsLogged} panel=""/>} />
           <Route path="/recoverPassword" element={<RecoverPassword sessionVals={sessionVals} setSessionVals={setSessionVals} setIsLogged={setIsLogged} panel=""/>} />
+          <Route path="/userPasswordResetRequest/:id" element={<UserPasswordResetRequest sessionVals={sessionVals} setSessionVals={setSessionVals} setIsLogged={setIsLogged} panel=""/>} />
           <Route path="/userVerification/:id" element={<UserVerification sessionVals={sessionVals} setSessionVals={setSessionVals} setIsLogged={setIsLogged} panel=""/>} />
           <Route path="/radioOnline" element={<OnlineRadio />} />
         </Routes>

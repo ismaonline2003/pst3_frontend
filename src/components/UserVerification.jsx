@@ -31,7 +31,7 @@ const UserVerification = ({sessionVals, setSessionVals, setIsLogged}) => {
   const StyledH2 = styledComponents.dahsboardPanelh2;
   const StyledH2Success = styledComponents.dahsboardPanelh2Success;
   const [showPassword, setShowPassword] = useState(false);
-  const [status, setStatus] = useState('searching');
+  const [status, setStatus] = useState('draft');
   const { id } = useParams();
 
   const SearchRecordUser = () => {
