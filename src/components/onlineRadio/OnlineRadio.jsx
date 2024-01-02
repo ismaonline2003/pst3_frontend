@@ -33,6 +33,7 @@ const ContainerComponent = styled('div')({
 const OnlineRadio = ({}) => {
   const { blockUI, setBlockUI, setNotificationMsg, setNotificationType, setShowNotification} = useContext(AppContext);
   const [ audioBlobURL, setAudioBlobURL ] = useState("");
+  const [ suscriptionID, setSuscriptionID] = useState(false);
   const [ username, setUsername] = useState("");
   const [ userID, setUserID] = useState(false);
   const [ recordData, setRecordData ] = useState({});
@@ -189,21 +190,94 @@ const OnlineRadio = ({}) => {
     });
   }
 
-  const _handleSetupBtn = () => {
-    setShowSetupDialog(true);
+  const setUsersVals = () => {
+    let userData = localStorage.getItem('userData');
+    if(userData) {
+      userData = JSON.parse(userData);
+      const activeSuscriptionsFiltered = userData.suscripcions.filter(s => s.activa);
+      setUsername(`${userData.person.name.toLowerCase()}_${userData.person.lastname.toLowerCase()}_${userData.id}`);
+      setUserID(userData.id);
+      console.log(activeSuscriptionsFiltered);
+      if(activeSuscriptionsFiltered.length > 0) {
+        setSuscriptionID(activeSuscriptionsFiltered[0].id);
+      }
+    }
   }
 
-  
-  const handleBtnConfirmSetupDialog = () => {
-    console.log('handleBtnConfirmSetupDialog')
+  const _handleBtnSuscribe = () => {
+    if(!userID) {
+      setNotificationMsg("Debe iniciar sesión para suscribirse");
+      setNotificationType('warning');
+      setShowNotification(true);
+      return;
+    }
+
+    axios.post(`${consts.backend_base_url}/api/emision/api/suscribe`, {user_id: userID, username: username})
+    .then((response) => {
+      //logica
+      let userData = JSON.parse(localStorage.getItem('userData'));
+      userData.suscripcions.push(response.data);
+      localStorage.setItem('userData', JSON.stringify(userData));
+      setSuscriptionID(response.data.id);
+      setNotificationMsg("Su suscripción ha sido registrada exitosamente");
+      setNotificationType('success');
+      setShowNotification(true);
+      setBlockUI(false);
+    })
+    .catch((err) => {
+      setBlockUI(false);
+      if(err.response.data) {
+        setNotificationMsg(err.response.data.message);
+      } else {
+        setNotificationMsg("Ocurrió un error inesperado.. Intentelo mas tarde.");
+      }
+      setNotificationType('error');
+      setShowNotification(true);
+    });
+  }
+
+  const _handleBtnUnsuscribe = () => {
+    if(!userID) {
+      setNotificationMsg("Debe iniciar sesión para cancelar la suscripción");
+      setNotificationType('warning');
+      setShowNotification(true);
+      return;
+    }
+
+    axios.post(`${consts.backend_base_url}/api/emision/api/unsuscribe`, {id: suscriptionID})
+    .then((response) => {
+      let userData = JSON.parse(localStorage.getItem('userData'));
+      for(let i = 0; i < userData.suscripcions.length; i++) {
+        if(userData.suscripcions[i].id == suscriptionID) {
+          userData.suscripcions[i].activa = false;
+        }
+      }
+      localStorage.setItem('userData', JSON.stringify(userData));
+      setSuscriptionID(false);
+      setNotificationMsg("Usted ha cancelado su suscripción ha exitosamente");
+      setNotificationType('success');
+      setShowNotification(true);
+      setBlockUI(false);
+    })
+    .catch((err) => {
+      setBlockUI(false);
+      if(err.response.data) {
+        setNotificationMsg(err.response.data.message);
+      } else {
+        setNotificationMsg("Ocurrió un error inesperado.. Intentelo mas tarde.");
+      }
+      setNotificationType('error');
+      setShowNotification(true);
+    });
   }
 
   useEffect(() => {
     getEmissionTime();
-  }, [fechaInicio])
+  }, [fechaInicio]);
 
   useEffect(() => {
     searchCurrentEmision();
+    setUsersVals();
   }, []);
 
   if(socket) {
@@ -220,7 +294,14 @@ const OnlineRadio = ({}) => {
             <h1 style={{'color': '#00b0ff', 'fontSize': '40px', 'fontWeight': '700'}}>AgroOnline UPTCMS</h1>
             <br />
             <div>
-              <Button variant="contained" color="success">Suscribete</Button>
+              {
+                !suscriptionID &&
+                <Button variant="contained" color="success" onClick={(e) => _handleBtnSuscribe()}>Suscribete</Button>
+              }
+              {
+                userID && suscriptionID &&
+                <Button variant="contained" color="error" onClick={(e) => _handleBtnUnsuscribe()}>Cancelar Suscripción</Button>
+              }
             </div>
             <br />
             <Container maxWidth="xl" className="bg-teal-300  p-6 rounded-md">
@@ -247,12 +328,6 @@ const OnlineRadio = ({}) => {
             </ListItem>
             {
               chatMessages.map((message) => {
-                /*
-                  message = {
-                    username: 'hola',
-                    content: ''
-                  }
-                */
                 return (
                   <Fragment>
                     <ListItem alignItems="flex-start" key={message.id}>

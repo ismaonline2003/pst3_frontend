@@ -25,6 +25,7 @@ const Login = ({sessionVals, setSessionVals, setIsLogged}) => {
   const StyledH1 = styledComponents.dahsboardPanelh1;
   const [showPassword, setShowPassword] = useState(false);
   const [inputPasswordType, setInputPassowrdType] = useState('password');
+  const [userRol, setUserRol] = useState("");
 
   const loginValidations = () => {
     let objReturn = {status: 'success', data: {}, message: ''};
@@ -70,6 +71,7 @@ const Login = ({sessionVals, setSessionVals, setIsLogged}) => {
         isExpired: false,
         userData: response.data.userData
       });
+      setUserRol(response.data.userData.rol);
       setIsLogged(true);
       setBlockUI(false);
     })
