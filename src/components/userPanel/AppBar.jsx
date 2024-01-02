@@ -87,7 +87,9 @@ export default function PrimarySearchAppBar({isSideBarOpen, setIsSideBarOpen}) {
     localStorage.setItem('token_exp_time', '');
     localStorage.setItem('userData', '{}');
     setLoginRedirect(true);
-    window.location.reload(true);
+    setTimeout(() => {
+      window.location.reload(true);
+    }, 500);
   };
 
   const menuId = 'primary-search-account-menu';

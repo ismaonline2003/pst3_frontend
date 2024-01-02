@@ -9,6 +9,9 @@ import CircularProgress from '@mui/material/CircularProgress';
 //own
 import Login from './components/Login';
 import OnlineRadio from './components/onlineRadio/OnlineRadio';
+import EmisionesRadio from './components/onlineRadio/EmisionesRadio';
+import OnlineRadioMyAccountSettings from './components/onlineRadio/OnlineRadioMyAccountSettings';
+import OnlineRadioMyAccountLogout from './components/onlineRadio/OnlineRadioMyAccountLogout';
 import Dashboard from './components/userPanel/Dashboard';
 import AppContext from './context/App';
 import SimpleNotification from './components/generales/SimpleNotification';
@@ -201,7 +204,15 @@ function App() {
                   </Route>
                 </Route>
               }
-              <Route path="/radioOnline" element={<OnlineRadio />} />
+              <Route path="/radioOnline" element={<OnlineRadio/>} />
+              {
+                isLogged && 
+                <Fragment>
+                  <Route path="/emisionesRadio" element={<EmisionesRadio />}/>
+                  <Route path="/radioOnlineUserConfig" element={<OnlineRadioMyAccountSettings />}/>
+                  <Route path="/radioOnlineLogout" element={<OnlineRadioMyAccountLogout />}/>
+                </Fragment>
+              }
           </Routes>
           {
             showNotification == true && 

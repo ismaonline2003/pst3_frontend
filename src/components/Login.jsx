@@ -74,6 +74,9 @@ const Login = ({sessionVals, setSessionVals, setIsLogged}) => {
       setUserRol(response.data.userData.rol);
       setIsLogged(true);
       setBlockUI(false);
+      setTimeout(() => {
+        window.location.reload(true);
+      }, 500);
     })
     .catch((err) => {
       setBlockUI(false);
