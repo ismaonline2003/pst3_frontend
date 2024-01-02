@@ -36,10 +36,22 @@ const OnlineRadioMyAccountSettings = ({}) => {
 
   //const playElement = useRef();
   const H1 = styledComponents.radioOnlineh1;
+  const [ userID, setUserID] = useState(false);
+
+  useEffect(() => {
+    let userData = localStorage.getItem('userData');
+    if(userData != '{}') {
+      userData = JSON.parse(userData);
+      if(userData) {
+        setUserID(userData.id);
+      }
+    }
+  }, []);
+
 
   return (
     <Fragment>
-      <OnlineRadioNavbar/>
+      <OnlineRadioNavbar userID={userID}/>
       <ContainerComponent>
         <Container maxWidth="md">
         </Container>

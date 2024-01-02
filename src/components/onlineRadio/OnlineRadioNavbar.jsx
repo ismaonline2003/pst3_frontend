@@ -131,7 +131,7 @@ function OnlineRadioNavbar({userID}) {
           </Box>
 
           <Box sx={{ flexGrow: 0 }}>
-            <Tooltip title="Mi Perfil">
+            <Tooltip title="Mi Cuenta">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                 <AccountCircleIcon alt={title} sx={{fontSize: '2.5rem', color: 'white'}} />
               </IconButton>

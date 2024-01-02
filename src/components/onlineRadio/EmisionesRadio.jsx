@@ -33,13 +33,24 @@ const ContainerComponent = styled('div')({
 
 const EmisionesRadio = ({}) => {
   const { blockUI, setBlockUI, setNotificationMsg, setNotificationType, setShowNotification} = useContext(AppContext);
+  const [ userID, setUserID] = useState(false);
 
   //const playElement = useRef();
   const H1 = styledComponents.radioOnlineh1;
 
+  useEffect(() => {
+    let userData = localStorage.getItem('userData');
+    if(userData != '{}') {
+      userData = JSON.parse(userData);
+      if(userData) {
+        setUserID(userData.id);
+      }
+    }
+  }, [])
+
   return (
     <Fragment>
-      <OnlineRadioNavbar/>
+      <OnlineRadioNavbar userID={userID}/>
       <ContainerComponent>
         <Container maxWidth="md">
         </Container>
