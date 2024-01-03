@@ -10,6 +10,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Login from './components/Login';
 import OnlineRadio from './components/onlineRadio/OnlineRadio';
 import EmisionesRadio from './components/onlineRadio/EmisionesRadio';
+import RadionOnlineEmision from './components/onlineRadio/RadionOnlineEmision';
 import OnlineRadioMyAccountSettings from './components/onlineRadio/OnlineRadioMyAccountSettings';
 import OnlineRadioMyAccountLogout from './components/onlineRadio/OnlineRadioMyAccountLogout';
 import Dashboard from './components/userPanel/Dashboard';
@@ -172,6 +173,10 @@ function App() {
                     <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"grabaciones"}/>}/>
                     <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"grabacion_form"}/>}/>
                   </Route>
+                  <Route path="autores" >
+                    <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"autores"}/>}/>
+                    <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"autor_form"}/>}/>
+                  </Route>
                   <Route path="suscripciones" >
                     <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"suscripciones"}/>}/>
                     <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"suscripcion_form"}/>}/>
@@ -205,10 +210,11 @@ function App() {
                 </Route>
               }
               <Route path="/radioOnline" element={<OnlineRadio/>} />
+              <Route path="/emisionesRadio" element={<EmisionesRadio />}/>
+              <Route path="/radionOnlineEmision/:id" element={<RadionOnlineEmision />}/>
               {
                 isLogged && 
                 <Fragment>
-                  <Route path="/emisionesRadio" element={<EmisionesRadio />}/>
                   <Route path="/radioOnlineUserConfig" element={<OnlineRadioMyAccountSettings />}/>
                   <Route path="/radioOnlineLogout" element={<OnlineRadioMyAccountLogout />}/>
                 </Fragment>

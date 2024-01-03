@@ -39,7 +39,8 @@ import VistasWebsite from './estadisticasPanel/VistasWebsite';
 import IniciosSesionLogs from './auditoria/iniciosSesionLogs';
 import Logs from './auditoria/Logs';
 import Footer from './Footer';
-
+import Autores from './autorPanel/Autores';
+import AutorForm from './autorPanel/AutorForm';
 
 const paneles = {
     emision_panel: EmisionPanel,
@@ -60,6 +61,8 @@ const paneles = {
     categoria_noticia_form: CategoriaNoticiaForm,
     grabaciones: Grabaciones,
     grabacion_form: GrabacionForm,
+    autores: Autores,
+    autor_form: AutorForm,
     suscripciones: Suscripciones,
     suscripcion_form: SuscripcionForm,
     suscripciones_web: Suscripciones,

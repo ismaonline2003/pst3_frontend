@@ -131,6 +131,11 @@ export default function NestedList() {
                         <ListItemText primary="Grabaciones" />
                     </ListItemButton>
                 </Link>
+                <Link to="/dashboard/autores">
+                    <ListItemButton sx={{ pl: 4 }}>
+                        <ListItemText primary="Autores" />
+                    </ListItemButton>
+                </Link>
                 <Link to="/dashboard/suscripciones">
                     <ListItemButton sx={{ pl: 4 }}>
                         <ListItemText primary="Suscripciones" />

@@ -1,21 +1,22 @@
 import { useState, useEffect, useContext } from 'react';
-import parser from 'html-react-parser';
-import { useParams, Navigate } from 'react-router-dom';
+import { useParams, Navigate, Link } from 'react-router-dom';
 import axios from "axios";
-
-//material UI
-import FormControl from '@mui/material/FormControl';
-import TextField from '@mui/material/TextField';
-//own
 import AppContext from '../../../context/App';
 import consts from '../../../settings/consts';
+import FormControl from '@mui/material/FormControl';
+import TextField from '@mui/material/TextField';
+import MenuItem from '@mui/material/MenuItem';
+import FormBtns from '../FormBtns';
+import sequelizeImg2Base64 from '../../../helpers/sequelizeImg2Base64';
 import getFormattedDate from '../../../helpers/getFormattedDate';
 import styledComponents from '../../styled'
 import FormContainer from '../FormContainer'
+import noEncontrado from '../../../icons/no-encontrado.jpg'
+import Button from '@mui/material/Button';
+import getTurnoName from '../../../helpers/getTurnoName';
 import DeleteDialog from '../../generales/DeleteDialog';
-import getEmisionFormattedDate from '../../../helpers/getEmisionFormattedDate';
 
-const GrabacionForm = ({}) => {
+const AutorForm = ({}) => {
     //logic
     const [reLoad, setReload] = useState(false);
     const [redirect, setRedirect] = useState(false);
@@ -24,13 +25,6 @@ const GrabacionForm = ({}) => {
 
     //bd values
     const [nombre, setNombre] = useState("");
-    const [emisor, setEmisor] = useState("");
-    const [descripcion, setDescripcion] = useState("");
-    const [status, setStatus] = useState("");
-    const [duracion, setDuracion] = useState("");
-    const [fechaInicio, setFechaInicio] = useState("");
-    const [fechaFin, setFechaFin] = useState("");
-    const [urlGrabacion, setUrlGrabacion] = useState("");
 
     //Ui fields
     const [showDeleteDialog, setShowDeleteDialog ] = useState(false);
@@ -43,22 +37,8 @@ const GrabacionForm = ({}) => {
     const StyledH2 = styledComponents.dahsboardPanelh2;
 
     const _setRecordData = (data) => {
-        let duracionMinutos = data.duracion/60;
-        const duracionStr = getEmisionFormattedDate({fecha_inicio: new Date(data.fecha_inicio)});
-        if(duracionMinutos != 1) {
-            duracionMinutos = `${duracionMinutos} minutos`
-        } else {
-            duracionMinutos = `${duracionMinutos} minuto`
-        }
         setRecordData(data);
-        setNombre(data.titulo);
-        setEmisor(`${data.user.person.name} ${data.user.person.lastname}`);
-        setDescripcion(data.descripcion);
-        setStatus("Finalizada");
-        setDuracion(duracionStr);
-        setFechaInicio(getFormattedDate(new Date(data.fecha_inicio), true));
-        setFechaFin(getFormattedDate(new Date(data.fecha_fin), true));
-        setUrlGrabacion(`${consts.frontend_base_url}/radionOnlineEmision/${data.id}`);
+        setNombre(data.name);
     }
 
     const recordValidations = () =>  {
@@ -79,9 +59,11 @@ const GrabacionForm = ({}) => {
         if(id != "0") {
             const token = localStorage.getItem('token');
             const config = {headers:{ authorization: token}};
-            let url = `${consts.backend_base_url}/api/grabacion/${id}`;
+            let url = `${consts.backend_base_url}/api/autor/${id}`;
             axios.get(url, config).then((response) => {
+                //set record data
                 _setRecordData(response.data);
+                setRecordFound(true);
                 setBlockUI(false);
             }).catch((err) => {
                 if(err.response.status == 404) {
@@ -103,14 +85,11 @@ const GrabacionForm = ({}) => {
     const updateRecordData = () => {
         setBlockUI(true);
         const token = localStorage.getItem('token');
-        let body = {
-            nombre: nombre
-        };
+        const body = {name: nombre};
         const config = {headers:{'authorization': token}};
-        let url = `${consts.backend_base_url}/api/grabacion/${id}`;
+        const url = `${consts.backend_base_url}/api/autor/${id}`;
         axios.put(url, body, config).then((response) => {
             //set record data
-            _setRecordData(response.data);
             setBlockUI(false);
             setNotificationMsg(response.data.message);
             setNotificationType('success');
@@ -126,17 +105,16 @@ const GrabacionForm = ({}) => {
     const createRecord = () => {
         setBlockUI(true);
         const token = localStorage.getItem('token');
-        let body = {
-            nombre: nombre
-        };
+        let body = {name: nombre};
         const config = {headers:{'authorization': token}};
-        let url = `${consts.backend_base_url}/api/grabacion`;
+        const url = `${consts.backend_base_url}/api/autor`;
         axios.post(url, body, config).then((response) => {
             //set record data
             _setRecordData(response.data);
             setNotificationMsg("El registro fue creado exitosamente!!");
             setNotificationType('success');
             setShowNotification(true);
+            setNewId(response.data.id);
             setReload(true);
             setBlockUI(false);
         }).catch((err) => {
@@ -177,7 +155,7 @@ const GrabacionForm = ({}) => {
         setBlockUI(true);
         const token = localStorage.getItem('token');
         const config = {headers:{'authorization': token}};
-        let url = `${consts.backend_base_url}/api/grabacion/${id}`;
+        const url = `${consts.backend_base_url}/api/autor/${id}`;
         axios.delete(url, config).then((response) => {
             setBlockUI(false);
             setNotificationMsg(response.data.message);
@@ -202,54 +180,50 @@ const GrabacionForm = ({}) => {
     return (
         <div className='m-4'>
             {
+                id == '0' && recordFound && 
                 <div className='text-center mb-10'>
-                    <StyledH1>Grabación</StyledH1>
+                    <StyledH1>Crear un nuevo Autor</StyledH1>
                 </div>
             }
             {
-                reLoad && <Navigate to={`/dashboard/grabaciones/${newId}`} />
+                id != '0' && recordFound &&
+                <div className='text-center mb-10'>
+                    <StyledH1>Actualizar Autor</StyledH1>
+                </div>
             }
             {
-                redirect && <Navigate to="/dashboard/grabaciones" />
+                recordFound && showFormBtns && 
+                <FormBtns 
+                    setUnlockFields={setUnlockFields} 
+                    handleConfirmarBtn={handleConfirmarBtn} 
+                    handleCancelarBtn={handleCancelarBtn} 
+                    showEditBtn={true ? id == '0' : false}
+                    deleteApplies={true}
+                    handleDeleteBtn={handleDeleteBtn}
+                />
             }
             {
+                reLoad && <Navigate to={`/dashboard/autores/${newId}`} />
+            }
+            {
+                redirect && <Navigate to="/dashboard/autores" />
+            }
+            {
+                recordFound && 
                 <FormContainer>
                     <div className='d-flex flex-row flex-wrap'>
-
-                    </div>
-                    <div className='d-flex flex-row flex-wrap'>
-                        <FormControl sx={{ m: 1, width: '95%' }} variant="outlined">
-                            <TextField id="nombre" label="Título" disabled variant="outlined" value={nombre}/>
-                        </FormControl>
-                    </div>
-                    <div className='d-flex flex-row flex-wrap'>
-                        <FormControl sx={{ m: 1, width: '31%' }} variant="outlined">
-                            <TextField id="Emisor" label="Emisor" disabled variant="outlined" value={emisor}/>
-                        </FormControl>
-                        <FormControl sx={{ m: 1, width: '31%' }} variant="outlined">
-                            <TextField id="status" label="Estatus" disabled variant="outlined" value={status}/>
-                        </FormControl>
-                        <FormControl sx={{ m: 1, width: '31%' }} variant="outlined">
-                            <TextField id="duracion" label="Duracion" disabled variant="outlined" value={duracion}/>
-                        </FormControl>
-                    </div>
-                    <div className='d-flex flex-row flex-wrap'>
-                        <FormControl sx={{ m: 1, width: '95%' }} variant="outlined">
-                            <div className='border p-4 text-justify rounded-lg' style={{color: 'rgba(0, 0, 0, 0.38)', borderColor: 'rgba(0, 0, 0, 0.38)'}}>
-                                {parser(descripcion)}
-                            </div>
-                        </FormControl>
-                    </div>
-                    <div className='d-flex flex-row flex-wrap'>
-                        <FormControl sx={{ m: 1, width: '47%' }} variant="outlined">
-                            <TextField id="inicio" label="Inicio" disabled variant="outlined" value={fechaInicio}/>
-                        </FormControl>
-                        <FormControl sx={{ m: 1, width: '47%' }} variant="outlined">
-                            <TextField id="fin" label="Fin" disabled variant="outlined" value={fechaFin}/>
-                        </FormControl>
-                    </div>
-                    <div className='d-flex flex-row flex-wrap m-4'>
-                        <a href={urlGrabacion} target='_blank'>Sintonizar Grabación</a>
+                        {
+                            !unlockFields && 
+                            <FormControl sx={{ m: 1, width: '95%' }} variant="outlined">
+                                <TextField id="nombre" label="Nombre" disabled variant="outlined" value={nombre}/>
+                            </FormControl>
+                        }
+                        {
+                            unlockFields && 
+                            <FormControl sx={{ m: 1, width: '95%' }} variant="outlined">
+                                <TextField id="nombre" label="Nombre" variant="outlined" defaultValue={nombre} onChange={(e) => setNombre(e.target.value)}/>
+                            </FormControl>
+                        }
                     </div>
                 </FormContainer>
             }
@@ -257,9 +231,24 @@ const GrabacionForm = ({}) => {
                 showDeleteDialog &&
                 <DeleteDialog showDeleteDialog={showDeleteDialog} setShowDeleteDialog={setShowDeleteDialog} handleDeleteConfirm={handleDeleteConfirm}></DeleteDialog>
             }
+            {
+                (!recordFound && id != 0) && 
+                <FormContainer>
+                    <div className='text-center'>
+                        <img src={noEncontrado} alt="no-encontrado" style={{width: '300px', margin: '0 auto', marginTop:'10px'}}/>
+                        <StyledH2 className='mt-5'>El Autor no fue encontrado</StyledH2>
+                        <div className='text-center d-flex flex-row flex-wrap w-100 mt-5'>
+                            <Link to={"/dashboard/autores"}>
+                                <Button variant="contained" color="primary" style={{marginLeft: '10px'}}>Volver</Button>
+                            </Link>
+                        </div>
+                    </div>
+                </FormContainer>
+            }
+
 
         </div>
     )
 }
 
-export default GrabacionForm;
+export default AutorForm;

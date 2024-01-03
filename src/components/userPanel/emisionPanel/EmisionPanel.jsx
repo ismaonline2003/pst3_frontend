@@ -21,7 +21,6 @@ import SubjectIcon from '@mui/icons-material/Subject';
 //text editor
 import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import Image from '@tiptap/extension-image';
 import TextAlign from '@tiptap/extension-text-align';
 import Document from '@tiptap/extension-document'
 import Heading from '@tiptap/extension-heading'
@@ -33,9 +32,7 @@ import {
   MenuDivider,
   MenuSelectHeading,
   RichTextEditorProvider,
-  RichTextField,
-  MenuButtonAddImage,
-  RichTextReadOnly
+  RichTextField
 } from "mui-tiptap";
 
 
@@ -45,6 +42,7 @@ import ListaCanciones from './ListaCanciones';
 import CanalesAudio from './CanalesAudio';
 import AppContext from '../../../context/App';
 import consts from '../../../settings/consts';
+import getEmisionFormattedDate from '../../../helpers/getEmisionFormattedDate';
 
 TextAlign.configure({
     types: ['heading', 'paragraph'],
@@ -222,35 +220,12 @@ export default function EmisionPanel({}) {
     }
 
     const getEmissionTime = () => { 
-        if(fechaInicio) {
-            const currentTime = new Date();
-            const diff = currentTime.getTime() - fechaInicio.getTime();
-            const secondsDiff = diff/ 1000;
-            const minutesDiff = secondsDiff/60;
-            const hourDiff = minutesDiff/60;
-            let hoursInt = parseInt(`${hourDiff}`.split('.')[0]);
-            let minutesInt = parseInt(`${minutesDiff}`.split('.')[0]);
-            let hours = hoursInt;
-            let minutes = parseInt(minutesDiff - (hoursInt*60));
-            let seconds = parseInt(secondsDiff - (minutesInt*60));
-    
-            if(hours < 10) {
-                hours = `0${hours}`;
-            }
-    
-            if(minutes < 10) {
-                minutes = `0${minutes}`;
-            }
-    
-            if(seconds < 10) {
-                seconds = `0${seconds}`;
-            }
-            setEmisionTimeStr(`${hours}:${minutes}:${seconds}`);
-            if(state == 'online') {
-                setTimeout(() => {
-                    getEmissionTime();
-                }, 1000);
-            }
+        const formattedDate = getEmisionFormattedDate({fecha_inicio: fechaInicio});
+        setEmisionTimeStr(formattedDate);
+        if(state == 'online') {
+            setTimeout(() => {
+                getEmissionTime();
+            }, 1000);
         }
     }
 

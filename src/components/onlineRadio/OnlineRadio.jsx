@@ -24,7 +24,7 @@ import consts from '../../settings/consts';
 import AppContext from '../../context/App';
 import IconButton from '../../icons/radio-online-icon.svg'
 import OnlineRadioNavbar from './OnlineRadioNavbar';
-
+import getEmisionFormattedDate from '../../helpers/getEmisionFormattedDate';
 
 const ContainerComponent = styled('div')({
   padding: '20px'
@@ -33,10 +33,12 @@ const ContainerComponent = styled('div')({
 
 const OnlineRadio = ({}) => {
   const { blockUI, setBlockUI, setNotificationMsg, setNotificationType, setShowNotification} = useContext(AppContext);
-  const [ audioBlobURL, setAudioBlobURL ] = useState("");
   const [ suscriptionID, setSuscriptionID] = useState(false);
   const [ username, setUsername] = useState("");
   const [ userID, setUserID] = useState(false);
+  const [ recordID, setRecordID ] = useState(false);
+  const [ grid1Width, setGrid1With ] = useState(8);
+  const [ grid2Width, setGrid2With ] = useState(4);
   const [ recordData, setRecordData ] = useState({});
   const [ titulo, setTitulo ] = useState("");
   const [ descripcion, setDescripcion ] = useState("");
@@ -46,7 +48,6 @@ const OnlineRadio = ({}) => {
   const [ draftMessage, setDraftMessage] = useState("");
 
   //const playElement = useRef();
-  const H1 = styledComponents.radioOnlineh1;
   const ImgIcon = styledComponents.radioOnlineIcon;
   const socket = useMemo(() =>  io(consts.ws_server_url), [recordData]);
 
@@ -91,19 +92,16 @@ const OnlineRadio = ({}) => {
   const onRadioAudio = (data) => {
     const audioCtx = new AudioContext();
     audioCtx.decodeAudioData(data.file, function(decodedBuffer) {
-      console.log(decodedBuffer);
       var newSource = audioCtx.createBufferSource();
       newSource.buffer = decodedBuffer;
       newSource.connect( audioCtx.destination );
       newSource.start(0);
-    }, function(error) {
-      console.log(error);
+    }, (error) => {
     });
   }
 
   const onChatMessage = (data) => {
     let newChatMessagesList = [...chatMessages];
-    console.log(newChatMessagesList);
     newChatMessagesList.push(data);
     setChatMessages(newChatMessagesList);
   }
@@ -124,39 +122,19 @@ const OnlineRadio = ({}) => {
   }
 
   const getEmissionTime = () => { 
+    const formattedDate = getEmisionFormattedDate({fecha_inicio: fechaInicio});
+    setEmisionTimeStr(formattedDate);
     if(fechaInicio) {
-        const currentTime = new Date();
-        const diff = currentTime.getTime() - fechaInicio.getTime();
-        const secondsDiff = diff/ 1000;
-        const minutesDiff = secondsDiff/60;
-        const hourDiff = minutesDiff/60;
-        let hoursInt = parseInt(`${hourDiff}`.split('.')[0]);
-        let minutesInt = parseInt(`${minutesDiff}`.split('.')[0]);
-        let hours = hoursInt;
-        let minutes = parseInt(minutesDiff - (hoursInt*60));
-        let seconds = parseInt(secondsDiff - (minutesInt*60));
-
-        if(hours < 10) {
-            hours = `0${hours}`;
-        }
-
-        if(minutes < 10) {
-            minutes = `0${minutes}`;
-        }
-
-        if(seconds < 10) {
-            seconds = `0${seconds}`;
-        }
-        setEmisionTimeStr(`${hours}:${minutes}:${seconds}`);
         setTimeout(() => {
             getEmissionTime();
         }, 1000);
     }
-}
+  }
 
   const setEmisionValues = (data) => {
     let radioEspectadorMensajes = [];
     setRecordData(data);
+    setRecordID(data.id);
     setTitulo(data.titulo);
     setDescripcion(data.descripcion);
     setFechaInicio(new Date(data.fecha_inicio));
@@ -177,9 +155,8 @@ const OnlineRadio = ({}) => {
     const config = {headers:{'authorization': token}};
     const url = `${consts.backend_base_url}/api/emision/api/current`;
     axios.get(url, config).then((response) => {
-        console.log(response);
-        if(response.data) {
-            setEmisionValues(response.data);
+        if(response.data.length > 0) {
+          setEmisionValues(response.data[0]);
         }
         setBlockUI(false);
     }).catch((err) => {
@@ -274,6 +251,18 @@ const OnlineRadio = ({}) => {
   }
 
   useEffect(() => {
+    if(!recordID) {
+      setGrid1With(12);
+      setGrid2With(0);
+    }
+    if(recordID) {
+      setGrid1With(8);
+      setGrid2With(4);
+    }
+  }, [recordID]);
+
+
+  useEffect(() => {
     getEmissionTime();
   }, [fechaInicio]);
 
@@ -293,9 +282,9 @@ const OnlineRadio = ({}) => {
       <ContainerComponent>
         <Container maxWidth="md">
         <Grid Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-          <Grid item xs={8}>
+          <Grid item xs={grid1Width}>
               <br />
-              <h1 style={{'color': '#00b0ff', 'fontSize': '40px', 'fontWeight': '700'}}>AgroOnline UPTCMS</h1>
+              <h1 style={{'color': '#00b0ff', 'fontSize': '40px', 'fontWeight': '700'}}>Radio Online</h1>
               <br />
               <div>
                 {
@@ -322,87 +311,93 @@ const OnlineRadio = ({}) => {
               <div className='text-justify'>
                 <h2 style={{'fontSize': '25px', 'fontWeight': '700', 'color': '#424242'}}>{titulo}</h2>
                 <br />
-                {parser(descripcion)}
+                {
+                  descripcion &&
+                  parser(descripcion)
+                }
               </div>
           </Grid>
-          <Grid item xs={4} className="text-left">
-            <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
-              <ListItem alignItems="flex-start" key={"chat_message_title"}>
-                <h3 className='font-bold'>Chat En Vivo</h3>
-              </ListItem>
-              {
-                chatMessages.map((message) => {
-                  return (
-                    <Fragment>
-                      <ListItem alignItems="flex-start" key={message.id}>
-                        <ListItemText
-                          secondary={
-                            <div>
-                              <Typography
-                                sx={{ display: 'inline', fontWeight: '700'}}
-                                component="span"
-                                variant="body2"
-                                color="text.primary"
-                              >
-                                {message.username}
-                              </Typography>
-                              <br></br>
-                              {message.content}
-                            </div>
-                          }
-                        />
-                      </ListItem>
-                      <Divider/>
-                    </Fragment>
-                  )
-                })
-              }
-              <br />
-              <ListItem alignItems="flex-start">
-                    {
-                      userID &&
-                      <div className="w-100 p-0">
-                        <TextField
-                          id="textarea-chat"
-                          label="Enviar Mensaje"
-                          multiline
-                          rows={4}
-                          variant="filled"
-                          value={draftMessage}
-                          className='w-100'
-                          onChange={(e) => setDraftMessage(e.target.value)}
-                        />
-                        <br />
-                        <br />
-                        <Button variant="contained" color="info" endIcon={<SendIcon />} onClick={(e) => sendMessage(e)}>
-                          Enviar
-                        </Button>
-                      </div>
-                    }
-                    {
-                      !userID &&
-                      <div className="w-100 p-0">
-                        <TextField
-                          id="textarea-chat"
-                          label="Inicie Sesión para enviar un mensaje"
-                          disabled
-                          multiline
-                          rows={4}
-                          variant="filled"
-                          className='w-100'
-                        />
-                        <br />
-                        <br />
-                        <Link to={"/login"} target='_blank'>
-                          <Button variant="contained" color="primary">
-                            Iniciar Sesión
+          {
+            recordID &&
+            <Grid item xs={grid2Width} className="text-left">
+              <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+                <ListItem alignItems="flex-start" key={"chat_message_title"}>
+                  <h3 className='font-bold'>Chat En Vivo</h3>
+                </ListItem>
+                {
+                  chatMessages.map((message) => {
+                    return (
+                      <Fragment>
+                        <ListItem alignItems="flex-start" key={message.id}>
+                          <ListItemText
+                            secondary={
+                              <div>
+                                <Typography
+                                  sx={{ display: 'inline', fontWeight: '700'}}
+                                  component="span"
+                                  variant="body2"
+                                  color="text.primary"
+                                >
+                                  {message.username}
+                                </Typography>
+                                <br></br>
+                                {message.content}
+                              </div>
+                            }
+                          />
+                        </ListItem>
+                        <Divider/>
+                      </Fragment>
+                    )
+                  })
+                }
+                <br />
+                <ListItem alignItems="flex-start">
+                      {
+                        userID &&
+                        <div className="w-100 p-0">
+                          <TextField
+                            id="textarea-chat"
+                            label="Enviar Mensaje"
+                            multiline
+                            rows={4}
+                            variant="filled"
+                            value={draftMessage}
+                            className='w-100'
+                            onChange={(e) => setDraftMessage(e.target.value)}
+                          />
+                          <br />
+                          <br />
+                          <Button variant="contained" color="info" endIcon={<SendIcon />} onClick={(e) => sendMessage(e)}>
+                            Enviar
                           </Button>
-                        </Link>
-                      </div>
-                    }
-              </ListItem>
-            </List>
-          </Grid>
+                        </div>
+                      }
+                      {
+                        !userID &&
+                        <div className="w-100 p-0">
+                          <TextField
+                            id="textarea-chat"
+                            label="Inicie Sesión para enviar un mensaje"
+                            disabled
+                            multiline
+                            rows={4}
+                            variant="filled"
+                            className='w-100'
+                          />
+                          <br />
+                          <br />
+                          <Link to={"/login"} target='_blank'>
+                            <Button variant="contained" color="primary">
+                              Iniciar Sesión
+                            </Button>
+                          </Link>
+                        </div>
+                      }
+                </ListItem>
+              </List>
+            </Grid>
+          }
         </Grid>
         </Container>
       </ContainerComponent>
