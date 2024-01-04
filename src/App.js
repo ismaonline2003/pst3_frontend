@@ -173,6 +173,10 @@ function App() {
                     <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"grabaciones"}/>}/>
                     <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"grabacion_form"}/>}/>
                   </Route>
+                  <Route path="radioAudio" >
+                    <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"radio_audio_list"}/>}/>
+                    <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"radio_audio_form"}/>}/>
+                  </Route>
                   <Route path="autores" >
                     <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"autores"}/>}/>
                     <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"autor_form"}/>}/>

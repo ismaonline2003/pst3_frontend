@@ -34,7 +34,7 @@ const ci_vals = [
         value: 'P',
         label: 'P',
       }
-  ];
+];
 
 
 const EstudianteForm = ({}) => {

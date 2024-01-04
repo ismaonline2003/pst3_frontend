@@ -41,6 +41,8 @@ import Logs from './auditoria/Logs';
 import Footer from './Footer';
 import Autores from './autorPanel/Autores';
 import AutorForm from './autorPanel/AutorForm';
+import RadioAudioList from './radioAudioPanel/RadioAudioList';
+import RadioAudioForm from './radioAudioPanel/RadioAudioForm';
 
 const paneles = {
     emision_panel: EmisionPanel,
@@ -63,7 +65,8 @@ const paneles = {
     grabacion_form: GrabacionForm,
     autores: Autores,
     autor_form: AutorForm,
-    suscripciones: Suscripciones,
+    radio_audio_list: RadioAudioList,
+    radio_audio_form: RadioAudioForm,
     suscripcion_form: SuscripcionForm,
     suscripciones_web: Suscripciones,
     usuarios: Usuarios,

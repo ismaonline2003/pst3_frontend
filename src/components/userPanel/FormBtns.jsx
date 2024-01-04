@@ -4,12 +4,16 @@ import AppContext from '../../context/App';
 
 const FormBtns = ({setUnlockFields, handleConfirmarBtn, handleCancelarBtn, showEditBtn, deleteApplies, handleDeleteBtn}) => {
     const [ showConfirmEditBtn, setShowConfirmEditBtn ] = useState(false);
-    const [ showDeleteDialog, setShowDeleteDialog ] = useState(false);
     const { blockUI, setBlockUI, setNotificationMsg, setNotificationType, setShowNotification} = useContext(AppContext);
 
     useEffect(() => {
         setShowConfirmEditBtn(showEditBtn);
-    }, [])
+    }, []);
+
+    useEffect(() => {
+        console.log('showEditBtn', showEditBtn);
+        setShowConfirmEditBtn(showEditBtn);
+    }, [showEditBtn]);
 
     const _handleEditarBtn = () => {
         setUnlockFields(true);
