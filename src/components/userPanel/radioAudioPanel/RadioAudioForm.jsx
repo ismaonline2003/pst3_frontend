@@ -453,6 +453,12 @@ const RadioAudioForm = ({}) => {
                             </FormControl>
                         }
                     </div>
+                    <br />
+                    <div className='d-flex flex-row flex-wrap'>
+                        <audio controls style={{width: '100%'}}>
+                            <source src={`${consts.backend_base_url}/api/files/getRadioAudio/${filename}`} type="audio/mp3"/>
+                        </audio>
+                    </div>
                 </FormContainer>
             }
             {
