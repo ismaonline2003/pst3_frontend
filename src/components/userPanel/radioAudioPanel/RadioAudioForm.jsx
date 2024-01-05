@@ -71,6 +71,7 @@ const RadioAudioForm = ({}) => {
     const [type, setType] = useState("cancion");
     const [ytUrl, setYtUrl] = useState("");
     const [filename, setFilename] = useState("");
+    const [audioDuration, setAudioDuration] = useState(0);
     const [file, setFile] = useState(undefined);
     const [autorID, setAutorID] = useState(false);
     const [autor, setAutor] = useState(false);
@@ -96,6 +97,10 @@ const RadioAudioForm = ({}) => {
         } 
     }
 
+    const updateAudioDuration = (data) => {
+
+    }
+
     const _setRecordData = (data) => {
         setRecordData(data);
         setTitulo(data.title);
@@ -105,6 +110,7 @@ const RadioAudioForm = ({}) => {
         setAutorID(data.id_autor);
         setAutor(data.author.name);
         setYtUrl(data.yt_url);
+        setAudioDuration(data.seconds_duration);
     }
 
     const recordValidations = () =>  {
@@ -204,6 +210,7 @@ const RadioAudioForm = ({}) => {
         const url = `${consts.backend_base_url}/api/radio_audio`;
         try {
             const response = await axios.post(url, formData, config);
+            console.log(response);
             //set record data
             setNotificationMsg("El audio fue registrado exitosamente!!");
             setNotificationType('success');

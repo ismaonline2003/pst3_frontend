@@ -50,7 +50,7 @@ export default function EmisionAudioList({}) {
     //
     const [ audiosFound, setAudiosFound ] = useState([]);
     const [ selectedAudio, setSelectedAudio ] = useState(false);
-    const [ newRecordDate, setNewRecordDate ] = useState(new Date());
+    const [ newRecordDate, setNewRecordDate ] = useState("");
     const [ newRecords, setNewRecords ] = useState([]);
 
 
@@ -113,8 +113,40 @@ export default function EmisionAudioList({}) {
         }
     }
 
+    const _audioValidations = (audioList) => {
+        const currentDate = new Date();
+        console.log(audioList);
+        for(let i = 0; i < audioList.length; i++) {
+            const recordFechaEmisionProgramada = new Date(audioList[i].fecha_emision_programada);
+            for(let a = 0; a < audioList.length; a++) {
+                if(audioList[a].id != audioList[i].id) {
+                    let date1 = new Date(audioList[a].fecha_emision_programada);
+                    let date2 = new Date(audioList[a].fecha_emision_programada);
+                    date2.setSeconds(date2.getSeconds() + audioList[a].radio_audio.seconds_duration + 4);
+                    if(recordFechaEmisionProgramada >= date1 && recordFechaEmisionProgramada <= date2) {
+                        setNotificationMsg("Los audios no pueden coincidir en su programación. La programación de cada audio debe tener una separación de al menos 5 segundos (considerando la duración del audio).");
+                        setNotificationType('error');
+                        setShowNotification(true);
+                        return false;
+                    }
+                }
+            }
+            if(recordFechaEmisionProgramada < currentDate) {
+                setNotificationMsg("Las fechas de los registros deben ser menor o igual a la fecha actual.");
+                setNotificationType('error');
+                setShowNotification(true);
+                return false;
+            }
+        }
+        return true
+    }
+
     const _addNewRecordToList = () => {
         const newRecordData = {id: newRecords.length, radio_audio: selectedAudio, fecha_emision_programada: newRecordDate};
+        const audioValidations = _audioValidations([...newRecords, ...[newRecordData]]);
+        if(!audioValidations) {
+            return;
+        }
         if(!selectedAudio) {
             setNotificationMsg("Debe seleccionar un audio");
             setNotificationType('error');
@@ -130,7 +162,7 @@ export default function EmisionAudioList({}) {
         setNewRecords(recordsLocalAdd(newRecords, newRecordData));
         setAudiosFound([]);
         setSelectedAudio(false);
-        setNewRecordDate(new Date());
+        setNewRecordDate("");
     }
 
     const _deleteNewRecordFromList = (id) => {
@@ -302,9 +334,7 @@ export default function EmisionAudioList({}) {
                                                     key={row.id}
                                                     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                                                     >
-                                                        <TableCell component="th" scope="row">
-                                                        </TableCell>
-                                                        <TableCell align="left">{row.radio_audio.author.name} - {row.radio_audio.title}</TableCell>
+                                                        <TableCell colspan="2" align="left">{row.radio_audio.author.name} - {row.radio_audio.title}</TableCell>
                                                         <TableCell component="th" scope="row">{getFormattedDate(new Date(row.fecha_emision_programada), true)}</TableCell>
                                                         <TableCell>
                                                             <DeleteIcon sx={{fontSize: '2.2rem', ':hover': {cursor: 'pointer', fontSize: '2.5rem', transition: '.3s ease all'}}} color="error"
@@ -334,7 +364,7 @@ export default function EmisionAudioList({}) {
                                         <TableCell component="th" scope="row">
                                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                             <DemoContainer components={['DateTimePicker']}>
-                                                <DateTimePicker label="Fecha y Hora" onChange={(e) => setNewRecordDate(e['$d'])} />
+                                                <DateTimePicker label="Fecha y Hora" value={newRecordDate} onChange={(e) => setNewRecordDate(e['$d'].toString())} />
                                             </DemoContainer>
                                             </LocalizationProvider>
                                         </TableCell>
