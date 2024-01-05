@@ -368,7 +368,7 @@ const RadioAudioForm = ({}) => {
                         {
                             unlockFields && 
                             <FormControl sx={{ m: 1, width: '40%' }} variant="outlined">
-                                <TextField id="autor_search" label="Autor Busqueda" variant="outlined" onMouseLeave={(e) => setAutorSearchVal(e.target.value)}/>
+                                <TextField id="autor_search" label="Autor Busqueda" variant="outlined" onMouseOut={(e) => setAutorSearchVal(e.target.value)}/>
                             </FormControl>
                         }
                         {
@@ -447,7 +447,7 @@ const RadioAudioForm = ({}) => {
                                     file:text-sm file:font-semibold
                                     file:bg-blue-50 file:text-blue-700
                                     hover:file:bg-blue-100
-                                        hover:cursor-pointer
+                                    hover:cursor-pointer
                                     "
                                 />
                             </FormControl>
