@@ -69,7 +69,6 @@ const ListBtns = ({
                 status == 'readonly' && !ReadyOnly &&
                 <div className='mb-2 w-100 rounded border border-slate-500 p-4 border-opacity-20 bg-slate-50'>
                 <Button variant="contained" onClick={(e) => _setStatus('create')} style={{marginLeft: '10px'}} color="success">Crear</Button>
-                <Button variant="contained" onClick={(e) => _setStatus('update')} style={{marginLeft: '10px'}} color="warning">Editar</Button>
                 <Button variant="contained" onClick={(e) => _setStatus('delete')} style={{marginLeft: '10px'}} color="error">Eliminar</Button>
                 </div>
             }

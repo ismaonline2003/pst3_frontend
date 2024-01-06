@@ -49,8 +49,11 @@ export default function EmisionAudioList({}) {
 
     //
     const [ audiosFound, setAudiosFound ] = useState([]);
+    const [ valToSearch, setValToSearch ] = useState("");
     const [ selectedAudio, setSelectedAudio ] = useState(false);
     const [ newRecordDate, setNewRecordDate ] = useState("");
+    const [ newRecordDateSeconds, setNewRecordDateSeconds ] = useState(0);
+    const [ newRecordDateFormatted, setNewRecordDateFormatted ] = useState("");
     const [ newRecords, setNewRecords ] = useState([]);
 
 
@@ -63,7 +66,6 @@ export default function EmisionAudioList({}) {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
     };
-
 
     const searchRecords = (searchVals) => {
         setBlockUI(true);
@@ -83,14 +85,6 @@ export default function EmisionAudioList({}) {
           setBlockUI(false);
         });
     }
-
-    useEffect(() => {
-        searchRecords({
-            parameter: "",
-            value: "",
-            limit: 25,
-        });
-    }, []);
 
     const handleSearchBtn = (searchVals) => {
         searchRecords(searchVals);
@@ -115,7 +109,6 @@ export default function EmisionAudioList({}) {
 
     const _audioValidations = (audioList) => {
         const currentDate = new Date();
-        console.log(audioList);
         for(let i = 0; i < audioList.length; i++) {
             const recordFechaEmisionProgramada = new Date(audioList[i].fecha_emision_programada);
             for(let a = 0; a < audioList.length; a++) {
@@ -142,7 +135,12 @@ export default function EmisionAudioList({}) {
     }
 
     const _addNewRecordToList = () => {
-        const newRecordData = {id: newRecords.length, radio_audio: selectedAudio, fecha_emision_programada: newRecordDate};
+        let fecha_emision_programada = new Date();
+        if(!newRecordDateFormatted) {
+            fecha_emision_programada = new Date(newRecordDate);
+            fecha_emision_programada.setSeconds(newRecordDateSeconds);
+        }
+        const newRecordData = {id: newRecords.length, radio_audio: selectedAudio, fecha_emision_programada: fecha_emision_programada.toString()};
         const audioValidations = _audioValidations([...newRecords, ...[newRecordData]]);
         if(!audioValidations) {
             return;
@@ -163,6 +161,7 @@ export default function EmisionAudioList({}) {
         setAudiosFound([]);
         setSelectedAudio(false);
         setNewRecordDate("");
+        setValToSearch("");
     }
 
     const _deleteNewRecordFromList = (id) => {
@@ -175,7 +174,6 @@ export default function EmisionAudioList({}) {
         return newList;
     }
 
-    
     const recordsLocalRemove = (id=0, recordList=[]) => {
         let newRecordList = [];
         for(let i = 0; i < recordList.length; i++) {
@@ -205,14 +203,134 @@ export default function EmisionAudioList({}) {
         }
     }
 
+    const setRecordDeleteCheck = (id=0, val=true, is_new=false) => {
+        if(is_new) {
+            setNewRecords(recordsLocalUpdate(id, newRecords, {delete_check: val}));
+        }
+        if(!is_new) {
+            console.log(id, val, is_new);
+            setRecords(recordsLocalUpdate(id, records, {delete_check: val}));
+        }
+    }
 
-    const handleConfirmarBtn = () => {
+    const sendNewRecordsCreate = async () => {
+        setBlockUI(true);
+        const token = localStorage.getItem('token');
+        const config = {headers: {'authorization': token}};
+        const url = `${consts.backend_base_url}/api/emision_audio`;
+        let body = [];
+        for(let i = 0; i < newRecords.length; i++) {
+            let audioDate = new Date(newRecords[i].fecha_emision_programada);
+            let audioDuration = newRecords[i].radio_audio.seconds_duration;
+            let audioFinishDate = new Date(newRecords[i].fecha_emision_programada);
+            audioFinishDate.setSeconds(audioFinishDate.getSeconds() + audioDuration + 4);
+            body.push({
+                id_audio: newRecords[i].radio_audio.id,
+                fecha_emision_programada: audioDate.toISOString(),
+                fecha_fin_emision_programada: audioFinishDate.toISOString()
+            });
+        }
+        try {
+            const response = await axios.post(url, body, config);
+            //set record data
+            setNotificationMsg("La programación fue registrada exitosamente");
+            setNotificationType('success');
+            setShowNotification(true);
+            setBlockUI(false);
+            setTimeout(() => {
+                window.location.reload(true);
+            }, 500);
+            return true;
+        } catch(err) {
+            setBlockUI(false);
+            setNotificationMsg(err.response.data.message);
+            setNotificationType('error');
+            setShowNotification(true);
+            return false;
+        }
+    }
 
+    const sendRecordsDelete = async () => {
+        setBlockUI(true);
+        const token = localStorage.getItem('token');
+        const config = {headers: {'authorization': token}};
+        const url = `${consts.backend_base_url}/api/emision_audio/api/delete`;
+        let body = records.filter(e => e.delete_check);
+        try {
+            const response = await axios.post(url, body, config);
+            //set record data
+            setNotificationMsg("La programación fue registrada exitosamente");
+            setNotificationType('success');
+            setShowNotification(true);
+            setBlockUI(false);
+            setTimeout(() => {
+                window.location.reload(true);
+            }, 500);
+            return true;
+        } catch(err) {
+            setBlockUI(false);
+            setNotificationMsg(err.response.data.message);
+            setNotificationType('error');
+            setShowNotification(true);
+            return false;
+        }
+    }
+
+    const handleConfirmarBtn = async () => {
+        let confirmarBtnReturn = {'status': 'success', 'message': '', 'data': {}};
+        let action = true;
+        if(status === 'create') {
+            action = await sendNewRecordsCreate();
+        }
+        if(status === 'delete') {
+            action = await sendRecordsDelete();
+        }
+        if(!action) {
+            confirmarBtnReturn = {'status': 'failed', 'message': '', 'data': {}};
+        }
+        return confirmarBtnReturn;
     }
 
     const handleCancelarBtn = () => {
         setStatus('readonly');
+        setNewRecords([]);
     }
+
+    useEffect(() => {
+        if(valToSearch) {
+            audiosSearch(valToSearch);
+        }
+    }, [valToSearch]);
+
+    useEffect(() => {
+        if(newRecordDateSeconds) {
+            if(newRecordDateSeconds < 0) {
+                setNotificationMsg("Los segundos no pueden ser menores a 0.");
+                setNotificationType('error');
+                setShowNotification(true);
+                setNewRecordDateSeconds(0);
+            } else if(newRecordDateSeconds > 59) {
+                setNotificationMsg("Los segundos no pueden ser mayores a 59.");
+                setNotificationType('error');
+                setShowNotification(true);
+                setNewRecordDateSeconds(0);
+            } else if (newRecordDate && newRecordDateSeconds) {
+                let finalDate = new Date(newRecordDate);
+                finalDate.setSeconds(newRecordDateSeconds);
+                setNewRecordDateFormatted(finalDate.toString());
+            }
+        } else {
+            setNewRecordDateSeconds(0);
+        }
+    }, [newRecordDate, newRecordDateSeconds]);
+
+    useEffect(() => {
+        searchRecords({
+            parameter: "",
+            value: "",
+            limit: 25,
+        });
+    }, []);
  
     return (
         <React.Fragment>
@@ -286,7 +404,7 @@ export default function EmisionAudioList({}) {
                                             sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                                             >
                                                 <TableCell component="th" scope="row">
-                                                    <Checkbox onClick={(e) => console.log(e)}/>
+                                                    <Checkbox onClick={(e) => setRecordDeleteCheck(row.id, e.target.checked, false)}/>
                                                 </TableCell>
                                                 <TableCell component="th" scope="row">{row.id}</TableCell>
                                                 <TableCell align="left">{row.radio_audio.author.name} - {row.radio_audio.title}</TableCell>
@@ -323,20 +441,25 @@ export default function EmisionAudioList({}) {
                                             <TableCell align="left" width={'25%'}>Busqueda</TableCell>
                                             <TableCell align="left" width={'25%'}>Audio</TableCell>
                                             <TableCell align="left" width={'25%'}>Fecha</TableCell>
+                                            <TableCell align="left" width={'25%'}>Segundos</TableCell>
                                             <TableCell align="left" width={'25%'}>Acción</TableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
                                         {
                                             newRecords.map((row, index) => {
+                                            let finFechaEmisionProgramada =  new Date(row.fecha_emision_programada);
+                                            finFechaEmisionProgramada.setSeconds(finFechaEmisionProgramada.getSeconds() + row.radio_audio.seconds_duration + 4);
                                             return (
                                                 <TableRow
                                                     key={row.id}
                                                     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                                                     >
-                                                        <TableCell colspan="2" align="left">{row.radio_audio.author.name} - {row.radio_audio.title}</TableCell>
-                                                        <TableCell component="th" scope="row">{getFormattedDate(new Date(row.fecha_emision_programada), true)}</TableCell>
-                                                        <TableCell>
+                                                        <TableCell colSpan="2" component="td" scope="row" align="left">{row.radio_audio.author.name} - {row.radio_audio.title}</TableCell>
+                                                        <TableCell colSpan="2" component="td" scope="row" align="left">
+                                                            {getFormattedDate(new Date(row.fecha_emision_programada), true)} / {getFormattedDate(finFechaEmisionProgramada, true)}
+                                                        </TableCell>
+                                                        <TableCell component="td" scope="row" align="left">
                                                             <DeleteIcon sx={{fontSize: '2.2rem', ':hover': {cursor: 'pointer', fontSize: '2.5rem', transition: '.3s ease all'}}} color="error"
                                                                 onClick={(e) => _deleteNewRecordFromList(row.id)}
                                                             />
@@ -349,10 +472,10 @@ export default function EmisionAudioList({}) {
                                         key={'create-new-row'}
                                         sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                                     >
-                                        <TableCell component="th" scope="row">
-                                            <TextField id="search_audio" label="Buscar Audio" variant="outlined" onMouseOut={(e) => audiosSearch(e.target.value)}/>
+                                        <TableCell component="td" align="left" scope="row">
+                                            <TextField id="search_audio" label="Buscar Audio" variant="outlined" defaultValue={valToSearch} onMouseLeave={(e) => setValToSearch(e.target.value)}/>
                                         </TableCell>
-                                        <TableCell align="left">
+                                        <TableCell component="td" align="left" scope="row">
                                             <TextField sx={{width: '100%'}} id="audios_found" select label="Fuente" onChange={(e) => setSelectedAudio(audiosFound.filter(a => a.id == parseInt(e.target.value))[0])}>
                                                 {audiosFound.map((option) => (
                                                     <MenuItem key={option.id} value={option.id}>
@@ -361,14 +484,17 @@ export default function EmisionAudioList({}) {
                                                 ))}
                                             </TextField>
                                         </TableCell>
-                                        <TableCell component="th" scope="row">
+                                        <TableCell component="td" align="left" scope="row">
                                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                             <DemoContainer components={['DateTimePicker']}>
                                                 <DateTimePicker label="Fecha y Hora" value={newRecordDate} onChange={(e) => setNewRecordDate(e['$d'].toString())} />
                                             </DemoContainer>
                                             </LocalizationProvider>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell component="td" align="left" scope="row">
+                                            <TextField id="new_date_seconds" type="number" label="Segundos" variant="outlined" value={newRecordDateSeconds} onChange={(e) => setNewRecordDateSeconds(parseInt(e.target.value))}/>
+                                        </TableCell>
+                                        <TableCell component="td" align="left" scope="row">
                                             <LibraryAddIcon sx={{fontSize: '2.2rem', ':hover': {cursor: 'pointer', fontSize: '2.5rem', transition: '.3s ease all'}}} color="success"
                                                 onClick={(e) => _addNewRecordToList()}
                                             />

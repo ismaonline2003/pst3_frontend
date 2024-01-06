@@ -126,7 +126,6 @@ const Dashboard = ({sessionVals, panelName}) => {
                                 <Panel className='p-0 m-0 w-100' tipoDomain="portal_noticias"/>
                             }  
                         </Container>
-                        <Footer/>
                     </Grid>
                 </Grid>
             </Box>
