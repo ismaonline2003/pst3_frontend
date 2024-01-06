@@ -124,12 +124,6 @@ export default function EmisionAudioList({}) {
                     }
                 }
             }
-            if(recordFechaEmisionProgramada < currentDate) {
-                setNotificationMsg("Las fechas de los registros deben ser menor o igual a la fecha actual.");
-                setNotificationType('error');
-                setShowNotification(true);
-                return false;
-            }
         }
         return true
     }
@@ -226,8 +220,8 @@ export default function EmisionAudioList({}) {
             audioFinishDate.setSeconds(audioFinishDate.getSeconds() + audioDuration + 4);
             body.push({
                 id_audio: newRecords[i].radio_audio.id,
-                fecha_emision_programada: audioDate.toISOString(),
-                fecha_fin_emision_programada: audioFinishDate.toISOString()
+                fecha_emision_programada: audioDate.toString(),
+                fecha_fin_emision_programada: audioFinishDate.toString()
             });
         }
         try {
@@ -242,6 +236,7 @@ export default function EmisionAudioList({}) {
             }, 500);
             return true;
         } catch(err) {
+            console.log(err);
             setBlockUI(false);
             setNotificationMsg(err.response.data.message);
             setNotificationType('error');
@@ -369,7 +364,9 @@ export default function EmisionAudioList({}) {
                                                 </TableCell>
                                                 <TableCell component="th" scope="row">{row.id}</TableCell>
                                                 <TableCell align="left">{row.radio_audio.author.name} - {row.radio_audio.title}</TableCell>
-                                                <TableCell component="th" scope="row">{getFormattedDate(new Date(row.fecha_emision_programada), true)}</TableCell>
+                                                <TableCell component="th" scope="row">
+                                                    {getFormattedDate(new Date(row.fecha_emision_programada), true)} / {getFormattedDate(new Date(row.fecha_fin_emision_programada), true)}
+                                                    </TableCell>
                                         </TableRow>
                                     )
                                     })

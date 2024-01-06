@@ -1,5 +1,5 @@
-import { React, useState, useContext, useEffect, useMemo, Fragment } from 'react'
-import { Link } from 'react-router-dom';
+import { React, useState, useContext, useEffect, useMemo, useRef, Fragment } from 'react'
+import { Link, useLocation } from 'react-router-dom';
 import parser from 'html-react-parser';
 import axios from "axios";
 
@@ -44,12 +44,31 @@ const OnlineRadio = ({}) => {
   const [ descripcion, setDescripcion ] = useState("");
   const [ fechaInicio, setFechaInicio ] = useState(false);
   const [ emisionTimeStr, setEmisionTimeStr ] = useState("");
+  const [ emisionAudiosFilenames, setEmisionAudiosFilenames ] = useState([]);
+  const [ scheduledRadioAudioData, setScheduledRadioAudioData ] = useState(false);
+  const [ scheduledAudioViewed, setScheduledAudioViewed ] = useState(false);
   const [ chatMessages, setChatMessages ] = useState([]);
   const [ draftMessage, setDraftMessage] = useState("");
 
   //const playElement = useRef();
+  const emisionAudiosElement = useRef(null);
+  const radioAudiosElement = useRef(null);
   const ImgIcon = styledComponents.radioOnlineIcon;
   const socket = useMemo(() =>  io(consts.ws_server_url), [recordData]);
+  const scheduledAudioViewedMemo = useMemo(() =>  scheduledAudioViewed, [scheduledAudioViewed]);
+  const location = useLocation();
+
+  if(emisionAudiosElement && emisionAudiosElement.current) {
+    emisionAudiosElement.current.onended = async () => {
+      await setAudiosElementsSrc();
+    }
+  }
+
+  if(radioAudiosElement && radioAudiosElement.current) {
+    radioAudiosElement.current.onended = async () => {
+      setScheduledRadioAudioData(false);
+    }
+  }
 
   const messageValidations = () => {
     let objReturn = {'status': 'success', 'data': {}, 'msg': ''};
@@ -89,15 +108,17 @@ const OnlineRadio = ({}) => {
     setDraftMessage("");
   }
 
-  const onRadioAudio = (data) => {
-    const audioCtx = new AudioContext();
-    audioCtx.decodeAudioData(data.file, function(decodedBuffer) {
-      var newSource = audioCtx.createBufferSource();
-      newSource.buffer = decodedBuffer;
-      newSource.connect( audioCtx.destination );
-      newSource.start(0);
-    }, (error) => {
-    });
+  const onRadioAudio = async (data) => {
+    const emisionAudiosFilenamesLenght = emisionAudiosFilenames.length;
+    let newList = [...emisionAudiosFilenames];
+    if(!newList.includes(data.file)) {
+      console.log('onRadioAudio', data, emisionAudiosFilenames);
+      newList.push(data.file);
+      setEmisionAudiosFilenames(newList);
+      if(emisionAudiosFilenamesLenght === 0) {
+        await setAudiosElementsSrc(false, newList);
+      }
+    }
   }
 
   const onChatMessage = (data) => {
@@ -106,10 +127,20 @@ const OnlineRadio = ({}) => {
     setChatMessages(newChatMessagesList);
   }
 
+  const onEmisionScheduledAudio = (data) => {
+    console.log('schedule_audio_viewed', localStorage.getItem('scheduled_audio_viewed'));
+    if(data.radio_audio) {
+      if(!localStorage.getItem('scheduled_audio_viewed')) {
+        searchCurrentEmision();
+      }
+    }
+  }
+
   const onSocketConnection = () => {
     const engine = socket.io.engine;
     console.log("Socket Connection"); // x8WIv7-mJelg7on_ALbx
     socket.on("radioAudio", onRadioAudio); 
+    socket.on("emisionScheduledAudio", onEmisionScheduledAudio); 
     socket.on("messages", onChatMessage); 
     socket.on("connect_error", (err) => {
       console.log(`connect_error due to ${err.message}`);
@@ -133,31 +164,35 @@ const OnlineRadio = ({}) => {
 
   const setEmisionValues = (data) => {
     let radioEspectadorMensajes = [];
-    setRecordData(data);
-    setRecordID(data.id);
-    setTitulo(data.titulo);
-    setDescripcion(data.descripcion);
-    setFechaInicio(new Date(data.fecha_inicio));
-    data.radio_espectador_mensajes.map((msg) => {
-      radioEspectadorMensajes.push({
-        user_id: msg.user_id,
-        username: msg.username,
-        content: msg.content,
-        time: msg.fecha_envio
+    if(data.radio_emision) {
+      setRecordData(data.radio_emision);
+      setRecordID(data.radio_emision.id);
+      setTitulo(data.radio_emision.titulo);
+      setDescripcion(data.radio_emision.descripcion);
+      setFechaInicio(new Date(data.radio_emision.fecha_inicio));
+      data.radio_emision.radio_espectador_mensajes.map((msg) => {
+        radioEspectadorMensajes.push({
+          user_id: msg.user_id,
+          username: msg.username,
+          content: msg.content,
+          time: msg.fecha_envio
+        })
       })
-    })
-    setChatMessages(radioEspectadorMensajes);
+      setChatMessages(radioEspectadorMensajes);
+    }
+    if(data.emision_audio && scheduledAudioViewedMemo == false) {
+      setScheduledRadioAudioData(data.emision_audio);
+    }
   }
 
   const searchCurrentEmision = () => {
+    console.log('scheduledAudioViewedMemo', scheduledAudioViewedMemo);
     setBlockUI(true);
     const token = localStorage.getItem('token');
     const config = {headers:{'authorization': token}};
     const url = `${consts.backend_base_url}/api/emision/api/current`;
     axios.get(url, config).then((response) => {
-        if(response.data.length > 0) {
-          setEmisionValues(response.data[0]);
-        }
+        setEmisionValues(response.data);
         setBlockUI(false);
     }).catch((err) => {
         setNotificationMsg(err.response.data.message);
@@ -250,6 +285,44 @@ const OnlineRadio = ({}) => {
     });
   }
 
+  const setAudiosElementsSrc = async (radioAudio=false, filenameList=[]) => {
+    let endpoint = `getCurrentEmisionAudio`;
+    let element = emisionAudiosElement;
+    if(radioAudio) {
+      element = radioAudiosElement;
+      endpoint = `getCurrentEmisionRadioAudio`;
+    }
+    if(element && element.current) {
+      if(filenameList.length > 0) {
+        element.current.src = `${consts.backend_base_url}/api/files/${endpoint}/${filenameList[0]}`;
+        await element.current.load();
+        await element.current.play();
+        if(radioAudio) {
+          setEmisionAudiosFilenames(filenameList.filter(e => e != filenameList[0]));
+        }
+      }
+    }
+  }
+
+  useEffect(() => {
+    if(scheduledRadioAudioData) {
+      if(radioAudiosElement && radioAudiosElement.current && !scheduledAudioViewedMemo) {
+          radioAudiosElement.current.src = `${consts.backend_base_url}/api/files/currentScheduledRadioAudio`;
+          radioAudiosElement.current.currentTime = scheduledRadioAudioData.audio_played_current_time;
+          radioAudiosElement.current.load();
+          radioAudiosElement.current.play();
+          localStorage.setItem('scheduled_audio_viewed', true);
+          setScheduledAudioViewed(true);
+      }
+    } else {
+      if(radioAudiosElement && radioAudiosElement.current) {
+        radioAudiosElement.current.src = "";
+        localStorage.setItem('scheduled_audio_viewed', false);
+        setScheduledAudioViewed(false);
+      }
+    }
+  }, [scheduledRadioAudioData]);
+
   useEffect(() => {
     if(!recordID) {
       setGrid1With(12);
@@ -299,11 +372,28 @@ const OnlineRadio = ({}) => {
               <br />
               <Container maxWidth="xl" className="bg-teal-300  p-6 rounded-md">
                   <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
-                    <Grid item xs={6} className="text-left">
+                    <Grid item xs={2} className="text-left">
                       <ImgIcon src={IconButton} alt="React Logo" className="radio-online-icon"/>
                     </Grid>
-                    <Grid item xs={6} className="text-right p-0 m-0">
-                    <h2 style={{'color': 'white', 'fontSize': '50px'}}>{emisionTimeStr}</h2>
+                    <Grid item xs={10} className="text-right p-0 m-0">
+                      <h2 style={{'color': 'white', 'fontSize': '50px'}}>{emisionTimeStr}</h2>
+                      {
+                        scheduledRadioAudioData &&
+                        <h2 style={{'color': 'white', 'fontSize': '1.6rem'}}>
+                          {scheduledRadioAudioData.radio_audio.author.name} - {scheduledRadioAudioData.radio_audio.title}
+                        </h2>
+                      }
+                      {
+                        recordID &&
+                        <Fragment>
+                          <audio ref={emisionAudiosElement} type="audio/mp3" className='d-none'></audio>
+                          <audio ref={radioAudiosElement} type="audio/mp3" className='d-none'></audio>
+                        </Fragment>
+                      }
+                      {
+                        !recordID &&
+                        <audio ref={radioAudiosElement} type="audio/mp3"></audio>
+                      }
                     </Grid>
                   </Grid>
               </Container>
