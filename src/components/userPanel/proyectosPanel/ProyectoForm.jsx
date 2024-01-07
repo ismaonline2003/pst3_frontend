@@ -44,9 +44,11 @@ import ImageListItemBar from '@mui/material/ImageListItemBar';
 import ListSubheader from '@mui/material/ListSubheader';
 import IconButton from '@mui/material/IconButton';
 import InfoIcon from '@mui/icons-material/Info';
+import Switch from '@mui/material/Switch';
 
 
 //own
+import SinFotoPerfil from '../../../icons/sin-foto-perfil.png';
 import AppContext from '../../../context/App';
 import consts from '../../../settings/consts';
 import FormBtns from '../FormBtns';
@@ -86,6 +88,9 @@ const trayectoVals = [
     }
 ];
 
+const postBooleanLabel = { inputProps: { 'aria-label': 'Publicado' } };
+
+
 const ProyectoForm = ({}) => {
     const [reLoad, setReload] = useState(false);
     const [redirect, setRedirect] = useState(false);
@@ -97,7 +102,6 @@ const ProyectoForm = ({}) => {
     const [seccionID, setSeccionID] = useState(false);
     const [nombre, setNombre] = useState("");
     const [descripcion, setDescripcion] = useState("");
-    const [miniatura, setMiniatura] = useState(false);
     const [imgs, setImgs] = useState([]);
     const [docs, setDocs] = useState([]);
     const [integrantes, setIntegrantes] = useState([]);
@@ -126,7 +130,10 @@ const ProyectoForm = ({}) => {
     const [ defaultYear, setDefaultYear] = useState((new Date()).getFullYear());
     const [ defaultTrayecto, setDefaultTrayecto] = useState("0");
     const [ defaultSeccion, setDefaultSeccion] = useState("");
-
+    const [booleanPostChecked, setBooleanPostChecked] = useState(false);
+    const [showEditMiniatura, setShowEditMiniatura] = useState(false);
+    const [miniatura, setMiniaturaUrl] = useState("");
+    const [newMiniaturaObj, setNewMiniaturaObj] = useState(false);
 
     //form common fields
     const [showDeleteDialog, setShowDeleteDialog ] = useState(false);
@@ -134,14 +141,38 @@ const ProyectoForm = ({}) => {
     const [recordData, setRecordData ] = useState(undefined);
     const [newId, setNewId] = useState(0);
     const { id } = useParams();
+    const miniaturaInput = useRef(null);
     const { blockUI, setBlockUI, setNotificationMsg, setNotificationType, setShowNotification} = useContext(AppContext);
     const [unlockFields, setUnlockFields] = useState(false);
     const StyledH1 = styledComponents.dahsboardPanelh1;
     const StyledH2 = styledComponents.dahsboardPanelh2;
     const StyledH3 = styledComponents.dahsboardPanelh3;
+    const StyledH4 = styledComponents.dahsboardPanelh4;
+    const MiniaturaImg = styledComponents.miniaturaImg;
+    const MiniaturaImgEdit = styledComponents.miniaturaImgEdit;
+    const MiniaturaImgEditLayer = styledComponents.miniaturaImgEditLayer;
 
     if(editor) {
         editor.setEditable(descripcion);
+    }
+
+    if(miniaturaInput && miniaturaInput.current) {
+        miniaturaInput.current.onchange = (e) => {
+            const validations = imgValidations(e.target.files[0]);
+            if(validations.status != 'success') {
+                setNotificationMsg(validations.msg);
+                setNotificationType('error');
+                setShowNotification(true);
+                e.target.value = "";
+            } else {
+                const url = window.URL.createObjectURL(e.target.files[0]);
+                setNewMiniaturaObj({
+                    url: url,
+                    file: e.target.files[0]
+                });
+                setMiniaturaUrl(url);
+            }
+        } 
     }
 
     const getImgsList = (data) => {
@@ -173,17 +204,19 @@ const ProyectoForm = ({}) => {
 
     const getIntegrantesList = (data) => {
         let integrantesList = [];
-        data.inscripcions.map((item) => {
-            let estudiante = data.seccion.estudiantes.filter(e => e.id == item.estudiante_id);
-            if(estudiante.length > 0) {
-                estudiante = estudiante[0];
-                integrantesList.push({
-                    id: estudiante.id,
-                    ci_type: estudiante.person.ci_type,
-                    ci: estudiante.person.ci,
-                    nombre: estudiante.person.name,
-                    apellido: estudiante.person.lastname
-                })
+        console.log(data.integrante_proyectos);
+        data.integrante_proyectos.map((item) => {
+            if(item.inscripcion) {
+                let estudiante = item.inscripcion.estudiante;
+                if(estudiante) {
+                    integrantesList.push({
+                        id: estudiante.id,
+                        ci_type: estudiante.person.ci_type,
+                        ci: estudiante.person.ci,
+                        nombre: estudiante.person.name,
+                        apellido: estudiante.person.lastname
+                    })
+                }
             }
         })
         return integrantesList
@@ -205,6 +238,7 @@ const ProyectoForm = ({}) => {
     }
 
     const setProyectoInfo = (data) => {
+        let wordpressPosted = false;
         setRecordData(data);
         setNombre(data.nombre);
         setDescripcion(data.descripcion);
@@ -226,6 +260,11 @@ const ProyectoForm = ({}) => {
         setNewDocName('');
         setNewImageDescription('');
         setDocs2Add([]);
+        if(data.wordpress_id) {
+            wordpressPosted = true;
+        }
+        setBooleanPostChecked(wordpressPosted);
+        setMiniaturaUrl(`${consts.backend_base_url}/api/files/getFile/${data.miniatura_filename}`);
     }
 
     if(newImage && newImage.current) {
@@ -350,10 +389,10 @@ const ProyectoForm = ({}) => {
     const getIntegrantesDeleted = () => {
         let arrReturn = [];
         console.log(recordData);
-        recordData.inscripcions.map((item) => {
-            let filter = integrantes.filter(integranteRecord => integranteRecord.id == item.estudiante_id);
+        recordData.integrante_proyectos.map((item) => {
+            let filter = integrantes.filter(integranteRecord => integranteRecord.estudiante_id === item.estudiante_id);
             if(filter.length == 0) {
-                arrReturn.push({id: item.integrante_proyecto.id});
+                arrReturn.push({id: item.id});
             }
         });
         return arrReturn;
@@ -362,7 +401,7 @@ const ProyectoForm = ({}) => {
     const getAddedIntegrantes = () => {
         let arrReturn = [];
         integrantes.map((item) => {
-            let filter = recordData.inscripcions.filter(integranteRecord => integranteRecord.estudiante_id == item.id);
+            let filter = recordData.integrante_proyectos.filter(integranteRecord => integranteRecord.estudiante_id === item.id);
             if(filter.length == 0) {
                 arrReturn.push({
                     id: item.id,
@@ -379,8 +418,13 @@ const ProyectoForm = ({}) => {
     //imgs and docs in update methods
 
     const getAddedFiles = (formData) => {
-        let filesObj = {imgs:[], docs: [], formData: {}};
+        let filesObj = {imgs:[], docs: [], formData: {}, miniatura_added: false};
         let a = 0;
+
+        if(newMiniaturaObj) {
+            formData.append('files', newMiniaturaObj.file);
+            filesObj.miniatura_added = true;
+        }
 
         for(let i = 0; i < imgs2Add.length; i++) {
             let item = imgs2Add[i];
@@ -486,14 +530,12 @@ const ProyectoForm = ({}) => {
             //docs
             addedDocs:addedDocs,
             deletedDocs: docsDeleted,
-            docsUpdated:docsUpdated
+            docsUpdated:docsUpdated,
+            miniaturaAdded: addedFiles.miniatura_added,
+            post: booleanPostChecked
         };
-        console.log(body, body);
-
+        console.log(body);
         formData.append('data', JSON.stringify(body));
-        if(miniatura != false) {
-            formData.append('miniatura', miniatura);
-        }
         const config = {headers:{'authorization': token, 'Content-Type': 'multipart/form-data'}};
         let url = `${consts.backend_base_url}/api/proyecto/${id}`;
         axios.put(url, formData, config).then((response) => {
@@ -525,13 +567,12 @@ const ProyectoForm = ({}) => {
             imgs: [],
             docs: []
         };
-
-        if(miniatura != false) {
-            formData.append('files', miniatura);
+        
+        if(newMiniaturaObj) {
+            formData.append('files', newMiniaturaObj.file);
             body.miniaturaAdded = true;
             a += 1;
         } 
-
         for(let i = 0; i < imgs2Add.length; i++) {
             let item = imgs2Add[i];
             formData.append(`files`, item.img);
@@ -852,6 +893,12 @@ const ProyectoForm = ({}) => {
         }
     }
 
+    
+    const _handleEliminarMiniaturaBtn = () => {
+        setMiniaturaUrl('');
+        setNewMiniaturaObj(false);
+    }
+
     useEffect(() => {
         setEditorContent();
     }, [recordData]);
@@ -895,6 +942,36 @@ const ProyectoForm = ({}) => {
                 !(!recordFound && id != 0) && 
                 <Fragment>
                     <FormContainer>
+                        <div className='d-flex flex-row flex-wrap text-center mb-4'>
+                            {
+                                !unlockFields &&
+                                <MiniaturaImg src={miniatura ? miniatura : SinFotoPerfil} alt="miniatura-noticia"/>  
+                            } 
+                            {
+                                unlockFields &&
+                                <Fragment>
+                                    <MiniaturaImgEdit 
+                                        style={{backgroundImage: `url('${miniatura ? miniatura : SinFotoPerfil}')`}}   
+                                        onMouseEnter={() => setShowEditMiniatura(true)} 
+                                        onMouseLeave={() => setShowEditMiniatura(false)}
+                                    >
+                                        {
+                                            showEditMiniatura &&
+                                            <MiniaturaImgEditLayer
+                                                onClick={(e) => miniaturaInput.current.click()}
+                                            >
+                                                <p>Click Aqui para cambiar la foto</p>
+                                                <input type="file" id="miniaturaInput" ref={miniaturaInput} hidden/>
+                                            </MiniaturaImgEditLayer>
+                                        }
+                                    </MiniaturaImgEdit>
+                                    {
+                                        miniatura &&
+                                        <Button variant="outlined" color="error" style={{margin: '10px'}} onClick={(e) => _handleEliminarMiniaturaBtn(e)}>Eliminar Miniatura</Button>
+                                    }
+                                </Fragment>
+                            }
+                        </div>
                         <div className="w-100 text-center">
                             <StyledH2>Datos Generales del Proyecto</StyledH2>
                         </div>
@@ -1006,6 +1083,19 @@ const ProyectoForm = ({}) => {
                                     </RichTextEditorProvider>
                                 </FormControl>
                             }
+                        </div>
+                        <div className='d-flex flex-row flex-wrap m-4'>
+                            <div style={{width:'100px !important'}}>
+                                {
+                                    !booleanPostChecked &&
+                                    <StyledH4>Publicar</StyledH4>
+                                }
+                                                            {
+                                    booleanPostChecked &&
+                                    <StyledH4>Ocultar</StyledH4>
+                                }
+                            </div>
+                            <div style={{width:'100px !important'}}><Switch {...postBooleanLabel} checked={booleanPostChecked} onClick={(e) => setBooleanPostChecked(e.target.checked)}/></div>
                         </div>
                     </FormContainer>
                     <br />

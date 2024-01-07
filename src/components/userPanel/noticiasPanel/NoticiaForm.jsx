@@ -39,13 +39,10 @@ import SinFotoPerfil from '../../../icons/sin-foto-perfil.png';
 import AppContext from '../../../context/App';
 import consts from '../../../settings/consts';
 import FormBtns from '../FormBtns';
-import sequelizeImg2Base64 from '../../../helpers/sequelizeImg2Base64';
-import getFormattedDate from '../../../helpers/getFormattedDate';
 import styledComponents from '../../styled'
 import FormContainer from '../FormContainer'
 import noEncontrado from '../../../icons/no-encontrado.jpg'
 import Button from '@mui/material/Button';
-import getTurnoName from '../../../helpers/getTurnoName';
 import DeleteDialog from '../../generales/DeleteDialog';
 import imgValidations from '../../../helpers/imgValidations';
 
@@ -183,6 +180,9 @@ const NoticiaForm = ({}) => {
         setNewImgsList([]);
         setNewMiniaturaObj(false);
         setShowEditMiniatura(false);
+        if(data.wordpress_id) {
+            setBooleanPostChecked(true);
+        }
     }
 
     const searchCategoriasNoticias = () => {
@@ -191,7 +191,6 @@ const NoticiaForm = ({}) => {
         let url = `${consts.backend_base_url}/api/categoria_noticia`;
         axios.get(url, config).then((response) => {
             //set record data
-            console.log(response);
             setCategorias(response.data);
             setBlockUI(false);
         }).catch((err) => {
@@ -237,10 +236,12 @@ const NoticiaForm = ({}) => {
             const config = {headers:{ authorization: token}};
             let url = `${consts.backend_base_url}/api/noticia/${id}`;
             axios.get(url, config).then((response) => {
+                console.log(response);
                 setNoticiaInfo(response.data);
                 setRecordFound(true);
                 setBlockUI(false);
             }).catch((err) => {
+                console.log(err);
                 if(err.response.status == 404) {
                     setRecordFound(false);
                 } else {
@@ -634,7 +635,7 @@ const NoticiaForm = ({}) => {
                                 <StyledH4>Ocultar</StyledH4>
                             }
                         </div>
-                        <div style={{width:'100px !important'}}><Switch {...postBooleanLabel} onClick={(e) => setBooleanPostChecked(e.target.checked)}/></div>
+                        <div style={{width:'100px !important'}}><Switch {...postBooleanLabel} checked={booleanPostChecked} onClick={(e) => setBooleanPostChecked(e.target.checked)}/></div>
                     </div>
                     
                 </FormContainer>
