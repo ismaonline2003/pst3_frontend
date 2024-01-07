@@ -201,6 +201,24 @@ export default function EmisionPanel({}) {
         });
     }
 
+    const _handleNotificaciones = () => {
+        setBlockUI(true);
+        const token = localStorage.getItem('token');
+        const config = {headers:{'authorization': token}};
+        let url = `${consts.backend_base_url}/api/grabacion/api/sendNotificaciones`;
+        axios.get(url, config).then((response) => {
+            setNotificationMsg("Las notificaciones han sido enviadas exitosamente!!");
+            setNotificationType('success');
+            setShowNotification(true);
+            setBlockUI(false);
+        }).catch((err) => {
+            setNotificationMsg("Ha ocurrido un error inesperado... Vuelva a intentarlo mas tarde.");
+            setNotificationType('error');
+            setShowNotification(true);
+            setBlockUI(false);
+        });
+    }
+
     const setEditorContent = () => {
         if (!editor || editor.isDestroyed) {
             return;
@@ -283,7 +301,7 @@ export default function EmisionPanel({}) {
                         <Stack spacing={2} direction="row">
                             <Button variant="contained" color="success" onClick={(e) => _handleBtnActualizar()}>Actualizar</Button>
                             <Button variant="contained" color="error" onClick={(e) => _handleBtnFinalizar()}>Finalizar</Button>
-                            <Button variant="contained" color="primary">Notificaciones</Button>
+                            <Button variant="contained" color="primary" onClick={(e) => _handleNotificaciones()}>Notificaciones</Button>
                         </Stack>
                     </Grid>
                     <Grid item xs={3} className="text-center">
