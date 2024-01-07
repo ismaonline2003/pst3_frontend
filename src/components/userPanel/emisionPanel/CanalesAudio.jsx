@@ -14,7 +14,13 @@ const hoverMicrophoneIconStyles = {fontSize: '5rem', transition: '.3s ease all',
 export default function CanalesAudio({emisionState, socket}) {
     console.log('emisionState', emisionState);
     const StyledH2 = styledComponents.dahsboardPanelh2;
-    const [ canalesList, setCanalesList] = useState([]);
+    const [ canalesList, setCanalesList] = useState([{
+        id: `canal-audio-1`,
+        nro: 1,
+        device_id: "",
+        active: false,
+        currentDataAvailable: []
+    }]);
     const [ selectedCanalID, setSelectedCanalID] = useState(false);
     const [ wsObj, setWswsObj ] = useState(undefined);
     const [ microphoneIconStyles, setMicrophoneIconStyles ] = useState(defaultMicrophoneIconStyles);
@@ -102,9 +108,11 @@ export default function CanalesAudio({emisionState, socket}) {
     }, [])
 
     const _onClickKeyboardVoiceIcon = (canal) => {
-        activarDispositivo(canal.id);
-        setSelectedCanalID(canal.id);
-        setMicrophoneIconColor('error');
+        if(canal) {
+            activarDispositivo(canal.id);
+            setSelectedCanalID(canal.id);
+            setMicrophoneIconColor('error');
+        }
     }
 
     const _onMouseOverKeyboardVoiceIcon = (e) => {

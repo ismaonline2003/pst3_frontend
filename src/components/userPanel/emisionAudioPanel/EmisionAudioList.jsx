@@ -21,6 +21,10 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import DeleteIcon from '@mui/icons-material/Delete';
+import Slider from '@mui/material/Slider';
+import VolumeDown from '@mui/icons-material/VolumeDown';
+import VolumeUp from '@mui/icons-material/VolumeUp';
+
 //own
 import SearchBarReadOnly from '../SearchBarReadOnly';
 import ListBtns from '../ListBtns';
@@ -55,6 +59,7 @@ export default function EmisionAudioList({}) {
     const [ newRecordDateSeconds, setNewRecordDateSeconds ] = useState(0);
     const [ newRecordDateFormatted, setNewRecordDateFormatted ] = useState("");
     const [ newRecords, setNewRecords ] = useState([]);
+    const [ sliderVolumeVal, setSliderVolumeVal] = useState(100);
 
 
 
@@ -134,7 +139,12 @@ export default function EmisionAudioList({}) {
             fecha_emision_programada = new Date(newRecordDate);
             fecha_emision_programada.setSeconds(newRecordDateSeconds);
         }
-        const newRecordData = {id: newRecords.length, radio_audio: selectedAudio, fecha_emision_programada: fecha_emision_programada.toString()};
+        const newRecordData = {
+            id: newRecords.length, 
+            radio_audio: selectedAudio, 
+            fecha_emision_programada: fecha_emision_programada.toString(),
+            volume: sliderVolumeVal
+        };
         const audioValidations = _audioValidations([...newRecords, ...[newRecordData]]);
         if(!audioValidations) {
             return;
@@ -156,6 +166,7 @@ export default function EmisionAudioList({}) {
         setSelectedAudio(false);
         setNewRecordDate("");
         setValToSearch("");
+        setSliderVolumeVal(100);
     }
 
     const _deleteNewRecordFromList = (id) => {
@@ -214,6 +225,7 @@ export default function EmisionAudioList({}) {
         const url = `${consts.backend_base_url}/api/emision_audio`;
         let body = [];
         for(let i = 0; i < newRecords.length; i++) {
+            console.log('newRecords[i].volume', newRecords[i].volume);
             let audioDate = new Date(newRecords[i].fecha_emision_programada);
             let audioDuration = newRecords[i].radio_audio.seconds_duration;
             let audioFinishDate = new Date(newRecords[i].fecha_emision_programada);
@@ -221,7 +233,8 @@ export default function EmisionAudioList({}) {
             body.push({
                 id_audio: newRecords[i].radio_audio.id,
                 fecha_emision_programada: audioDate.toString(),
-                fecha_fin_emision_programada: audioFinishDate.toString()
+                fecha_fin_emision_programada: audioFinishDate.toString(),
+                audio_volume: newRecords[i].volume/100
             });
         }
         try {
@@ -289,6 +302,10 @@ export default function EmisionAudioList({}) {
     const handleCancelarBtn = () => {
         setStatus('readonly');
         setNewRecords([]);
+    }
+
+    const _handleSlider = (e, newVal) => {
+        setSliderVolumeVal(newVal);
     }
 
     useEffect(() => {
@@ -470,10 +487,8 @@ export default function EmisionAudioList({}) {
                                         sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                                     >
                                         <TableCell component="td" align="left" scope="row">
-                                            <TextField id="search_audio" label="Buscar Audio" variant="outlined" defaultValue={valToSearch} onMouseLeave={(e) => setValToSearch(e.target.value)}/>
-                                        </TableCell>
-                                        <TableCell component="td" align="left" scope="row">
-                                            <TextField sx={{width: '100%'}} id="audios_found" select label="Fuente" onChange={(e) => setSelectedAudio(audiosFound.filter(a => a.id == parseInt(e.target.value))[0])}>
+                                            <TextField size="small" id="search_audio" label="Buscar Audio" variant="outlined" defaultValue={valToSearch} onMouseLeave={(e) => setValToSearch(e.target.value)}/>
+                                            <TextField size="small" sx={{width: '100%', marginTop: '10px'}} id="audios_found" select label="Fuente" onChange={(e) => setSelectedAudio(audiosFound.filter(a => a.id == parseInt(e.target.value))[0])}>
                                                 {audiosFound.map((option) => (
                                                     <MenuItem key={option.id} value={option.id}>
                                                         {option.author.name} - {option.title}
@@ -482,14 +497,21 @@ export default function EmisionAudioList({}) {
                                             </TextField>
                                         </TableCell>
                                         <TableCell component="td" align="left" scope="row">
+                                            <div className="d-flex justify-between flex-row w-100 items-center mt-4">
+                                                <VolumeDown />
+                                                <Slider size="small" sx={{width: '80px', marginLeft: '20px', marginRight: '20px', padding: '0 !important'}} aria-label="Volúmen" valueLabelDisplay="auto" value={sliderVolumeVal} onChange={_handleSlider} />
+                                                <VolumeUp />
+                                            </div>
+                                        </TableCell>
+                                        <TableCell component="td" align="left" scope="row">
                                             <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                            <DemoContainer components={['DateTimePicker']}>
-                                                <DateTimePicker label="Fecha y Hora" value={newRecordDate} onChange={(e) => setNewRecordDate(e['$d'].toString())} />
-                                            </DemoContainer>
+                                                <DemoContainer components={['DateTimePicker']}>
+                                                    <DateTimePicker size="small" label="Fecha y Hora" value={newRecordDate} onChange={(e) => setNewRecordDate(e['$d'].toString())} />
+                                                </DemoContainer>
                                             </LocalizationProvider>
                                         </TableCell>
                                         <TableCell component="td" align="left" scope="row">
-                                            <TextField id="new_date_seconds" type="number" label="Segundos" variant="outlined" value={newRecordDateSeconds} onChange={(e) => setNewRecordDateSeconds(parseInt(e.target.value))}/>
+                                            <TextField size="small" id="new_date_seconds" type="number" label="Segundos" variant="outlined" value={newRecordDateSeconds} onChange={(e) => setNewRecordDateSeconds(parseInt(e.target.value))}/>
                                         </TableCell>
                                         <TableCell component="td" align="left" scope="row">
                                             <LibraryAddIcon sx={{fontSize: '2.2rem', ':hover': {cursor: 'pointer', fontSize: '2.5rem', transition: '.3s ease all'}}} color="success"

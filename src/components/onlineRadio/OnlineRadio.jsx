@@ -12,6 +12,9 @@ import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import TextField from '@mui/material/TextField';
 import SendIcon from '@mui/icons-material/Send';
+import Slider from '@mui/material/Slider';
+import VolumeDown from '@mui/icons-material/VolumeDown';
+import VolumeUp from '@mui/icons-material/VolumeUp';
 import { Container, FormGroup, FormControl, InputLabel, Input, Button } from '@mui/material';
 import { styled } from '@mui/system';
 
@@ -44,11 +47,12 @@ const OnlineRadio = ({}) => {
   const [ descripcion, setDescripcion ] = useState("");
   const [ fechaInicio, setFechaInicio ] = useState(false);
   const [ emisionTimeStr, setEmisionTimeStr ] = useState("");
-  const [ emisionAudiosFilenames, setEmisionAudiosFilenames ] = useState([]);
+  const [ currentEmisionFilenames, setCurrentEmisionFilenames ] = useState([]);
   const [ scheduledRadioAudioData, setScheduledRadioAudioData ] = useState(false);
   const [ scheduledAudioViewed, setScheduledAudioViewed ] = useState(false);
   const [ chatMessages, setChatMessages ] = useState([]);
   const [ draftMessage, setDraftMessage] = useState("");
+  const [ sliderVolumeVal, setSliderVolumeVal] = useState(100);
 
   //const playElement = useRef();
   const emisionAudiosElement = useRef(null);
@@ -59,11 +63,10 @@ const OnlineRadio = ({}) => {
   const location = useLocation();
 
   if(emisionAudiosElement && emisionAudiosElement.current) {
-    emisionAudiosElement.current.onended = async () => {
-      await setAudiosElementsSrc();
-    }
+    emisionAudiosElement.current.onended = () => {
+      setAudiosElementsSrc();
+    }  
   }
-
   if(radioAudiosElement && radioAudiosElement.current) {
     radioAudiosElement.current.onended = async () => {
       setScheduledRadioAudioData(false);
@@ -108,17 +111,39 @@ const OnlineRadio = ({}) => {
     setDraftMessage("");
   }
 
+  const _setSocketScheduledAudioData = (audio_data) => {
+    setScheduledRadioAudioData(audio_data);
+  }
+
   const onRadioAudio = async (data) => {
-    const emisionAudiosFilenamesLenght = emisionAudiosFilenames.length;
-    let newList = [...emisionAudiosFilenames];
-    if(!newList.includes(data.file)) {
-      console.log('onRadioAudio', data, emisionAudiosFilenames);
-      newList.push(data.file);
-      setEmisionAudiosFilenames(newList);
-      if(emisionAudiosFilenamesLenght === 0) {
-        await setAudiosElementsSrc(false, newList);
+    try {
+       /*
+        const audioCtx = new AudioContext();
+        console.log(data.file);
+        const decodedBuffer = await audioCtx.decodeAudioData(data.file);
+        const newSource =  audioCtx.createBufferSource();
+        newSource.buffer = decodedBuffer;
+        newSource.connect( audioCtx.destination );
+        newSource.start(0);
+      */
+
+      let audio_emision_filenames = JSON.parse(localStorage.getItem('audio_emision_filenames'));
+      let first_emision_audio_play_done = localStorage.getItem('first_emision_audio_play_done');
+      if(audio_emision_filenames) {
+        if(!audio_emision_filenames.includes(data.filename)) {
+          audio_emision_filenames.push(data.filename);
+          localStorage.setItem('audio_emision_filenames', JSON.stringify(audio_emision_filenames));
+          if(!first_emision_audio_play_done || first_emision_audio_play_done === 'false') {
+            localStorage.setItem('first_emision_audio_play_done', true);
+            await setAudiosElementsSrc();
+          }
+        }
       }
+
+    } catch(err) {
+      console.log(err)
     }
+    
   }
 
   const onChatMessage = (data) => {
@@ -128,10 +153,9 @@ const OnlineRadio = ({}) => {
   }
 
   const onEmisionScheduledAudio = (data) => {
-    console.log('schedule_audio_viewed', localStorage.getItem('scheduled_audio_viewed'));
     if(data.radio_audio) {
-      if(!localStorage.getItem('scheduled_audio_viewed')) {
-        searchCurrentEmision();
+      if(localStorage.getItem('scheduled_audio_viewed') === 'false') {
+        _setSocketScheduledAudioData(data.audio_data);
       }
     }
   }
@@ -186,19 +210,21 @@ const OnlineRadio = ({}) => {
   }
 
   const searchCurrentEmision = () => {
-    console.log('scheduledAudioViewedMemo', scheduledAudioViewedMemo);
     setBlockUI(true);
     const token = localStorage.getItem('token');
     const config = {headers:{'authorization': token}};
     const url = `${consts.backend_base_url}/api/emision/api/current`;
     axios.get(url, config).then((response) => {
+        console.log(response);
         setEmisionValues(response.data);
         setBlockUI(false);
     }).catch((err) => {
-        setNotificationMsg(err.response.data.message);
-        setNotificationType('error');
-        setShowNotification(true);
-        setBlockUI(false);
+        if(err.response) {
+          setNotificationMsg(err.response.data.message);
+          setNotificationType('error');
+          setShowNotification(true);
+          setBlockUI(false);
+        }
     });
   }
 
@@ -285,43 +311,56 @@ const OnlineRadio = ({}) => {
     });
   }
 
-  const setAudiosElementsSrc = async (radioAudio=false, filenameList=[]) => {
+  const setAudiosElementsSrc = async () => {
     let endpoint = `getCurrentEmisionAudio`;
-    let element = emisionAudiosElement;
-    if(radioAudio) {
-      element = radioAudiosElement;
-      endpoint = `getCurrentEmisionRadioAudio`;
-    }
-    if(element && element.current) {
+    let filenameList = JSON.parse(localStorage.getItem('audio_emision_filenames'));
+    if(emisionAudiosElement && emisionAudiosElement.current) {
       if(filenameList.length > 0) {
-        element.current.src = `${consts.backend_base_url}/api/files/${endpoint}/${filenameList[0]}`;
-        await element.current.load();
-        await element.current.play();
-        if(radioAudio) {
-          setEmisionAudiosFilenames(filenameList.filter(e => e != filenameList[0]));
-        }
+        emisionAudiosElement.current.src = `${consts.backend_base_url}/api/files/${endpoint}/${filenameList[0]}`;
+        localStorage.setItem('audio_emision_filenames', JSON.stringify(filenameList.filter(e => e != filenameList[0])));
+        await emisionAudiosElement.current.load();
+        await emisionAudiosElement.current.play();
+        return;
       }
+    }
+    localStorage.setItem('first_emision_audio_play_done', false);
+  }
+
+  const _handleSlider = (event, newValue) => {
+    setSliderVolumeVal(newValue);
+    if(radioAudiosElement.current) {
+      radioAudiosElement.current.volume = newValue/100;
+    }
+    if(emisionAudiosElement.current) {
+      emisionAudiosElement.current.volume = newValue/100;
     }
   }
 
   useEffect(() => {
-    if(scheduledRadioAudioData) {
-      if(radioAudiosElement && radioAudiosElement.current && !scheduledAudioViewedMemo) {
-          radioAudiosElement.current.src = `${consts.backend_base_url}/api/files/currentScheduledRadioAudio`;
-          radioAudiosElement.current.currentTime = scheduledRadioAudioData.audio_played_current_time;
-          radioAudiosElement.current.load();
-          radioAudiosElement.current.play();
-          localStorage.setItem('scheduled_audio_viewed', true);
-          setScheduledAudioViewed(true);
+    try {
+      if(scheduledRadioAudioData) {
+        if(radioAudiosElement && radioAudiosElement.current && !scheduledAudioViewedMemo) {
+            radioAudiosElement.current.src = `${consts.backend_base_url}/api/files/currentScheduledRadioAudio`;
+            radioAudiosElement.current.currentTime = scheduledRadioAudioData.audio_played_current_time;
+            radioAudiosElement.current.load();
+            radioAudiosElement.current.play();
+            localStorage.setItem('scheduled_audio_viewed', true);
+            setScheduledAudioViewed(true);
+        }
+      } else {
+        if(radioAudiosElement && radioAudiosElement.current) {
+          radioAudiosElement.current.src = "";
+          localStorage.setItem('scheduled_audio_viewed', false);
+          setScheduledAudioViewed(false);
+        }
       }
-    } else {
-      if(radioAudiosElement && radioAudiosElement.current) {
-        radioAudiosElement.current.src = "";
-        localStorage.setItem('scheduled_audio_viewed', false);
-        setScheduledAudioViewed(false);
-      }
+    } catch( err) {
+      setScheduledRadioAudioData(false);
+      localStorage.setItem('scheduled_audio_viewed', false);
+      setScheduledAudioViewed(false);
     }
   }, [scheduledRadioAudioData]);
+
 
   useEffect(() => {
     if(!recordID) {
@@ -342,9 +381,14 @@ const OnlineRadio = ({}) => {
   useEffect(() => {
     searchCurrentEmision();
     setUsersVals();
+    localStorage.setItem('first_emision_audio_play_done', false);
   }, []);
 
   if(socket) {
+    const audio_emision_filenames = localStorage.getItem('audio_emision_filenames');
+    if(!audio_emision_filenames) {
+      localStorage.setItem('audio_emision_filenames', JSON.stringify([]));
+    }
     socket.on("connect", onSocketConnection);
     socket.on("disconnect", onSocketDisconnection);
   }
@@ -376,16 +420,30 @@ const OnlineRadio = ({}) => {
                       <ImgIcon src={IconButton} alt="React Logo" className="radio-online-icon"/>
                     </Grid>
                     <Grid item xs={10} className="text-right p-0 m-0">
-                      <h2 style={{'color': 'white', 'fontSize': '50px'}}>{emisionTimeStr}</h2>
                       {
-                        scheduledRadioAudioData &&
-                        <h2 style={{'color': 'white', 'fontSize': '1.6rem'}}>
-                          {scheduledRadioAudioData.radio_audio.author.name} - {scheduledRadioAudioData.radio_audio.title}
-                        </h2>
+                        scheduledRadioAudioData && !recordID &&
+                        <Fragment>
+                          <h2 style={{'color': 'white', 'fontSize': '1.6rem', backgroundColor: 'rgba(0, 0, 0, .5)', padding: '10px', borderRadius: '5px'}}>
+                            {scheduledRadioAudioData.radio_audio.author.name} - {scheduledRadioAudioData.radio_audio.title}
+                          </h2>
+                        </Fragment>
+                        
                       }
                       {
                         recordID &&
                         <Fragment>
+                          <div style={{backgroundColor: 'rgba(0, 0, 0, .5)', padding: '10px', borderRadius: '5px'}}>
+                            <h2 style={{'color': 'white', 'fontSize': '1.6rem'}}>
+                              {emisionTimeStr}
+                            </h2>
+                            <br />
+                              {
+                                scheduledRadioAudioData &&
+                                <h2 style={{'color': 'white', 'fontSize': '1.2rem'}}>
+                                {scheduledRadioAudioData.radio_audio.author.name} - {scheduledRadioAudioData.radio_audio.title}
+                                </h2>
+                              }
+                          </div>
                           <audio ref={emisionAudiosElement} type="audio/mp3" className='d-none'></audio>
                           <audio ref={radioAudiosElement} type="audio/mp3" className='d-none'></audio>
                         </Fragment>
@@ -394,6 +452,11 @@ const OnlineRadio = ({}) => {
                         !recordID &&
                         <audio ref={radioAudiosElement} type="audio/mp3"></audio>
                       }
+                      <div className="d-flex justify-between flex-row w-100 items-center mt-4">
+                        <VolumeDown />
+                          <Slider sx={{width: '80%', marginLeft: '20px', marginRight: '20px', padding: '0 !important'}} aria-label="Volúmen" value={sliderVolumeVal} onChange={_handleSlider} />
+                        <VolumeUp />
+                      </div>
                     </Grid>
                   </Grid>
               </Container>
