@@ -193,16 +193,11 @@ function App() {
                     <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"suscripcion_web_form"}/>}/>
                   </Route>
                   <Route path="estadisticas" >
-                      <Route path="interaccionWebsite" element={<Dashboard sessionVals={sessionVals} panelName={"interaccionWebsite"}/>}/>
-                      <Route path="nVisitasWebsite" element={<Dashboard sessionVals={sessionVals} panelName={"nVisitasWebsite"}/>}/>
+                      <Route path="visitasWebsite" element={<Dashboard sessionVals={sessionVals} panelName={"visitasWebsite"}/>}/>
                       <Route path="visitasCategoriaWebsite" element={<Dashboard sessionVals={sessionVals} panelName={"visitasCategoriaWebsite"}/>}/>
                       <Route path="visitasArticuloWebsite" element={<Dashboard sessionVals={sessionVals} panelName={"visitasArticuloWebsite"}/>}/>
-                      <Route path="visitasMensualesWebsite" element={<Dashboard sessionVals={sessionVals} panelName={"visitasMensualesWebsite"}/>}/>
-                      <Route path="likesWebsite" element={<Dashboard sessionVals={sessionVals} panelName={"likesWebsite"}/>}/>
-                      <Route path="comentariosWebsite" element={<Dashboard sessionVals={sessionVals} panelName={"comentariosWebsite"}/>}/>
                       <Route path="visitasRadioOnline" element={<Dashboard sessionVals={sessionVals} panelName={"visitasRadioOnline"}/>}/>
-                      <Route path="timepoSintonizacionRadio" element={<Dashboard sessionVals={sessionVals} panelName={"timepoSintonizacionRadio"}/>}/>
-                      <Route path="nSuscripcionesRadio" element={<Dashboard sessionVals={sessionVals} panelName={"nSuscripcionesRadio"}/>}/>
+                      <Route path="suscripcionesRadio" element={<Dashboard sessionVals={sessionVals} panelName={"suscripcionesRadio"}/>}/>
                   </Route>
                   <Route path="usuarios" >
                     <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"usuarios"}/>}/>

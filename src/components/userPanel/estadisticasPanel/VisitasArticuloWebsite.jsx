@@ -25,7 +25,7 @@ const searchBarParameters = [
 ];
 const searchSelectValues = [];
 
-export default function InteraccionWebsite({}) {
+export default function VisitasArticuloWebsite({}) {
     const StyledH1 = styledComponents.dahsboardPanelh1;
     const [ records, setRecords ] = useState([]);
     const { blockUI, setBlockUI, setNotificationMsg, setNotificationType, setShowNotification} = useContext(AppContext);
@@ -40,7 +40,11 @@ export default function InteraccionWebsite({}) {
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
-    };
+    };  
+
+    const getData = () => {
+
+    }
 
 
     const searchRecords = (searchVals) => {
@@ -76,53 +80,15 @@ export default function InteraccionWebsite({}) {
     return (
         <React.Fragment>
             <br /> 
-            <StyledH1>Interacción por el Website</StyledH1>
+            <StyledH1>Vistas Website</StyledH1>
             <br />
-            <SearchBar selectOptions={searchBarParameters} externalHandleSearchBtn={handleSearchBtn} crearRoute={"/dashboard/pnfs/0"} searchSelectValues={searchSelectValues}/>
+            <div className='d-flex justify-around flex-row flex-wrap'>
+
+            </div>
             <br />
             <div style={{ height: 400, width: '100%' }}>
             <Paper sx={{ width: '100%', mb: 2 }}>
-                <TableContainer>
-                    <Table sx={{ minWidth: 650 }} aria-label="Proyectos">
-                        <TableHead>
-                            <TableRow>
-                                <TableCell align="left">Ref</TableCell>
-                                <TableCell align="left">Nombre</TableCell>
-                                <TableCell align="left">Ver</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                        {console.log(records)}
-                        {records.filter((item, index) => index < (page+1)*rowsPerPage && index >= (page)*rowsPerPage).map((row, index) => {
-                                return (
-                                    <TableRow
-                                        key={row.id}
-                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                                        >
-                                            <TableCell component="th" scope="row">
-                                                {row.id}
-                                            </TableCell>
-                                            <TableCell align="left">{row.nombre_pnf}</TableCell>
-                                            <TableCell align="left">
-                                                <Link to={`/dashboard/pnfs/${row.id}`}>
-                                                    <VisibilityIcon color="secondary"/>
-                                                </Link>
-                                            </TableCell>
-                                    </TableRow>
-                                )
-                        })}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-                <TablePagination
-                    rowsPerPageOptions={[5, 10, 25]}
-                    component="div"
-                    count={records.length}
-                    rowsPerPage={rowsPerPage}
-                    page={page}
-                    onPageChange={handleChangePage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                 />
+                
             </Paper>
             </div>
         </React.Fragment>

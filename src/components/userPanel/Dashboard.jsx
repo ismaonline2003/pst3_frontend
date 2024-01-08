@@ -32,9 +32,6 @@ import Suscripciones from './suscripcionesPanel/Suscripciones';
 import SuscripcionForm from './suscripcionesPanel/SuscripcionForm';
 import Usuarios from './usuariosPanel/Usuarios';
 import UsuarioForm from './usuariosPanel/UsuarioForm';
-//estadisticas
-import InteraccionWebsite from './estadisticasPanel/InteraccionWebsite';
-import VistasWebsite from './estadisticasPanel/VistasWebsite';
 //
 import IniciosSesionLogs from './auditoria/iniciosSesionLogs';
 import Logs from './auditoria/Logs';
@@ -44,6 +41,14 @@ import AutorForm from './autorPanel/AutorForm';
 import RadioAudioList from './radioAudioPanel/RadioAudioList';
 import RadioAudioForm from './radioAudioPanel/RadioAudioForm';
 import EmisionAudioList from './emisionAudioPanel/EmisionAudioList';
+//
+//estadisticas
+import VistasWebsite from './estadisticasPanel/VistasWebsite';
+import VistasCategoriasWebsite from './estadisticasPanel/VistasCategoriasWebsite';
+import VisitasArticuloWebsite from './estadisticasPanel/VisitasArticuloWebsite';
+import VisitasRadioOnline from './estadisticasPanel/VisitasRadioOnline';
+import SuscripcionesRadio from './estadisticasPanel/SuscripcionesRadio';
+
 const paneles = {
     emision_panel: EmisionPanel,
     inicio: Inicio,
@@ -74,8 +79,12 @@ const paneles = {
     usuario_form: UsuarioForm,
     inicios_sesion: IniciosSesionLogs,
     logs: Logs,
-    interaccionWebsite: InteraccionWebsite,
-    nVisitasWebsite: VistasWebsite
+    //estadisticas
+    visitasWebsite: VistasWebsite,
+    visitasCategoriaWebsite: VistasCategoriasWebsite,
+    visitasArticuloWebsite: VisitasArticuloWebsite,
+    visitasRadioOnline: VisitasRadioOnline,
+    suscripcionesRadio: SuscripcionesRadio,
 }
 
 const Dashboard = ({sessionVals, panelName}) => {

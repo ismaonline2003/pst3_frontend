@@ -163,12 +163,7 @@ export default function NestedList() {
         </ListItemButton>
         <Collapse in={openEstadisticas} timeout="auto" unmountOnExit>
             <List component="div" disablePadding>
-                <Link to="/dashboard/estadisticas/interaccionWebsite">
-                    <ListItemButton sx={{ pl: 4 }}>
-                        <ListItemText primary="Interacción Website" />
-                    </ListItemButton>
-                </Link>
-                <Link to="/dashboard/estadisticas/nVisitasWebsite">
+                <Link to="/dashboard/estadisticas/visitasWebsite">
                     <ListItemButton sx={{ pl: 4 }}>
                         <ListItemText primary="Número de visitas Website" />
                     </ListItemButton>
@@ -183,34 +178,14 @@ export default function NestedList() {
                         <ListItemText primary="Visitas por articulo Website" />
                     </ListItemButton>
                 </Link>
-                <Link to="/dashboard/estadisticas/visitasMensualesWebsite">
-                    <ListItemButton sx={{ pl: 4 }}>
-                        <ListItemText primary="Visitantes Mensuales Website" />
-                    </ListItemButton>
-                </Link>
-                <Link to="/dashboard/estadisticas/likesWebsite">
-                    <ListItemButton sx={{ pl: 4 }}>
-                        <ListItemText primary="Likes Website" />
-                    </ListItemButton>
-                </Link>
-                <Link to="/dashboard/estadisticas/comentariosWebsite">
-                    <ListItemButton sx={{ pl: 4 }}>
-                        <ListItemText primary="Comentarios Website" />
-                    </ListItemButton>
-                </Link>
                 <Link to="/dashboard/estadisticas/visitasRadioOnline">
                     <ListItemButton sx={{ pl: 4 }}>
                         <ListItemText primary="Visitas Radio Online" />
                     </ListItemButton>
                 </Link>
-                <Link to="/dashboard/estadisticas/timepoSintonizacionRadio">
+                <Link to="/dashboard/estadisticas/suscripcionesRadio">
                     <ListItemButton sx={{ pl: 4 }}>
-                        <ListItemText primary="Tiempo de Sintonización Radio" />
-                    </ListItemButton>
-                </Link>
-                <Link to="/dashboard/estadisticas/nSuscripcionesRadio">
-                    <ListItemButton sx={{ pl: 4 }}>
-                        <ListItemText primary="Número de Suscripciones Radio" />
+                        <ListItemText primary="Suscripciones Radio" />
                     </ListItemButton>
                 </Link>
             </List>

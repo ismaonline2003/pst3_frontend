@@ -25,7 +25,7 @@ const searchBarParameters = [
 ];
 const searchSelectValues = [];
 
-export default function VistasCategoriasWebsite({}) {
+export default function SuscripcionesRadio({}) {
     const StyledH1 = styledComponents.dahsboardPanelh1;
     const [ records, setRecords ] = useState([]);
     const { blockUI, setBlockUI, setNotificationMsg, setNotificationType, setShowNotification} = useContext(AppContext);

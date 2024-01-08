@@ -697,7 +697,6 @@ const ProyectoForm = ({}) => {
             newIntegrante.rel_id = false;
             newIntegrantesArr.push(newIntegrante[0]);
         }
-        console.log(newIntegrantesArr);
         setIntegrantes(newIntegrantesArr);
     }
 
