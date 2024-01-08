@@ -113,6 +113,17 @@ const OnlineRadio = ({}) => {
 
   const _setSocketScheduledAudioData = (audio_data) => {
     setScheduledRadioAudioData(audio_data);
+    let scheduled_audio_viewed = localStorage.getItem('scheduled_audio_viewed');
+    if(!scheduled_audio_viewed || scheduled_audio_viewed === 'false') {
+      localStorage.setItem('scheduled_audio_viewed', true);
+      _setView('scheduled_audio', audio_data.id);
+    }
+  }
+
+  const onChatMessage = (data) => {
+    let newChatMessagesList = [...chatMessages];
+    newChatMessagesList.push(data);
+    setChatMessages(newChatMessagesList);
   }
 
   const onRadioAudio = async (data) => {
@@ -135,7 +146,7 @@ const OnlineRadio = ({}) => {
           localStorage.setItem('audio_emision_filenames', JSON.stringify(audio_emision_filenames));
           if(!first_emision_audio_play_done || first_emision_audio_play_done === 'false') {
             localStorage.setItem('first_emision_audio_play_done', true);
-            await setAudiosElementsSrc();
+            await setAudiosElementsSrc();;
           }
         }
       }
@@ -144,12 +155,6 @@ const OnlineRadio = ({}) => {
       console.log(err)
     }
     
-  }
-
-  const onChatMessage = (data) => {
-    let newChatMessagesList = [...chatMessages];
-    newChatMessagesList.push(data);
-    setChatMessages(newChatMessagesList);
   }
 
   const onEmisionScheduledAudio = (data) => {
@@ -333,6 +338,28 @@ const OnlineRadio = ({}) => {
     }
     if(emisionAudiosElement.current) {
       emisionAudiosElement.current.volume = newValue/100;
+    }
+  }
+
+  
+  const _setView = (type="emision", id=0) => {
+    if(id != 0 && !isNaN(id)) {
+      let bodyData = {};
+      if(type === "emision") {
+        bodyData = {is_emision: true};
+      }
+      if(type === "scheduled_audio") {
+        bodyData = {scheduled_audio_emision_id: id, is_emision: false};
+      }
+      if(bodyData != {}) {
+        axios.post(`${consts.backend_base_url}/api/emision/api/view`, bodyData)
+        .then((response) => {
+         console.log(response);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+      }
     }
   }
 

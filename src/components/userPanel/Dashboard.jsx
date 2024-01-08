@@ -74,7 +74,7 @@ const paneles = {
     radio_audio_form: RadioAudioForm,
     emision_audio: EmisionAudioList,
     suscripcion_form: SuscripcionForm,
-    suscripciones_web: Suscripciones,
+    suscripciones: Suscripciones,
     usuarios: Usuarios,
     usuario_form: UsuarioForm,
     inicios_sesion: IniciosSesionLogs,
@@ -91,6 +91,7 @@ const Dashboard = ({sessionVals, panelName}) => {
     const [isSideBarOpen, setIsSideBarOpen] = useState(true);
     const [sideBarXs, setSideBarXs] = useState(4);
     const [contentScreenXs, setContentScreenXs] = useState(8);
+    const [userRol, setUserRol] = useState("");
     const [personData, setPersonData] = useState({});
     let Panel = paneles[panelName];
 
@@ -111,6 +112,7 @@ const Dashboard = ({sessionVals, panelName}) => {
             if(sessionVals.userData.person) {
                 persondata = sessionVals.userData.person;
             }
+            setUserRol(sessionVals.userData.rol);
         }
         setPersonData(persondata);
     }, [sessionVals]);
@@ -121,7 +123,7 @@ const Dashboard = ({sessionVals, panelName}) => {
             <Box sx={{ flexGrow: 1 }} marginBottom={'0'}>
                 <Grid  container spacing={2} marginBottom={'0'}>
                     <Grid item xs={sideBarXs}>
-                        {isSideBarOpen ? <SideBar /> : <Fragment/>}
+                        {isSideBarOpen ? <SideBar userRol={userRol} personData={personData}/> : <Fragment/>}
                     </Grid>
                     <Grid item xs={contentScreenXs} marginBottom={'0'}>
                         <Container className='p-0 w-100' style={{height: '100%'}}>

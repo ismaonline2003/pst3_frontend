@@ -13,6 +13,7 @@ import ManageSearchIcon from '@mui/icons-material/ManageSearch';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import PodcastsIcon from '@mui/icons-material/Podcasts';
+import SubscriptionsIcon from '@mui/icons-material/Subscriptions';
 import styled from '../styled'
 
 const Inicio = ({}) => {
@@ -105,27 +106,27 @@ const Inicio = ({}) => {
                     </div>
                 </Button>
             </Link>
-            <Link  to="/dashboard/estadisticas/nVisitasWebsite">
+            <Link  to="/dashboard/estadisticas/visitasWebsite">
                 <Button variant="outlined" style={{width: '300px', margin: '1rem'}} color="success">
                     <div className='d-flex justify-around flex-column p-4'>
                         <VisibilityIcon style={{fontSize: '4rem'}}/>
-                        <p style={{fontSize: '1.2rem'}}>Visitas Website</p>
+                        <p style={{fontSize: '1.2rem'}}>Estadísticas Website</p>
                     </div>
                 </Button>
             </Link>
-            <Link  to="/dashboard/estadisticas/likesWebsite">
-                <Button variant="outlined" style={{width: '300px', margin: '1rem'}} color="success">
-                    <div className='d-flex justify-around flex-column p-4'>
-                        <ThumbUpIcon style={{fontSize: '4rem'}}/>
-                        <p style={{fontSize: '1.2rem'}}>Likes Website</p>
-                    </div>
-                </Button>
-            </Link>
-            <Link  to="/dashboard/estadisticas/timepoSintonizacionRadio">
+            <Link  to="/dashboard/estadisticas/visitasRadioOnline">
                 <Button variant="outlined" style={{width: '300px', margin: '1rem'}} color="success">
                     <div className='d-flex justify-around flex-column p-4'>
                         <PodcastsIcon style={{fontSize: '4rem'}}/>
-                        <p style={{fontSize: '1.2rem'}}>Sintonización Radio</p>
+                        <p style={{fontSize: '1.2rem'}}>Estadísticas Radio</p>
+                    </div>
+                </Button>
+            </Link>
+            <Link  to="/dashboard/estadisticas/suscripcionesRadio">
+                <Button variant="outlined" style={{width: '300px', margin: '1rem'}} color="success">
+                    <div className='d-flex justify-around flex-column p-4'>
+                        <SubscriptionsIcon style={{fontSize: '4rem'}}/>
+                        <p style={{fontSize: '1.2rem'}}>Suscripciones Radio</p>
                     </div>
                 </Button>
             </Link>

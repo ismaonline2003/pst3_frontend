@@ -15,6 +15,8 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 import MailIcon from '@mui/icons-material/Mail';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import MoreIcon from '@mui/icons-material/MoreVert';
+import Stack from '@mui/material/Stack';
+import Chip from '@mui/material/Chip';
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
@@ -203,36 +205,6 @@ export default function PrimarySearchAppBar({isSideBarOpen, setIsSideBarOpen}) {
                 Universidad Politécnica Territorial de Caracas "Mariscal Sucre"<br />
               </p>
              </div>
-          </Box>
-          <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-            {/*Icono de Mensajes */}
-            <IconButton size="large" aria-label="show 0 new mails" color="inherit">
-              <Badge badgeContent={0} color="error">
-                <MailIcon />
-              </Badge>
-            </IconButton>
-            {/*Icono de Notificaciones */}
-            <IconButton
-              size="large"
-              aria-label="show 0 new notifications"
-              color="inherit"
-            >
-              <Badge badgeContent={0} color="error">
-                <NotificationsIcon />
-              </Badge>
-            </IconButton>
-            {/*Icono de Cuenta */}
-            <IconButton
-              size="large"
-              edge="end"
-              aria-label="account of current user"
-              aria-controls={menuId}
-              aria-haspopup="true"
-              onClick={handleProfileMenuOpen}
-              color="inherit"
-            >
-              <AccountCircle />
-            </IconButton>
           </Box>
           {/*Icono de 3 puntos (mobile)*/}
           <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
