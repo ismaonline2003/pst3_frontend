@@ -128,12 +128,17 @@ const Dashboard = ({sessionVals, panelName}) => {
                     <Grid item xs={contentScreenXs} marginBottom={'0'}>
                         <Container className='p-0 w-100' style={{height: '100%'}}>
                             {
-                                panelName != 'suscripciones_web' &&
+                                panelName == 'inicio' &&
+                                <Panel className='p-0 m-0 w-100' userRol={userRol}/>
+                            }
+
+                            {
+                                !['inicio', 'suscripciones_web', 'suscripciones_web_form'].includes(panelName) &&
                                 <Panel className='p-0 m-0 w-100'/>
                             }
 
                             {
-                                (panelName == 'suscripciones_web' || panelName == 'suscripciones_web_form')  &&
+                               ['suscripciones_web', 'suscripciones_web_form'].includes(panelName) &&
                                 <Panel className='p-0 m-0 w-100' tipoDomain="portal_noticias"/>
                             }  
                         </Container>

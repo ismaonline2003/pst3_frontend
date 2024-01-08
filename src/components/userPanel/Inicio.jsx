@@ -1,4 +1,4 @@
-import { React, useState, useEffect } from 'react';
+import { React, useState, useEffect, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
@@ -16,7 +16,7 @@ import PodcastsIcon from '@mui/icons-material/Podcasts';
 import SubscriptionsIcon from '@mui/icons-material/Subscriptions';
 import styled from '../styled'
 
-const Inicio = ({}) => {
+const Inicio = ({userRol}) => {
     const [userData, setUserData] = useState(false);
     const StyledH1 = styled.dahsboardPanelh1
 
@@ -34,102 +34,117 @@ const Inicio = ({}) => {
                     <StyledH1>Bienvenido {userData.person.name} {userData.person.lastname}</StyledH1>
                 }
             </div>
-            <Link  to="/dashboard/estudiantes">
-                <Button variant="outlined" style={{width: '300px', margin: '1rem'}} color="success">
-                    <div className='d-flex justify-around flex-column p-4'>
-                        <PeopleAltIcon style={{fontSize: '4rem'}}/>
-                        <p style={{fontSize: '1.2rem'}}>Estudiantes</p>
-                    </div>
-                </Button>
-            </Link>
-            <Link  to="/dashboard/pnfs">
-                <Button variant="outlined" style={{width: '300px', margin: '1rem'}} color="success">
-                    <div className='d-flex justify-around flex-column p-4'>
-                        <SchoolIcon style={{fontSize: '4rem'}}/>
-                        <p style={{fontSize: '1.2rem'}}>PNFS</p>
-                    </div>
-                </Button>
-            </Link>
-            <Link  to="/dashboard/secciones">
-                <Button variant="outlined" style={{width: '300px', margin: '1rem'}} color="success">
-                    <div className='d-flex justify-around flex-column p-4'>
-                        <FormatListBulletedIcon style={{fontSize: '4rem'}}/>
-                        <p style={{fontSize: '1.2rem'}}>Secciones</p>
-                    </div>
-                </Button>
-            </Link>
-            <Link  to="/dashboard/proyectos">
-                <Button variant="outlined" style={{width: '300px', margin: '1rem'}} color="success">
-                    <div className='d-flex justify-around flex-column p-4'>
-                        <AccountTreeIcon style={{fontSize: '4rem'}}/>
-                        <p style={{fontSize: '1.2rem'}}>Proyectos</p>
-                    </div>
-                </Button>
-            </Link>
-            <Link  to="/dashboard/noticias">
-                <Button variant="outlined" style={{width: '300px', margin: '1rem'}} color="success">
-                    <div className='d-flex justify-around flex-column p-4'>
-                        <ArticleIcon style={{fontSize: '4rem'}}/>
-                        <p style={{fontSize: '1.2rem'}}>Noticias</p>
-                    </div>
-                </Button>
-            </Link>
-            <Link  to="/dashboard/radioOnlineEmision">
-                <Button variant="outlined" style={{width: '300px', margin: '1rem'}} color="success">
-                    <div className='d-flex justify-around flex-column p-4'>
-                        <MicIcon style={{fontSize: '4rem'}}/>
-                        <p style={{fontSize: '1.2rem'}}>Emisión de Radio</p>
-                    </div>
-                </Button>
-            </Link>
-            <Link  to="/dashboard/grabaciones">
-                <Button variant="outlined" style={{width: '300px', margin: '1rem'}} color="success">
-                    <div className='d-flex justify-around flex-column p-4'>
-                        <RadioButtonCheckedIcon style={{fontSize: '4rem'}}/>
-                        <p style={{fontSize: '1.2rem'}}>Grabaciones</p>
-                    </div>
-                </Button>
-            </Link>
-            <Link  to="/dashboard/usuarios">
-                <Button variant="outlined" style={{width: '300px', margin: '1rem'}} color="success">
-                    <div className='d-flex justify-around flex-column p-4'>
-                        <AccountBoxIcon style={{fontSize: '4rem'}}/>
-                        <p style={{fontSize: '1.2rem'}}>Usuarios</p>
-                    </div>
-                </Button>
-            </Link>
-            <Link  to="/dashboard/logs">
-                <Button variant="outlined" style={{width: '300px', margin: '1rem'}} color="success">
-                    <div className='d-flex justify-around flex-column p-4'>
-                        <ManageSearchIcon style={{fontSize: '4rem'}}/>
-                        <p style={{fontSize: '1.2rem'}}>Logs</p>
-                    </div>
-                </Button>
-            </Link>
-            <Link  to="/dashboard/estadisticas/visitasWebsite">
-                <Button variant="outlined" style={{width: '300px', margin: '1rem'}} color="success">
-                    <div className='d-flex justify-around flex-column p-4'>
-                        <VisibilityIcon style={{fontSize: '4rem'}}/>
-                        <p style={{fontSize: '1.2rem'}}>Estadísticas Website</p>
-                    </div>
-                </Button>
-            </Link>
-            <Link  to="/dashboard/estadisticas/visitasRadioOnline">
-                <Button variant="outlined" style={{width: '300px', margin: '1rem'}} color="success">
-                    <div className='d-flex justify-around flex-column p-4'>
-                        <PodcastsIcon style={{fontSize: '4rem'}}/>
-                        <p style={{fontSize: '1.2rem'}}>Estadísticas Radio</p>
-                    </div>
-                </Button>
-            </Link>
-            <Link  to="/dashboard/estadisticas/suscripcionesRadio">
-                <Button variant="outlined" style={{width: '300px', margin: '1rem'}} color="success">
-                    <div className='d-flex justify-around flex-column p-4'>
-                        <SubscriptionsIcon style={{fontSize: '4rem'}}/>
-                        <p style={{fontSize: '1.2rem'}}>Suscripciones Radio</p>
-                    </div>
-                </Button>
-            </Link>
+            {
+                ['A', 'ER'].includes(userRol) &&
+                <Fragment>
+                    <Link  to="/dashboard/estudiantes">
+                        <Button variant="outlined" style={{width: '300px', margin: '1rem'}} color="success">
+                            <div className='d-flex justify-around flex-column p-4'>
+                                <PeopleAltIcon style={{fontSize: '4rem'}}/>
+                                <p style={{fontSize: '1.2rem'}}>Estudiantes</p>
+                            </div>
+                        </Button>
+                    </Link>
+                    <Link  to="/dashboard/pnfs">
+                        <Button variant="outlined" style={{width: '300px', margin: '1rem'}} color="success">
+                            <div className='d-flex justify-around flex-column p-4'>
+                                <SchoolIcon style={{fontSize: '4rem'}}/>
+                                <p style={{fontSize: '1.2rem'}}>PNFS</p>
+                            </div>
+                        </Button>
+                    </Link>
+                    <Link  to="/dashboard/secciones">
+                        <Button variant="outlined" style={{width: '300px', margin: '1rem'}} color="success">
+                            <div className='d-flex justify-around flex-column p-4'>
+                                <FormatListBulletedIcon style={{fontSize: '4rem'}}/>
+                                <p style={{fontSize: '1.2rem'}}>Secciones</p>
+                            </div>
+                        </Button>
+                    </Link>
+                    <Link  to="/dashboard/proyectos">
+                        <Button variant="outlined" style={{width: '300px', margin: '1rem'}} color="success">
+                            <div className='d-flex justify-around flex-column p-4'>
+                                <AccountTreeIcon style={{fontSize: '4rem'}}/>
+                                <p style={{fontSize: '1.2rem'}}>Proyectos</p>
+                            </div>
+                        </Button>
+                    </Link>
+                    <Link  to="/dashboard/noticias">
+                        <Button variant="outlined" style={{width: '300px', margin: '1rem'}} color="success">
+                            <div className='d-flex justify-around flex-column p-4'>
+                                <ArticleIcon style={{fontSize: '4rem'}}/>
+                                <p style={{fontSize: '1.2rem'}}>Noticias</p>
+                            </div>
+                        </Button>
+                    </Link>
+                </Fragment>
+            }
+            {
+                ['A', 'ER'].includes(userRol) &&
+                <Fragment>
+                    <Link  to="/dashboard/radioOnlineEmision">
+                        <Button variant="outlined" style={{width: '300px', margin: '1rem'}} color="success">
+                            <div className='d-flex justify-around flex-column p-4'>
+                                <MicIcon style={{fontSize: '4rem'}}/>
+                                <p style={{fontSize: '1.2rem'}}>Emisión de Radio</p>
+                            </div>
+                        </Button>
+                    </Link>
+                    <Link  to="/dashboard/grabaciones">
+                        <Button variant="outlined" style={{width: '300px', margin: '1rem'}} color="success">
+                            <div className='d-flex justify-around flex-column p-4'>
+                                <RadioButtonCheckedIcon style={{fontSize: '4rem'}}/>
+                                <p style={{fontSize: '1.2rem'}}>Grabaciones</p>
+                            </div>
+                        </Button>
+                    </Link>
+                </Fragment>
+            }
+            {
+                ['A'].includes(userRol) &&
+                <Fragment>
+                    <Link  to="/dashboard/usuarios">
+                        <Button variant="outlined" style={{width: '300px', margin: '1rem'}} color="success">
+                            <div className='d-flex justify-around flex-column p-4'>
+                                <AccountBoxIcon style={{fontSize: '4rem'}}/>
+                                <p style={{fontSize: '1.2rem'}}>Usuarios</p>
+                            </div>
+                        </Button>
+                    </Link>
+                    <Link  to="/dashboard/logs">
+                        <Button variant="outlined" style={{width: '300px', margin: '1rem'}} color="success">
+                            <div className='d-flex justify-around flex-column p-4'>
+                                <ManageSearchIcon style={{fontSize: '4rem'}}/>
+                                <p style={{fontSize: '1.2rem'}}>Logs</p>
+                            </div>
+                        </Button>
+                    </Link>
+                    <Link  to="/dashboard/estadisticas/visitasWebsite">
+                        <Button variant="outlined" style={{width: '300px', margin: '1rem'}} color="success">
+                            <div className='d-flex justify-around flex-column p-4'>
+                                <VisibilityIcon style={{fontSize: '4rem'}}/>
+                                <p style={{fontSize: '1.2rem'}}>Estadísticas Website</p>
+                            </div>
+                        </Button>
+                    </Link>
+                    <Link  to="/dashboard/estadisticas/visitasRadioOnline">
+                        <Button variant="outlined" style={{width: '300px', margin: '1rem'}} color="success">
+                            <div className='d-flex justify-around flex-column p-4'>
+                                <PodcastsIcon style={{fontSize: '4rem'}}/>
+                                <p style={{fontSize: '1.2rem'}}>Estadísticas Radio</p>
+                            </div>
+                        </Button>
+                    </Link>
+                    <Link  to="/dashboard/estadisticas/suscripcionesRadio">
+                        <Button variant="outlined" style={{width: '300px', margin: '1rem'}} color="success">
+                            <div className='d-flex justify-around flex-column p-4'>
+                                <SubscriptionsIcon style={{fontSize: '4rem'}}/>
+                                <p style={{fontSize: '1.2rem'}}>Suscripciones Radio</p>
+                            </div>
+                        </Button>
+                    </Link>
+                </Fragment>
+            }
             <div></div>
             <br />
             <br />

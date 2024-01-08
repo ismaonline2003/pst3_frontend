@@ -71,7 +71,7 @@ export default function NestedList({userRol, personData}) {
                     <Chip label="Profesor" color="primary" size="small"/>
                 }
                 { 
-                    userRol === 'E' &&
+                    userRol === 'ER' &&
                     <Chip label="Emisor" color="secondary" size="small"/>
                 }
             </ListItemText>
@@ -167,7 +167,7 @@ export default function NestedList({userRol, personData}) {
             </Fragment>
         }
         {
-            ['A', 'E'].includes(userRol) &&
+            ['A', 'ER'].includes(userRol) &&
             <Fragment>
                 {/*Sección de Radio Online*/}
                 <ListItemButton onClick={() => setOpenRadio(!openRadio)}>

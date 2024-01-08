@@ -137,7 +137,7 @@ function App() {
                 </Fragment>
               }
               {
-                sessionVals.userData.rol != 'E' && 
+                ['A'].includes(sessionVals.userData.rol) && 
                 <Route path="/dashboard">
                   <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"inicio"}/>}/>
                   <Route path="radioOnlineEmision" element={<Dashboard sessionVals={sessionVals} panelName={"emision_panel"}/>}/>
@@ -208,6 +208,66 @@ function App() {
                   </Route>
                   <Route path="logs" >
                     <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"logs"}/>}/>
+                  </Route>
+                </Route>
+              }
+              {
+                ['ER'].includes(sessionVals.userData.rol) && 
+                <Route path="/dashboard">
+                  <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"inicio"}/>}/>
+                  <Route path="radioOnlineEmision" element={<Dashboard sessionVals={sessionVals} panelName={"emision_panel"}/>}/>
+                  <Route path="grabaciones" >
+                    <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"grabaciones"}/>}/>
+                    <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"grabacion_form"}/>}/>
+                  </Route>
+                  <Route path="autores" >
+                    <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"autores"}/>}/>
+                    <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"autor_form"}/>}/>
+                  </Route>
+                  <Route path="radioAudio" >
+                    <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"radio_audio_list"}/>}/>
+                    <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"radio_audio_form"}/>}/>
+                  </Route>
+                  <Route path="emisionAudio" >
+                    <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"emision_audio"}/>}/>
+                  </Route>
+                  <Route path="suscripciones" >
+                    <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"suscripciones"}/>}/>
+                    <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"suscripcion_form"}/>}/>
+                  </Route>
+                </Route>
+              }
+              {
+                ['P'].includes(sessionVals.userData.rol) && 
+                <Route path="/dashboard">
+                  <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"inicio"}/>}/>
+                  <Route path="estudiantes" >
+                    <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"estudiantes"}/>}/>
+                    <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"estudiante_form"}/>}/>
+                  </Route>
+                  <Route path="profesores" >
+                    <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"profesores"}/>}/>
+                    <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"profesor_form"}/>}/>
+                  </Route>
+                  <Route path="secciones" >
+                    <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"secciones"}/>}/>
+                    <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"seccion_form"}/>}/>
+                  </Route>
+                  <Route path="pnfs" >
+                    <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"pnfs"}/>}/>
+                    <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"pnf_form"}/>}/>
+                  </Route>
+                  <Route path="proyectos" >
+                    <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"proyectos"}/>}/>
+                    <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"proyecto_form"}/>}/>
+                  </Route>
+                  <Route path="noticias" >
+                    <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"noticias"}/>}/>
+                    <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"noticia_form"}/>}/>
+                  </Route>
+                  <Route path="categorias_noticias" >
+                    <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"categorias_noticias"}/>}/>
+                    <Route path=":id" element={<Dashboard sessionVals={sessionVals} panelName={"categoria_noticia_form"}/>}/>
                   </Route>
                 </Route>
               }
