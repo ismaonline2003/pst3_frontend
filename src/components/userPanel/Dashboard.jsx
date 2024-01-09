@@ -1,16 +1,15 @@
 import { React, useState, useContext, useEffect, Fragment } from 'react'
-import axios from "axios";
 import { Container, Box} from '@mui/material';
 import Grid from '@mui/material/Grid';
-import Paper from '@mui/material/Paper';
-import { styled } from '@mui/system';
+import { styled, ThemeProvider, createTheme } from '@mui/material/styles';
+
+//own
 import Inicio from './Inicio';
 import AppBar from './AppBar';
 import SideBar from './SideBar';
 import SimpleNotification from '../generales/SimpleNotification';
 import AppContext from '../../context/App';
 import styledComponents from '../styled';
-/**/
 import EmisionPanel from './emisionPanel/EmisionPanel';
 import Estudiantes from './estudiantesPanel/Estudiantes';
 import EstudianteForm from './estudiantesPanel/EstudianteForm';
@@ -32,6 +31,7 @@ import Suscripciones from './suscripcionesPanel/Suscripciones';
 import SuscripcionForm from './suscripcionesPanel/SuscripcionForm';
 import Usuarios from './usuariosPanel/Usuarios';
 import UsuarioForm from './usuariosPanel/UsuarioForm';
+
 //
 import IniciosSesionLogs from './auditoria/iniciosSesionLogs';
 import Logs from './auditoria/Logs';
@@ -41,6 +41,7 @@ import AutorForm from './autorPanel/AutorForm';
 import RadioAudioList from './radioAudioPanel/RadioAudioList';
 import RadioAudioForm from './radioAudioPanel/RadioAudioForm';
 import EmisionAudioList from './emisionAudioPanel/EmisionAudioList';
+
 //
 //estadisticas
 import VistasWebsite from './estadisticasPanel/VistasWebsite';
@@ -119,14 +120,13 @@ const Dashboard = ({sessionVals, panelName}) => {
 
     return (
         <Box sx={{ flexGrow: 1 }} marginBottom={'0'}>
-            <AppBar isSideBarOpen={isSideBarOpen} setIsSideBarOpen={setIsSideBarOpen}></AppBar>
-            <Box sx={{ flexGrow: 1 }} marginBottom={'0'}>
-                <Grid  container spacing={2} marginBottom={'0'}>
-                    <Grid item xs={sideBarXs}>
-                        {isSideBarOpen ? <SideBar userRol={userRol} personData={personData}/> : <Fragment/>}
+                <AppBar isSideBarOpen={isSideBarOpen} setIsSideBarOpen={setIsSideBarOpen}></AppBar>
+                <Grid  container spacing={0} marginBottom={'0'}  >
+                    <Grid item xs={sideBarXs} >
+                            {isSideBarOpen ? <SideBar userRol={userRol} personData={personData}/> : <Fragment/>}
                     </Grid>
                     <Grid item xs={contentScreenXs} marginBottom={'0'}>
-                        <Container className='p-0 w-100' style={{height: '100%'}}>
+                        <Container className='p-0 w-100'>
                             {
                                 panelName == 'inicio' &&
                                 <Panel className='p-0 m-0 w-100' userRol={userRol}/>
@@ -144,7 +144,6 @@ const Dashboard = ({sessionVals, panelName}) => {
                         </Container>
                     </Grid>
                 </Grid>
-            </Box>
         </Box>
     );
 };

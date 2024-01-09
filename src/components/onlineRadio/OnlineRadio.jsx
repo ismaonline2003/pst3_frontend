@@ -526,7 +526,6 @@ const OnlineRadio = ({}) => {
                             }
                           />
                         </ListItem>
-                        <Divider/>
                       </Fragment>
                     )
                   })

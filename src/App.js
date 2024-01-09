@@ -289,12 +289,15 @@ function App() {
                 type={notificationType}
               />
           }
-          <Backdrop
-            sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
-            open={blockUI}
-          >
-            <CircularProgress color="inherit" />
+          {
+            blockUI &&
+            <Backdrop
+              sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1}} style={{height: '100% !important', maxHeight: '100% !important'}}
+              open={blockUI}
+            >
+              <CircularProgress color="inherit" />
           </Backdrop>
+          }
         </AppContext.Provider>
       );
   }

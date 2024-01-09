@@ -177,26 +177,25 @@ export default function PrimarySearchAppBar({isSideBarOpen, setIsSideBarOpen}) {
       {loginRedirect && <Navigate to={`/login`} />}
       <AppBar position="static" color="success">
         <Toolbar>
+                <Typography
+                        variant="h6"
+                        noWrap
+                        component="div"
+                        sx={{color:'white', display: { xs: 'none', sm: 'block' , margin: '1rem', fontSize: '1.4rem'} }}
+                >
+                    SIPPEPRE
+                    {
+                    //Plataforma Online para la publicación de Proyectos Agroecologicos y Emision de Radio Online de la UPTCMS
+                    }
+                </Typography>
           <IconButton
             size="large"
             edge="start"
             color="inherit"
             aria-label="open drawer"
-            sx={{ mr: 2 }}
           >
             <MenuIcon onClick={(e) => setIsSideBarOpen(!isSideBarOpen)}/>
           </IconButton>
-          <Typography
-            variant="h6"
-            noWrap
-            component="div"
-            sx={{ display: { xs: 'none', sm: 'block' } }}
-          >
-            AgroOnline-UPTECMS
-             {
-              //Plataforma Online para la publicación de Proyectos Agroecologicos y Emision de Radio Online de la UPTCMS
-             }
-          </Typography>
           <Box sx={{ flexGrow: 1 }} >
              <div className='text-center w-100'>
               <p className='p-2 font-bold'>

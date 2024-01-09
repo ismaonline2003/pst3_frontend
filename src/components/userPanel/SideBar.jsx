@@ -57,6 +57,14 @@ export default function NestedList({userRol, personData}) {
         </ListSubheader>
       }
     >   
+        <Link to="/dashboard">
+            <ListItemButton>
+                    <ListItemIcon>
+                        <HomeIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Inicio" />
+            </ListItemButton>
+        </Link>
         <ListItemButton onClick={(e) => setOpenPerfil(!openPerfil)}>
             <ListItemIcon>
                 <AccountCircle sx={{fontSize: '2rem'}}/>
@@ -89,14 +97,6 @@ export default function NestedList({userRol, personData}) {
                 </ListItemButton>
             </List>
         </Collapse>
-        <Link to="/dashboard">
-            <ListItemButton>
-                    <ListItemIcon>
-                        <HomeIcon />
-                    </ListItemIcon>
-                    <ListItemText primary="Inicio" />
-            </ListItemButton>
-        </Link>
         {
             ['A', 'P'].includes(userRol) &&
             

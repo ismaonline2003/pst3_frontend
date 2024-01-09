@@ -39,7 +39,7 @@ function OnlineRadioNavbar({userID}) {
   };
 
   return (
-    <AppBar position="static">
+    <AppBar position="static" color="success">
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           <Typography
