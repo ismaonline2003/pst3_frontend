@@ -136,6 +136,8 @@ export default function VistasWebsite({}) {
     const [ tendenciaTraficoDiarioConfig, setTendenciaTraficoDiarioConfig ] = useState(false);
     const [ top10CatConfig, setTop10CatConfig ] = useState(false);
     const [ top10CatTable, setTop10CatTable] = useState({dataset: [], total: 0, total_percentage: 0});
+    const [ top10ArtConfig, setTop10ArtConfig ] = useState(false);
+    const [ top10ArtTable, setTop10ArtTable] = useState({dataset: [], total: 0, total_percentage: 0});
 
     //
     const [ tendenciaTraficoPeriodSelected, setTendenciaTraficoPeriodSelected] = useState("today");
@@ -146,7 +148,13 @@ export default function VistasWebsite({}) {
     const [ top10CatPeriodDate1, setTop10CatPeriodDate1] = useState("");
     const [ top10CatPeriodDate2, setTop10CatPeriodDate2] = useState("");
     const [ top10CatChartTypeSelected, setTop10CatChartTypeSelected] = useState('tabla');
+    //
+    const [ top10ArtPeriodSelected, setTop10ArtPeriodSelected] = useState("today");
+    const [ top10ArtPeriodDate1, setTop10ArtPeriodDate1] = useState("");
+    const [ top10ArtPeriodDate2, setTop10ArtPeriodDate2] = useState("");
+    const [ top10ArtChartTypeSelected, setTop10ArtChartTypeSelected] = useState('tabla');
 
+    
     ChartJS.register(
         CategoryScale,
         LinearScale,
@@ -160,13 +168,52 @@ export default function VistasWebsite({}) {
         Legend
     )
     
+    const setTop10ArtChartData = (data) => {
+        let vals = [];
+        let labels = [];
+        let total = 0;
+        let totalPercentage = 0;
+        console.log(data);
+        for(let i = 0; i < data.length; i++) {
+            if(data[i].post_title && data[i].percentage) {
+                labels.push(`${data[i].post_title} | ${data[i].percentage}%`);
+                totalPercentage += data[i].percentage;
+            } else {
+                labels.push(`Ninguna`);
+            }
+            total += parseInt(data[i].visits_num);
+            vals.push(parseInt(data[i].visits_num));
+        }
+
+        let config = {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Top 10 Artículos mas Vistos',
+                    data: vals,
+                    backgroundColor: ['#41a8ec', '#fe6687'],
+                    borderColor: ['#41a8ec', '#fe6687']
+                }
+            ]
+        }
+
+        if(config.datasets.length > 0 && top10ArtChartTypeSelected === 'torta') {
+            config.datasets[0].backgroundColor = ['#36a2eb', '#ff6384', '#4bc0c0', '#ff9f40', '#9966ff', '#ffcd56', '#c9cbcf', '#31698e', '#8a1a32', '#2b8b8b'];
+            config.datasets[0].borderColor = ['#36a2eb', '#ff6384', '#4bc0c0', '#ff9f40', '#9966ff', '#ffcd56', '#c9cbcf', '#31698e', '#8a1a32', '#2b8b8b'];
+        }
+        if(config.datasets.length > 0 && top10ArtChartTypeSelected === 'tabla') {
+            setTop10ArtTable({dataset: data, total: total, total_percentage: totalPercentage});
+        }
+
+        setTop10ArtConfig(config);
+    }
 
     const setTop10CatChartData = (data) => {
         let vals = [];
         let labels = [];
         let total = 0;
         let totalPercentage = 0;
-        console.log(data);
+
         for(let i = 0; i < data.length; i++) {
             if(data[i].category_name && data[i].percentage) {
                 labels.push(`${data[i].category_name} | ${data[i].percentage}%`);
@@ -318,6 +365,47 @@ export default function VistasWebsite({}) {
         setBlockUI(false);
     }
 
+    const getTop10ArtsData = async () => {
+        setBlockUI(true);
+        if(!top10ArtPeriodSelected) {
+            setBlockUI(false);
+            setNotificationMsg("Debe seleccionar una opción.");
+            setNotificationType('warning');
+            setShowNotification(true);
+            return;
+        }
+        if(top10ArtPeriodSelected === 'periodDates') {
+            if(!top10ArtPeriodDate1) {
+                setBlockUI(false);
+                setNotificationMsg("Debe seleccionar una fecha de inicio.");
+                setNotificationType('warning');
+                setShowNotification(true);
+                return;
+            }
+            if(!top10ArtPeriodDate2) {
+                setBlockUI(false);
+                setNotificationMsg("Debe seleccionar una fecha de fin.");
+                setNotificationType('warning');
+                setShowNotification(true);
+                return;
+            }
+        }
+        const token = localStorage.getItem('token');
+        const config = {headers: {'authorization': token}};
+        const query =  `option=${top10ArtPeriodSelected}&date_1=${top10ArtPeriodDate1}&date_2=${top10ArtPeriodDate2}`;
+        const url = `${consts.backend_base_url}/api/estadisticas/top10Articulos?${query}`;
+        try {
+            const response = await axios.get(url, config);
+            setTop10ArtChartData(response.data);
+        } catch(err) {
+            setBlockUI(false);
+            setNotificationMsg("Ocurrió un error inesperado... Intentelo mas tarde.");
+            setNotificationType('error');
+            setShowNotification(true);
+        }
+        setBlockUI(false);
+    }
+
     const getGeneralData = async (allDataUpdate=true) => {
         console.log('getGeneralData');
         setBlockUI(true);
@@ -331,6 +419,7 @@ export default function VistasWebsite({}) {
                 setResumenTrafico(response.data.data.resumen_trafico);
                 setTendenciaTraficoDiarioData(response.data.data.tendencia_trafico_diario);
                 setTop10CatChartData(response.data.data.top_10_categories);
+                setTop10ArtChartData(response.data.data.top_10_articles);
             } else {
                 setResumenTrafico(response.data.data.resumen_trafico);
             }
@@ -344,9 +433,6 @@ export default function VistasWebsite({}) {
         setBlockUI(false);
     }
 
-    const handleSearchBtn = (searchVals) => {
-
-    };
 
     useEffect(() => {
         getGeneralData();
@@ -581,7 +667,7 @@ export default function VistasWebsite({}) {
                                                 </TableRow>
                                             </TableHead>
                                             <TableBody>
-                                            {
+                                            { top10CatTable &&
                                                 top10CatTable.dataset.map((item) => {
                                                     return(
                                                         <TableRow>
@@ -644,7 +730,7 @@ export default function VistasWebsite({}) {
                 </CardContent>
                 <CardActions className="p-4 d-flex justify-left flex-row flex-wrap">
                     <FormControl sx={{ m: 1, width: '250px' }} variant="outlined">
-                        <TextField size="small" id="periodos" select label="Periodos" defaultValue={"today" ? periods : tendenciaTraficoPeriodSelected} 
+                        <TextField size="small" id="periodos" select label="Periodos" defaultValue={"today" ? periods : top10CatChartTypeSelected} 
                             onChange={(e) => {
                                 setTop10CatPeriodDate1("");
                                 setTop10CatPeriodDate2("");
@@ -662,15 +748,144 @@ export default function VistasWebsite({}) {
                         <Fragment>
                             <FormControl sx={{ m: 1, width: '250px' }} variant="outlined">
                                 <TextField size="small" id="date_1" label="Fecha Inicio" variant="outlined" type="date" 
-                                    defaultValue={new Date()} onChange={(e) => setTendenciaTraficoPeriodDate1(e.target.value)}/>
+                                    defaultValue={new Date()} onChange={(e) => setTop10CatPeriodDate1(e.target.value)}/>
                             </FormControl>
                             <FormControl sx={{ m: 1, width: '250px' }} variant="outlined">
                                 <TextField size="small" id="date_2" label="Fecha Fin" variant="outlined" type="date" 
-                                    defaultValue={new Date()} onChange={(e) => setTendenciaTraficoPeriodDate2(e.target.value)}/>
+                                    defaultValue={new Date()} onChange={(e) => setTop10CatPeriodDate2(e.target.value)}/>
                             </FormControl>
                         </Fragment>
                     }
                     <Button size="small" onClick={(e) => getTopCat10Data()}>Actualizar <ReplayIcon></ReplayIcon></Button>
+                </CardActions>
+            </Card>
+            <br />
+            <Card sx={{ minWidth: 275 }}>
+                <CardContent>
+                    <Typography sx={{ fontSize: '2rem', fontWeight: '700'}} color="text.primary" gutterBottom>
+                        Top 10 Artículos
+                    </Typography>
+                    <Box sx={{ width: '100%' }}>
+                        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                            <Tabs value={top10ArtChartTypeSelected} onChange={(e, newVal) => setTop10ArtChartTypeSelected(newVal)} aria-label="basic tabs example">
+                                <Tab label="Tabla" value="tabla" />
+                                <Tab label="Barras" value="barras" />
+                                <Tab label="Torta" value="torta" />
+                            </Tabs>
+                        </Box>
+                            {
+                                top10ArtConfig && top10ArtChartTypeSelected === 'tabla' &&
+                                <Box sx={{ p: 3 }}>
+                                    <Typography sx={{ fontSize: '2rem', fontWeight: '700'}} color="text.primary" gutterBottom>
+                                        Tabla
+                                    </Typography>
+                                    <br />
+                                    <TableContainer component={Paper}>
+                                        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                                            <TableHead>
+                                                <TableRow>
+                                                    <TableCell align="left" width={'50%'}>
+                                                        <strong>Artículo</strong>
+                                                    </TableCell>
+                                                    <TableCell align="left" width={'25%'}>
+                                                        <strong>Visitas</strong>
+                                                    </TableCell>
+                                                    <TableCell align="left" width={'25%'}>
+                                                        <strong>Porcentaje</strong>
+                                                    </TableCell>
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody>
+                                            {
+                                                top10ArtTable.dataset.map((item) => {
+                                                    return(
+                                                        <TableRow>
+                                                            <TableCell align="left" width={'50%'}>
+                                                                {item.post_title}
+                                                            </TableCell>
+                                                            <TableCell align="left" width={'25%'}>
+                                                                {item.visits_num}
+                                                            </TableCell>
+                                                            <TableCell align="left" width={'25%'}>
+                                                                {item.percentage}%
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    );
+                                                })
+                                            }
+                                            <TableRow>
+                                                <TableCell align="left" width={'50%'}>
+                                                   Total
+                                                </TableCell>
+                                                <TableCell align="left" width={'25%'}>
+                                                    {top10ArtTable.total}
+                                                </TableCell>
+                                                <TableCell align="left" width={'25%'}>
+                                                    {top10ArtTable.total_percentage}%
+                                                </TableCell>
+                                            </TableRow>
+                                            </TableBody>
+                                        </Table>
+                                    </TableContainer>
+                                </Box>
+                            }
+                            {
+                               top10ArtConfig && top10ArtChartTypeSelected === 'barras' &&
+                                <Box sx={{ p: 3 }}>
+                                    <Typography sx={{ fontSize: '2rem', fontWeight: '700'}} color="text.primary" gutterBottom>
+                                        Barras
+                                    </Typography>
+                                    <br />
+                                    <Bar
+                                        datasetIdKey='top-10-cat-barras'
+                                        data={top10ArtConfig}
+                                    />
+                                </Box>
+                            }
+                            {
+                                top10ArtConfig && top10ArtChartTypeSelected === 'torta' &&
+                                <Box sx={{ p: 3}}>
+                                    <Typography sx={{ fontSize: '2rem', fontWeight: '700'}} color="text.primary" gutterBottom>
+                                        Torta
+                                    </Typography>
+                                    <br />
+                                    <Pie
+                                        datasetIdKey='top-10-cat-torta'
+                                        data={top10ArtConfig}
+                                    />
+                                </Box>
+                            }
+                    </Box>
+                </CardContent>
+                <CardActions className="p-4 d-flex justify-left flex-row flex-wrap">
+                    <FormControl sx={{ m: 1, width: '250px' }} variant="outlined">
+                        <TextField size="small" id="periodos" select label="Periodos" defaultValue={"today" ? periods : top10ArtPeriodSelected} 
+                            onChange={(e) => {
+                                setTop10ArtPeriodDate1("");
+                                setTop10ArtPeriodDate2("");
+                                setTop10ArtPeriodSelected(e.target.value);
+                            }}>
+                            {periods.map((option) => (
+                                <MenuItem key={option.value} value={option.value}>
+                                    {option.label}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+                    </FormControl>
+                    {
+                        top10CatPeriodSelected === 'periodDates' &&
+                        <Fragment>
+                            <FormControl sx={{ m: 1, width: '250px' }} variant="outlined">
+                                <TextField size="small" id="date_1" label="Fecha Inicio" variant="outlined" type="date" 
+                                    defaultValue={new Date()} onChange={(e) => setTop10ArtPeriodDate1(e.target.value)}/>
+                            </FormControl>
+                            <FormControl sx={{ m: 1, width: '250px' }} variant="outlined">
+                                <TextField size="small" id="date_2" label="Fecha Fin" variant="outlined" type="date" 
+                                    defaultValue={new Date()} onChange={(e) => setTop10ArtPeriodDate2(e.target.value)}/>
+                            </FormControl>
+                        </Fragment>
+                    }
+                    <Button size="small" onClick={(e) => getTop10ArtsData()}>Actualizar <ReplayIcon></ReplayIcon></Button>
                 </CardActions>
             </Card>
         </React.Fragment>
