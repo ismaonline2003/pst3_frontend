@@ -11,10 +11,12 @@ import {
     Title,
     Tooltip,
     Legend,
-    BarElement
+    BarElement, 
+    ArcElement,
+    Colors
   } from 'chart.js'
 
-import { Line, Bar } from 'react-chartjs-2'
+import { Line, Bar, Pie } from 'react-chartjs-2'
 
 
 //material UI
@@ -37,6 +39,8 @@ import ReplayIcon from '@mui/icons-material/Replay';
 import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 
 //own
 import SearchBar from '../SearchBar';
@@ -131,6 +135,7 @@ export default function VistasWebsite({}) {
     const [ resumenTrafico, setResumenTrafico] = useState(false);
     const [ tendenciaTraficoDiarioConfig, setTendenciaTraficoDiarioConfig ] = useState(false);
     const [ top10CatConfig, setTop10CatConfig ] = useState(false);
+    const [ top10CatTable, setTop10CatTable] = useState({dataset: [], total: 0, total_percentage: 0});
 
     //
     const [ tendenciaTraficoPeriodSelected, setTendenciaTraficoPeriodSelected] = useState("today");
@@ -140,7 +145,7 @@ export default function VistasWebsite({}) {
     const [ top10CatPeriodSelected, setTop10CatPeriodSelected] = useState("today");
     const [ top10CatPeriodDate1, setTop10CatPeriodDate1] = useState("");
     const [ top10CatPeriodDate2, setTop10CatPeriodDate2] = useState("");
-    const [ top10CatChartTypeSelected, setTop10CatChartTypeSelected] = useState("table");
+    const [ top10CatChartTypeSelected, setTop10CatChartTypeSelected] = useState('tabla');
 
     ChartJS.register(
         CategoryScale,
@@ -148,32 +153,52 @@ export default function VistasWebsite({}) {
         PointElement,
         LineElement,
         BarElement,
+        ArcElement,
+        Colors,
         Title,
         Tooltip,
         Legend
     )
+    
 
     const setTop10CatChartData = (data) => {
         let vals = [];
         let labels = [];
-
+        let total = 0;
+        let totalPercentage = 0;
+        console.log(data);
         for(let i = 0; i < data.length; i++) {
-            labels.push(`${data[i].category_name} | ${data[i].percentage}%`);
-            vals.push(data[i].visits_num);
+            if(data[i].category_name && data[i].percentage) {
+                labels.push(`${data[i].category_name} | ${data[i].percentage}%`);
+                totalPercentage += data[i].percentage;
+            } else {
+                labels.push(`Ninguna`);
+            }
+            total += parseInt(data[i].visits_num);
+            vals.push(parseInt(data[i].visits_num));
         }
 
-        setTop10CatConfig({
+        let config = {
             labels: labels,
             datasets: [
                 {
                     label: 'Top 10 Categorías de Noticias',
                     data: vals,
-                    fill: false,
-                    borderColor: '#41a8ec',
-                    tension: 0.1
+                    backgroundColor: ['#41a8ec', '#fe6687'],
+                    borderColor: ['#41a8ec', '#fe6687']
                 }
             ]
-        });
+        }
+
+        if(config.datasets.length > 0 && top10CatChartTypeSelected === 'torta') {
+            config.datasets[0].backgroundColor = ['#36a2eb', '#ff6384', '#4bc0c0', '#ff9f40', '#9966ff', '#ffcd56', '#c9cbcf', '#31698e', '#8a1a32', '#2b8b8b'];
+            config.datasets[0].borderColor = ['#36a2eb', '#ff6384', '#4bc0c0', '#ff9f40', '#9966ff', '#ffcd56', '#c9cbcf', '#31698e', '#8a1a32', '#2b8b8b'];
+        }
+        if(config.datasets.length > 0 && top10CatChartTypeSelected === 'tabla') {
+            setTop10CatTable({dataset: data, total: total, total_percentage: totalPercentage});
+        }
+
+        setTop10CatConfig(config);
     }
 
     const setTendenciaTraficoDiarioData = (data) => {
@@ -251,6 +276,48 @@ export default function VistasWebsite({}) {
         setBlockUI(false);
     }
 
+    const getTopCat10Data = async () => {
+        setBlockUI(true);
+        if(!top10CatPeriodSelected) {
+            setBlockUI(false);
+            setNotificationMsg("Debe seleccionar una opción.");
+            setNotificationType('warning');
+            setShowNotification(true);
+            return;
+        }
+        if(top10CatPeriodSelected === 'periodDates') {
+            if(!top10CatPeriodDate1) {
+                setBlockUI(false);
+                setNotificationMsg("Debe seleccionar una fecha de inicio.");
+                setNotificationType('warning');
+                setShowNotification(true);
+                return;
+            }
+            if(!top10CatPeriodDate2) {
+                setBlockUI(false);
+                setNotificationMsg("Debe seleccionar una fecha de fin.");
+                setNotificationType('warning');
+                setShowNotification(true);
+                return;
+            }
+        }
+        const token = localStorage.getItem('token');
+        const config = {headers: {'authorization': token}};
+        const query =  `option=${top10CatPeriodSelected}&date_1=${top10CatPeriodDate1}&date_2=${top10CatPeriodDate2}`;
+        const url = `${consts.backend_base_url}/api/estadisticas/top10Categorias?${query}`;
+        try {
+            const response = await axios.get(url, config);
+            console.log(response);
+            setTop10CatChartData(response.data);
+        } catch(err) {
+            setBlockUI(false);
+            setNotificationMsg("Ocurrió un error inesperado... Intentelo mas tarde.");
+            setNotificationType('error');
+            setShowNotification(true);
+        }
+        setBlockUI(false);
+    }
+
     const getGeneralData = async (allDataUpdate=true) => {
         console.log('getGeneralData');
         setBlockUI(true);
@@ -263,6 +330,7 @@ export default function VistasWebsite({}) {
             if(allDataUpdate) {
                 setResumenTrafico(response.data.data.resumen_trafico);
                 setTendenciaTraficoDiarioData(response.data.data.tendencia_trafico_diario);
+                setTop10CatChartData(response.data.data.top_10_categories);
             } else {
                 setResumenTrafico(response.data.data.resumen_trafico);
             }
@@ -482,13 +550,97 @@ export default function VistasWebsite({}) {
                     <Typography sx={{ fontSize: '2rem', fontWeight: '700'}} color="text.primary" gutterBottom>
                         Top 10 Categorias
                     </Typography>
-                    {
-                        tendenciaTraficoDiarioConfig &&
-                        <Bar
-                            datasetIdKey='tendencia_trafico_diario'
-                            data={tendenciaTraficoDiarioConfig}
-                        />
-                    }
+                    <Box sx={{ width: '100%' }}>
+                        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                            <Tabs value={top10CatChartTypeSelected} onChange={(e, newVal) => setTop10CatChartTypeSelected(newVal)} aria-label="basic tabs example">{/* top10CatChartTypeSelected */}
+                                <Tab label="Tabla" value="tabla" />
+                                <Tab label="Barras" value="barras" />
+                                <Tab label="Torta" value="torta" />
+                            </Tabs>
+                        </Box>
+                            {
+                                top10CatTable && top10CatChartTypeSelected === 'tabla' &&
+                                <Box sx={{ p: 3 }}>
+                                    <Typography sx={{ fontSize: '2rem', fontWeight: '700'}} color="text.primary" gutterBottom>
+                                        Tabla
+                                    </Typography>
+                                    <br />
+                                    <TableContainer component={Paper}>
+                                        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                                            <TableHead>
+                                                <TableRow>
+                                                    <TableCell align="left" width={'50%'}>
+                                                        <strong>Categoría</strong>
+                                                    </TableCell>
+                                                    <TableCell align="left" width={'25%'}>
+                                                        <strong>Visitas</strong>
+                                                    </TableCell>
+                                                    <TableCell align="left" width={'25%'}>
+                                                        <strong>Porcentaje</strong>
+                                                    </TableCell>
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody>
+                                            {
+                                                top10CatTable.dataset.map((item) => {
+                                                    return(
+                                                        <TableRow>
+                                                            <TableCell align="left" width={'50%'}>
+                                                                {item.category_name}
+                                                            </TableCell>
+                                                            <TableCell align="left" width={'25%'}>
+                                                                {item.visits_num}
+                                                            </TableCell>
+                                                            <TableCell align="left" width={'25%'}>
+                                                                {item.percentage}%
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    );
+                                                })
+                                            }
+                                            <TableRow>
+                                                <TableCell align="left" width={'50%'}>
+                                                   Total
+                                                </TableCell>
+                                                <TableCell align="left" width={'25%'}>
+                                                    {top10CatTable.total}
+                                                </TableCell>
+                                                <TableCell align="left" width={'25%'}>
+                                                    {top10CatTable.total_percentage}%
+                                                </TableCell>
+                                            </TableRow>
+                                            </TableBody>
+                                        </Table>
+                                    </TableContainer>
+                                </Box>
+                            }
+                            {
+                                top10CatConfig && top10CatChartTypeSelected === 'barras' &&
+                                <Box sx={{ p: 3 }}>
+                                    <Typography sx={{ fontSize: '2rem', fontWeight: '700'}} color="text.primary" gutterBottom>
+                                        Barras
+                                    </Typography>
+                                    <br />
+                                    <Bar
+                                        datasetIdKey='top-10-cat-barras'
+                                        data={top10CatConfig}
+                                    />
+                                </Box>
+                            }
+                            {
+                                top10CatConfig && top10CatChartTypeSelected === 'torta' &&
+                                <Box sx={{ p: 3}}>
+                                    <Typography sx={{ fontSize: '2rem', fontWeight: '700'}} color="text.primary" gutterBottom>
+                                        Torta
+                                    </Typography>
+                                    <br />
+                                    <Pie
+                                        datasetIdKey='top-10-cat-torta'
+                                        data={top10CatConfig}
+                                    />
+                                </Box>
+                            }
+                    </Box>
                 </CardContent>
                 <CardActions className="p-4 d-flex justify-left flex-row flex-wrap">
                     <FormControl sx={{ m: 1, width: '250px' }} variant="outlined">
@@ -518,7 +670,7 @@ export default function VistasWebsite({}) {
                             </FormControl>
                         </Fragment>
                     }
-                    <Button size="small" onClick={(e) => getTendenciaTraficoDiarioData()}>Actualizar <ReplayIcon></ReplayIcon></Button>
+                    <Button size="small" onClick={(e) => getTopCat10Data()}>Actualizar <ReplayIcon></ReplayIcon></Button>
                 </CardActions>
             </Card>
         </React.Fragment>
