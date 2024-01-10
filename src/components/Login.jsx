@@ -143,6 +143,9 @@ const Login = ({sessionVals, setSessionVals, setIsLogged}) => {
           </CardActions>
         </Card>
       </ContainerComponent>
+      <div style={{height: '170px'}}>
+        a
+      </div>
       <Footer />
     </Fragment>
   )

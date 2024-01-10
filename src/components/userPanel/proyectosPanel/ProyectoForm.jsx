@@ -523,6 +523,7 @@ const ProyectoForm = ({}) => {
         let body = {
             id: id,
             id_seccion: seccionSelected,
+            id_profesor: profesorSelected,
             nombre: nombre,
             descripcion: editor.getHTML(),
             //integrantes
@@ -976,9 +977,13 @@ const ProyectoForm = ({}) => {
                     <FormContainer>
                         <div className='d-flex flex-row flex-wrap text-center mb-4'>
                             {
-                                !unlockFields &&
-                                <MiniaturaImg src={recordData.miniatura_filename ? recordData.miniatura_filename : SinFotoPerfil} alt="miniatura-noticia"/>  
+                                !unlockFields && recordData &&
+                                <MiniaturaImg src={miniatura ? miniatura : SinFotoPerfil} alt="miniatura-noticia"/>  
                             } 
+                            {
+                                !unlockFields && !recordData &&
+                                <MiniaturaImg src={SinFotoPerfil} alt="miniatura-noticia"/>  
+                            }
                             {
                                 unlockFields &&
                                 <Fragment>

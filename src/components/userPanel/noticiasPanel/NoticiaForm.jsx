@@ -164,6 +164,7 @@ const NoticiaForm = ({}) => {
     }, [recordData, contenido]);
 
     const setNoticiaInfo = (data) => {
+        console.log(data);
         setRecordData(data);
         setNombre(data.nombre);
         setDescripcion(data.descripcion);
@@ -296,11 +297,13 @@ const NoticiaForm = ({}) => {
         const config = {headers:{'authorization': token, 'Content-Type': 'multipart/form-data'}};
         let url = `${consts.backend_base_url}/api/noticia/${id}`;
         axios.put(url, formData, config).then((response) => {
-            setNoticiaInfo(response.data.data);
             setBlockUI(false);
             setNotificationMsg(response.data.message);
             setNotificationType('success');
             setShowNotification(true);
+            setTimeout(() => {
+                window.location.reload(true);
+            }, 1000);
         }).catch((err) => {
             console.log(err);
             setNotificationMsg("Ocurrió un error inesperado. Intentelo mas tarde...");
@@ -344,13 +347,17 @@ const NoticiaForm = ({}) => {
         let url = `${consts.backend_base_url}/api/noticia`;
 
         axios.post(url, formData, config).then((response) => {
+            console.log(response);
             //set record data
-            setNoticiaInfo(response.data);
             setNotificationMsg("El registro fue creado exitosamente!!");
             setNotificationType('success');
             setShowNotification(true);
-            setReload(true);
             setBlockUI(false);
+            setNewId(response.data.id);
+            setRedirect(true);
+            setTimeout(() => {
+                window.location.reload(true);
+            }, 100);
         }).catch((err) => {
             console.log(err);
             setNotificationMsg(err.response.data.message);
@@ -528,21 +535,6 @@ const NoticiaForm = ({}) => {
                             unlockFields && 
                             <FormControl sx={{ m: 1, width: '95%' }} variant="outlined">
                                 <TextField id="nombre" label="Nombre" variant="outlined" defaultValue={nombre} onChange={(e) => setNombre(e.target.value)}/>
-                            </FormControl>
-                        }
-
-                    </div>
-                    <div className='d-flex flex-row flex-wrap'>
-                        {
-                            !unlockFields && 
-                            <FormControl sx={{ m: 1, width: '95%' }} variant="outlined">
-                                <TextField id="descripcion" label="Descripción" disabled variant="outlined" value={nombre}/>
-                            </FormControl>
-                        }
-                        {
-                            unlockFields && 
-                            <FormControl sx={{ m: 1, width: '95%' }} variant="outlined">
-                                <TextField id="descripcion" label="Descripción" variant="outlined" defaultValue={descripcion} onChange={(e) => setDescripcion(e.target.value)}/>
                             </FormControl>
                         }
 

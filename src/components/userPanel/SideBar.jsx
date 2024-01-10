@@ -228,27 +228,12 @@ export default function NestedList({userRol, personData}) {
                     <List component="div" disablePadding>
                         <Link to="/dashboard/estadisticas/visitasWebsite">
                             <ListItemButton sx={{ pl: 4 }}>
-                                <ListItemText primary="Número de visitas Website" />
-                            </ListItemButton>
-                        </Link>
-                        <Link to="/dashboard/estadisticas/visitasCategoriaWebsite">
-                            <ListItemButton sx={{ pl: 4 }}>
-                                <ListItemText primary="Visitas por categoria Website" />
-                            </ListItemButton>
-                        </Link>
-                        <Link to="/dashboard/estadisticas/visitasArticuloWebsite">
-                            <ListItemButton sx={{ pl: 4 }}>
-                                <ListItemText primary="Visitas por articulo Website" />
+                                <ListItemText primary="Website" />
                             </ListItemButton>
                         </Link>
                         <Link to="/dashboard/estadisticas/visitasRadioOnline">
                             <ListItemButton sx={{ pl: 4 }}>
-                                <ListItemText primary="Visitas Radio Online" />
-                            </ListItemButton>
-                        </Link>
-                        <Link to="/dashboard/estadisticas/suscripcionesRadio">
-                            <ListItemButton sx={{ pl: 4 }}>
-                                <ListItemText primary="Suscripciones Radio" />
+                                <ListItemText primary="Radio Online" />
                             </ListItemButton>
                         </Link>
                     </List>

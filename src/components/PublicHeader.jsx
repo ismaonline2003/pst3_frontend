@@ -6,25 +6,27 @@ import MinisterioEducUniverstiaria from '../icons/cintillo_mppeuct.png'
 
 const PublicHeader = ({}) => {
     return (
-        <div className='w-100 d-flex justify-between flex-row text-center p-2 border shadow' >
-                <div style={{width: '25%', textAlign: 'center',  alignContent: 'center', alignItems: 'center', display: 'inline-block'}}>
-                    <img 
-                        src={UptecmLogo} 
-                        alt="uptecm-logo" 
-                        style={{width: '80px', display: 'text'}} 
-                    />
-                </div>
+        <div style={{display: 'flex', justifyContent: 'center', flexDirection: 'row', flexWrap: 'WRAP'}} className='w-100 p-2 border shadow' >
+                <img 
+                    src={UptecmLogo} 
+                    alt="uptecm-logo" 
+                    style={{width: '80px', display: 'block', maxHeight: '100px', margin: '10px'}} 
+                />
                 <div 
-                    style={{width: '50%', margin: '0 auto', alignContent: 'center', alignItems: 'center', display: 'inline-block'}}
+                    style={{width: '50%', textAlign: 'center', alignContent: 'center', alignItems: 'center'}}
                 >
-                    <p className='font-bold'>
+                    <p className='font-bold' style={{margin: '0 auto'}}>
                     República Bolivariana de Venezuela<br />
                     Ministerio del Poder Popular para la Educación Universitaria<br />
                     Universidad Politécnica Territorial de Caracas "Mariscal Sucre"<br />
+                    SIPPEPRE
                     </p>
                 </div>
-                <div className='inline-block' style={{width: '25%'}}>
-                </div>
+                <img 
+                    src={MinisterioEducUniverstiaria} 
+                    alt="uptecm-logo" 
+                    style={{width: '100px', display: 'block', maxHeight: '100px', margin: '10px'}} 
+                />
         </div>
     )
 };
