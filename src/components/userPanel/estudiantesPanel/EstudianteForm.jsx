@@ -1,11 +1,22 @@
 import { useState, useEffect, useContext } from 'react';
 import { useParams, Navigate, Link } from 'react-router-dom';
 import axios from "axios";
-import AppContext from '../../../context/App';
-import consts from '../../../settings/consts';
+//Material UI
 import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
+
+//own
+import AppContext from '../../../context/App';
+import consts from '../../../settings/consts';
 import FormBtns from '../FormBtns';
 import PersonaForm from '../PersonaForm';
 import personaFieldsValidations from '../../../helpers/personaFieldsValidations';
@@ -14,8 +25,8 @@ import getFormattedDate from '../../../helpers/getFormattedDate';
 import styledComponents from '../../styled'
 import FormContainer from '../FormContainer'
 import noEncontrado from '../../../icons/no-encontrado.jpg'
-import Button from '@mui/material/Button';
 import DeleteDialog from '../../generales/DeleteDialog';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const ci_vals = [
     {
@@ -64,6 +75,14 @@ const EstudianteForm = ({}) => {
     const StyledH1 = styledComponents.dahsboardPanelh1;
     const StyledH2 = styledComponents.dahsboardPanelh2;
 
+    //
+    const [ enrollments, setEnrollments] = useState([]);
+    const [ newEnrollments, setNewEnrollments] = useState([]);
+    const [ deleteEnrollments, setDeleteEnrollments] = useState([]);
+    const [ sectionsFound, setSectionsFound] = useState([]);
+    const [ sectionsSearchVal, setSectionsSearchVal] = useState("");
+    const [ selectedSection, setSelectedSection] = useState(false);
+
     const searchEstudiante = () => {
         setBlockUI(true);
         if(id != "0") {
@@ -83,6 +102,8 @@ const EstudianteForm = ({}) => {
                 setAddress(response.data.person.address);
                 setYearIngreso(response.data.year_ingreso);
                 setNroExpediente(response.data.nro_expediente);
+                console.log(response);
+                setEnrollments(response.data.inscripcions);
                 if(response.data.person.foto_carnet_filename) {
                     //const base64Img = sequelizeImg2Base64(response.data.person.foto_carnet);
                     //setFotoCarnetStr(base64Img.b64str);
@@ -129,7 +150,9 @@ const EstudianteForm = ({}) => {
                 sexo: sexo
             },
             nro_expediente: nroExpediente,
-            year_ingreso: yearIngreso
+            year_ingreso: yearIngreso,
+            nuevas_secciones: newEnrollments,
+            secciones_eliminar: deleteEnrollments
         };
         formData.append('data', JSON.stringify(body));
         const config = {headers:{'authorization': token, 'Content-Type': 'multipart/form-data'}};
@@ -139,6 +162,9 @@ const EstudianteForm = ({}) => {
             setNotificationMsg(response.data.message);
             setNotificationType('success');
             setShowNotification(true);
+            setTimeout(() => {
+                window.location.reload(true);
+            }, 500);
         }).catch((err) => {
             setNotificationMsg(err.response.data.message);
             setNotificationType('error');
@@ -170,7 +196,8 @@ const EstudianteForm = ({}) => {
                 sexo: sexo
             },
             nro_expediente: nroExpediente,
-            year_ingreso: yearIngreso
+            year_ingreso: yearIngreso,
+            secciones: newEnrollments
         };
         formData.append('data', JSON.stringify(body));
         const config = {headers:{'authorization': token, 'Content-Type': 'multipart/form-data'}};
@@ -188,6 +215,7 @@ const EstudianteForm = ({}) => {
             setAddress(response.data.person.address);
             setYearIngreso(response.data.year_ingreso);
             setNroExpediente(response.data.nro_expediente);
+            setEnrollments(response.data.inscripcions);
             if(response.data.person.foto_carnet_filename) {
                 //const base64Img = sequelizeImg2Base64(response.data.person.foto_carnet);
                 //setFotoCarnetStr(base64Img.b64str);
@@ -257,12 +285,18 @@ const EstudianteForm = ({}) => {
         setAddress(estudiante.person.address);
         setYearIngreso(estudiante.year_ingreso);
         setNroExpediente(estudiante.nro_expediente);
+        setEnrollments(estudiante.inscripcions);
         setFotoCarnetObj(undefined);
         if(estudiante.person.foto_carnet_filename) {
             //const base64Img = sequelizeImg2Base64(response.data.person.foto_carnet);
             //setFotoCarnetStr(base64Img.b64str);
             setFotoCarnetStr(`${consts.backend_base_url}/api/files/getFile/${estudiante.person.foto_carnet_filename}`);
         }
+        setDeleteEnrollments([]);
+        setNewEnrollments([]);
+        setSectionsSearchVal("");
+        setSectionsFound([]);
+        setSelectedSection(false);
     }
 
     const handleCancelarBtn = (e) => {
@@ -299,6 +333,41 @@ const EstudianteForm = ({}) => {
         });
     }
 
+    const _handleBtnAddEnrollment = () => {
+        const obj = {
+            id: selectedSection,
+            name: ""
+        }
+        if(!selectedSection) {
+            setNotificationMsg("Debe seleccionar una sección.");
+            setNotificationType('warning');
+            setShowNotification(true);
+            return;
+        }
+        if(enrollments.filter(e => e.id === selectedSection).length > 0) {
+            setNotificationMsg("El estudiante ya tiene una inscripción registrada a la sección seleccionada.");
+            setNotificationType('error');
+            setShowNotification(true);
+            return;
+        }
+        obj.name = sectionsFound.filter(e => e.id === selectedSection)[0].name;
+        setNewEnrollments([...newEnrollments, obj]);
+        setSectionsSearchVal("");
+        setSectionsFound([]);
+        setSelectedSection(false);
+    }
+
+    const _deleteEnrollment =  (enrollment_id=0, is_new=true) => {
+        console.log(newEnrollments.filter(e => e.id != enrollment_id));
+        if(!is_new) {
+            setDeleteEnrollments([...deleteEnrollments, ...enrollments.filter(e => e.id === enrollment_id)]);
+            setEnrollments(enrollments.filter(e => e.id != enrollment_id));
+        }
+        if(is_new) {
+            setNewEnrollments(newEnrollments.filter(e => e.id != enrollment_id));
+        }
+    }
+
     useEffect(() => {
         searchEstudiante();
     }, []);
@@ -306,6 +375,26 @@ const EstudianteForm = ({}) => {
     useEffect(() => {
         setNroExpediente(`${yearIngreso ? yearIngreso: ""}-${ci ? ci : ""}`);
     }, [yearIngreso, ci]);
+
+    useEffect(() => {
+        setBlockUI(true);
+        const token = localStorage.getItem('token');
+        const config = {headers:{ authorization: token}};
+        let url = `${consts.backend_base_url}/api/seccion/api/seccionPorNombre/${sectionsSearchVal}`;
+        axios.get(url, config).then((response) => {
+            setSectionsFound(response.data);
+            setBlockUI(false);
+        }).catch((err) => {
+            if(err.response.status == 404) {
+                setSectionsFound([]);
+            } else {
+                setNotificationMsg("Ocurrió un error inesperado... Intentelo mas tarde.");
+                setNotificationType('error');
+                setShowNotification(true);
+            }
+            setBlockUI(false);
+        });
+    }, [sectionsSearchVal]);
 
     return (
         <div className='m-4'>
@@ -385,7 +474,83 @@ const EstudianteForm = ({}) => {
                         </FormControl>
                     </div>
                 </FormContainer>
-            }            
+            }
+            <br />
+                <FormContainer>
+                    <StyledH2>Registro de Inscripciones</StyledH2>
+                    <br />
+                    <TableContainer component={Paper}>
+                        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell align="left" style={{width: '80%'}}><strong>Sección</strong></TableCell>
+                                    <TableCell align="left" style={{width: '20%'}}><strong>Eliminar</strong></TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                            {enrollments.map((row) => (
+                                <TableRow
+                                key={row.name}
+                                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                >
+                                    <TableCell component="th" scope="row">
+                                    {row.seccion.nombre} - Trayecto: {row.seccion.trayecto} - PNF: {row.seccion.carrera_universitarium.nombre_pnf} - Año: {row.seccion.year}
+                                    </TableCell>
+                                    <TableCell align="left" style={{width: '20%'}}>
+                                        {
+                                            unlockFields && 
+                                            <DeleteIcon sx={{fontSize: '2rem;', cursor:'pointer'}}  onClick={(e) => _deleteEnrollment(row.id, false)}></DeleteIcon>
+                                        }
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                            {newEnrollments.map((row) => (
+                                <TableRow
+                                key={row.name}
+                                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                >
+                                    <TableCell component="th" scope="row">
+                                        {row.name}
+                                    </TableCell>
+                                    <TableCell align="left" style={{width: '20%'}}>
+                                        {
+                                            unlockFields && 
+                                            <DeleteIcon sx={{fontSize: '2rem;', cursor:'pointer'}}  onClick={(e) => _deleteEnrollment(row.id, true)}></DeleteIcon>
+                                        }
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                            </TableBody>
+                            {
+                                unlockFields && 
+                                <TableRow
+                                    key={'add-new-enrrollment-row'}
+                                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                    >
+                                        <TableCell component="th" scope="row" colspan="2">
+                                            <div className='w-100 d-flex justify-center flex-row flex-wrap'>
+                                                <FormControl sx={{ m: 1, width: '35%' }} variant="outlined">
+                                                    <TextField size="small" id="search_section" label="Buscar Sección" variant="outlined" onChange={(e) => {setSectionsSearchVal(e.target.value)}}/>
+                                                </FormControl>
+                                                <FormControl sx={{ m: 1, width: '35%' }} variant="outlined">
+                                                    <TextField size="small" id="secciones" select label="Secciones" defaultValue={""} onChange={(e) => setSelectedSection(e.target.value)}>
+                                                        {
+                                                            sectionsFound.map((option) => (
+                                                                <MenuItem key={option.id} value={option.id}>
+                                                                    {option.name}
+                                                                </MenuItem>
+                                                            ))
+                                                        }
+                                                    </TextField>
+                                                </FormControl>
+                                                <Button size="small" variant="contained" sx={{width: '20%', marginTop: '15px'}} color="success" onClick={(e) => _handleBtnAddEnrollment()}>Agregar</Button>
+                                            </div>
+                                        </TableCell>
+                                </TableRow>
+                            }
+                        </Table>
+                    </TableContainer>
+                </FormContainer>          
             {
                 !estudianteFound && 
                 <FormContainer>
