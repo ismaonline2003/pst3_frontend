@@ -105,6 +105,7 @@ const ProyectoForm = ({}) => {
     const [imgs, setImgs] = useState([]);
     const [docs, setDocs] = useState([]);
     const [integrantes, setIntegrantes] = useState([]);
+    const [profesorID, setProfesorID] = useState(false);
 
     //ui fields
     const [pnfs, setPnfs] = useState([]);
@@ -130,10 +131,13 @@ const ProyectoForm = ({}) => {
     const [ defaultYear, setDefaultYear] = useState((new Date()).getFullYear());
     const [ defaultTrayecto, setDefaultTrayecto] = useState("0");
     const [ defaultSeccion, setDefaultSeccion] = useState("");
-    const [booleanPostChecked, setBooleanPostChecked] = useState(false);
-    const [showEditMiniatura, setShowEditMiniatura] = useState(false);
-    const [miniatura, setMiniaturaUrl] = useState("");
-    const [newMiniaturaObj, setNewMiniaturaObj] = useState(false);
+    const [ booleanPostChecked, setBooleanPostChecked] = useState(false);
+    const [ showEditMiniatura, setShowEditMiniatura] = useState(false);
+    const [ miniatura, setMiniaturaUrl] = useState("");
+    const [ newMiniaturaObj, setNewMiniaturaObj] = useState(false);
+    const [ profesorSearchVal, setProfesorSearchVal] = useState("");
+    const [ profesoresFound, setProfesoresFound ] = useState([]);
+    const [ profesorSelected, setProfesorSelected ] = useState(false);
 
     //form common fields
     const [showDeleteDialog, setShowDeleteDialog ] = useState(false);
@@ -265,6 +269,7 @@ const ProyectoForm = ({}) => {
         }
         setBooleanPostChecked(wordpressPosted);
         setMiniaturaUrl(`${consts.backend_base_url}/api/files/getFile/${data.miniatura_filename}`);
+        setProfesorID(data.id_profesor);
     }
 
     if(newImage && newImage.current) {
@@ -534,7 +539,11 @@ const ProyectoForm = ({}) => {
             miniaturaAdded: addedFiles.miniatura_added,
             post: booleanPostChecked
         };
-        console.log(body);
+        
+        if(profesorSelected) {
+            body.id_profesor = profesorSelected;
+        }
+
         formData.append('data', JSON.stringify(body));
         const config = {headers:{'authorization': token, 'Content-Type': 'multipart/form-data'}};
         let url = `${consts.backend_base_url}/api/proyecto/${id}`;
@@ -545,6 +554,9 @@ const ProyectoForm = ({}) => {
             setNotificationMsg(response.data.message);
             setNotificationType('success');
             setShowNotification(true);
+            setTimeout(() => {
+                setReload(true);
+            }, 3000);
         }).catch((err) => {
             setNotificationMsg(err.response.data.message);
             setNotificationType('error');
@@ -560,6 +572,7 @@ const ProyectoForm = ({}) => {
         let a = 0;
         let body = {
             id_seccion: seccionSelected,
+            id_profesor: profesorSelected,
             nombre: nombre,
             descripcion: editor.getHTML(),
             integrantes: integrantes,
@@ -901,6 +914,26 @@ const ProyectoForm = ({}) => {
     useEffect(() => {
         setEditorContent();
     }, [recordData]);
+
+    useEffect(() => {
+        setBlockUI(true);
+        const token = localStorage.getItem('token');
+        const config = {headers:{ authorization: token}};
+        let url = `${consts.backend_base_url}/api/profesor/api/profesorPorNombre/${profesorSearchVal}`;
+        axios.get(url, config).then((response) => {
+            setProfesoresFound(response.data);
+            setBlockUI(false);
+        }).catch((err) => {
+            if(err.response.status == 404) {
+                setProfesoresFound([]);
+            } else {
+                setNotificationMsg("Ocurrió un error inesperado... Intentelo mas tarde.");
+                setNotificationType('error');
+                setShowNotification(true);
+            }
+            setBlockUI(false);
+        });
+    }, [profesorSearchVal]);
     
 
     return (
@@ -944,7 +977,7 @@ const ProyectoForm = ({}) => {
                         <div className='d-flex flex-row flex-wrap text-center mb-4'>
                             {
                                 !unlockFields &&
-                                <MiniaturaImg src={miniatura ? miniatura : SinFotoPerfil} alt="miniatura-noticia"/>  
+                                <MiniaturaImg src={recordData.miniatura_filename ? recordData.miniatura_filename : SinFotoPerfil} alt="miniatura-noticia"/>  
                             } 
                             {
                                 unlockFields &&
@@ -997,6 +1030,32 @@ const ProyectoForm = ({}) => {
                                 </FormControl>
                             }
                         </div>
+                        {
+                            (recordFound && !unlockFields) && recordData.profesor && 
+                            <FormControl sx={{ m: 1, width: '95%' }} variant="outlined">
+                                <TextField id="profesor" label="Profesor" disabled variant="outlined" 
+                                value={`${recordData.profesor.person.name} ${recordData.profesor.person.lastname} - CI: ${recordData.profesor.person.ci_type}-${recordData.profesor.person.ci}`}/>
+                            </FormControl>
+                        }
+                        {
+                            unlockFields && 
+                            <div className='w-100 d-flex justify-center flex-row flex-wrap'>
+                                <FormControl sx={{ m: 1, width: '45%' }} variant="outlined">
+                                    <TextField id="search_profesor" label="Buscar Profesor" variant="outlined" onChange={(e) => {setProfesorSearchVal(e.target.value)}}/>
+                                </FormControl>
+                                <FormControl sx={{ m: 1, width: '45%' }} variant="outlined">
+                                    <TextField  id="profesores" select label="Profesores" defaultValue={""} onChange={(e) => setProfesorSelected(parseInt(e.target.value))}>
+                                        {
+                                            profesoresFound.map((option) => (
+                                                <MenuItem key={option.id} value={option.id}>
+                                                    {option.name}
+                                                </MenuItem>
+                                            ))
+                                        }
+                                    </TextField>
+                                </FormControl>
+                            </div>
+                        }
                         <div className='d-flex flex-row flex-wrap'>
                             {
                                 (recordFound && !unlockFields) && 
@@ -1315,9 +1374,6 @@ const ProyectoForm = ({}) => {
                         {
                             (!unlockFields && recordFound) && 
                             <ImageList sx={{ width: '95%', height: 500 }}>
-                                    <ImageListItem key="Subheader" cols={2}>
-                                        <ListSubheader component="div">Imagenes</ListSubheader>
-                                    </ImageListItem>
                                     {
                                         (recordFound && !unlockFields) && 
                                             imgs.map((item) => {
