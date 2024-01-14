@@ -50,6 +50,9 @@ import VisitasArticuloWebsite from './estadisticasPanel/VisitasArticuloWebsite';
 import VisitasRadioOnline from './estadisticasPanel/VisitasRadioOnline';
 import SuscripcionesRadio from './estadisticasPanel/SuscripcionesRadio';
 
+//Mi Perfil
+import MiPerfil from './MiPerfil';
+
 const paneles = {
     emision_panel: EmisionPanel,
     inicio: Inicio,
@@ -86,6 +89,8 @@ const paneles = {
     visitasArticuloWebsite: VisitasArticuloWebsite,
     visitasRadioOnline: VisitasRadioOnline,
     suscripcionesRadio: SuscripcionesRadio,
+    //mi perfil
+    mi_perfil: MiPerfil
 }
 
 const Dashboard = ({sessionVals, panelName}) => {

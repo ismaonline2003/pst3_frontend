@@ -140,6 +140,7 @@ function App() {
                 ['A'].includes(sessionVals.userData.rol) && 
                 <Route path="/dashboard">
                   <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"inicio"}/>}/>
+                  <Route path="miPerfil" element={<Dashboard sessionVals={sessionVals} panelName={"mi_perfil"}/>}/>
                   <Route path="radioOnlineEmision" element={<Dashboard sessionVals={sessionVals} panelName={"emision_panel"}/>}/>
                   <Route path="estudiantes" >
                     <Route path="" element={<Dashboard sessionVals={sessionVals} panelName={"estudiantes"}/>}/>
