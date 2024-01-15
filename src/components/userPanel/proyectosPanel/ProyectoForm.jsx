@@ -556,7 +556,7 @@ const ProyectoForm = ({}) => {
             setNotificationType('success');
             setShowNotification(true);
             setTimeout(() => {
-                setReload(true);
+                window.location.reload(true);
             }, 3000);
         }).catch((err) => {
             setNotificationMsg(err.response.data.message);
