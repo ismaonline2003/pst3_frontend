@@ -20,6 +20,7 @@ import Signup from './components/Signup';
 import RecoverPassword from './components/RecoverPassword';
 import UserVerification from './components/UserVerification';
 import UserPasswordResetRequest from './components/UserPasswordResetRequest';
+import MiPerfil from './components/userPanel/MiPerfil';
 
 function App() {
   let default_session_obj = {
@@ -278,7 +279,7 @@ function App() {
               {
                 isLogged && 
                 <Fragment>
-                  <Route path="/radioOnlineUserConfig" element={<OnlineRadioMyAccountSettings />}/>
+                  <Route path="/miPerfil" element={<OnlineRadioMyAccountSettings />}/>
                   <Route path="/radioOnlineLogout" element={<OnlineRadioMyAccountLogout />}/>
                 </Fragment>
               }

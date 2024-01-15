@@ -24,6 +24,7 @@ import consts from '../../settings/consts';
 import AppContext from '../../context/App';
 import IconButton from '../../icons/radio-online-icon.svg'
 import OnlineRadioNavbar from './OnlineRadioNavbar';
+import MiPefil from '../userPanel/MiPerfil';
 
 
 const ContainerComponent = styled('div')({
@@ -53,7 +54,8 @@ const OnlineRadioMyAccountSettings = ({}) => {
     <Fragment>
       <OnlineRadioNavbar userID={userID}/>
       <ContainerComponent>
-        <Container maxWidth="md">
+        <Container>
+          <MiPefil />
         </Container>
       </ContainerComponent>
     </Fragment>

@@ -14,8 +14,10 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
-const pages = [['Radio Online', '/radioOnline'], ['Portal Web', '/portal'], ['Emisiones', '/emisionesRadio']];
-const settings = [['Configuración', '/radioOnlineUserConfig'], ['Cerrar Sesión', '/radioOnlineLogout']];
+import consts from '../../settings/consts';
+
+const pages = [['Radio Online', '/radioOnline'], ['Portal Web', consts.portal_web_url], ['Emisiones', '/emisionesRadio']];
+const settings = [['Mi Pefil', '/miPerfil'], ['Cerrar Sesión', '/radioOnlineLogout']];
 const unloggedUserSettings = [['Iniciar Sesión', '/login'], ['Registrarse', '/signup']];
 const title = 'AgroOnline-UPTCMS';
 
