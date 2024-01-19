@@ -559,7 +559,8 @@ const ProyectoForm = ({}) => {
                 window.location.reload(true);
             }, 3000);
         }).catch((err) => {
-            setNotificationMsg(err.response.data.message);
+            console.log(err);
+            setNotificationMsg(err.response.message);
             setNotificationType('error');
             setShowNotification(true);
             setBlockUI(false);

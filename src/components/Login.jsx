@@ -79,9 +79,10 @@ const Login = ({sessionVals, setSessionVals, setIsLogged}) => {
       }, 500);
     })
     .catch((err) => {
+      console.log(err);
       setBlockUI(false);
-      if(err.data) {
-        setNotificationMsg(err.data.message);
+      if(err.response.data) {
+        setNotificationMsg(err.response.data.message);
       } else {
         setNotificationMsg("Ocurrió un error inesperado.. Intentelo mas tarde.");
       }

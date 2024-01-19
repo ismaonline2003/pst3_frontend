@@ -192,9 +192,15 @@ const SeccionForm = ({}) => {
 
     const createSeccion = () => {
         setBlockUI(true);
-        console.log(carrerasUniversitarias[0].id)
         const token = localStorage.getItem('token');
         let pnfIDInt = pnfId;
+        if(carrerasUniversitarias.length === 0) {
+            setNotificationMsg("Debe haber PNFS cargados en el sistema.");
+            setNotificationType('error');
+            setShowNotification(true);
+            setBlockUI(false);
+            return;
+        }
         if(id == "0" && pnfId == false) {
             setPnfID(carrerasUniversitarias[0].id);
             pnfIDInt = carrerasUniversitarias[0].id;
@@ -224,6 +230,9 @@ const SeccionForm = ({}) => {
             setNotificationType('success');
             setShowNotification(true);
             setReload(true);
+            setTimeout(() => {
+                window.location.reload(true);
+              }, 500);
             setBlockUI(false);
         }).catch((err) => {
             console.log(err);

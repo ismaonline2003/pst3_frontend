@@ -90,6 +90,7 @@ const PersonaForm = ({
 
     if(fotoCarnetInput && fotoCarnetInput.current) {
         fotoCarnetInput.current.onchange = (e) => {
+            console.log(e.target.files);
             const validations = imgValidations(e.target.files[0]);
             if(validations.status != 'success') {
                 setNotificationMsg(validations.msg);
@@ -97,6 +98,7 @@ const PersonaForm = ({
                 setShowNotification(true);
                 e.target.value = "";
             } else {
+                console.log(e.target.files);
                 let url = window.URL.createObjectURL(e.target.files[0]);
                 setFotoCarnetStr(url);
                 setFotoCarnetObj(e.target.files[0])

@@ -527,7 +527,7 @@ const EstudianteForm = ({}) => {
                                     key={'add-new-enrrollment-row'}
                                     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                                     >
-                                        <TableCell component="th" scope="row" colspan="2">
+                                        <TableCell component="th" scope="row" colSpan="2">
                                             <div className='w-100 d-flex justify-center flex-row flex-wrap'>
                                                 <FormControl sx={{ m: 1, width: '35%' }} variant="outlined">
                                                     <TextField size="small" id="search_section" label="Buscar Sección" variant="outlined" onChange={(e) => {setSectionsSearchVal(e.target.value)}}/>
