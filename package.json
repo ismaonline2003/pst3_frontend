@@ -22,6 +22,7 @@
     "@tiptap/react": "^2.1.12",
     "@tiptap/starter-kit": "^2.1.12",
     "chart.js": "^4.4.1",
+    "chartjs": "^0.3.24",
     "html-react-parser": "^5.0.6",
     "mui-tiptap": "^1.8.5",
     "react": "^18.2.0",
